@@ -535,14 +535,14 @@ function Room() {
                   onClick={analyze}
                   className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
                 >
-                  <SmilePlus className="size-4" />
+                  <Gauge className="size-4" />
                   Análise de sentimento
                 </button>
                 <button
                   onClick={openDashboard}
                   className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
                 >
-                  <BarChart3 className="size-4" />
+                  <ChartColumnBig className="size-4" />
                   Dashboard de falas
                 </button>
               </div>
@@ -638,7 +638,7 @@ function Room() {
               <div className="flex max-h-[85vh] w-full max-w-md flex-col rounded-xl border border-border bg-card shadow-xl">
                 <div className="flex items-center justify-between border-b border-border px-5 py-3">
                   <div className="flex items-center gap-2 font-medium">
-                    <SmilePlus className="size-4 text-primary" />
+                    <Gauge className="size-4 text-primary" />
                     Análise de sentimento
                   </div>
                   <button
@@ -719,7 +719,7 @@ function Room() {
               <div className="flex max-h-[85vh] w-full max-w-lg flex-col rounded-xl border border-border bg-card shadow-xl">
                 <div className="flex items-center justify-between border-b border-border px-5 py-3">
                   <div className="flex items-center gap-2 font-medium">
-                    <BarChart3 className="size-4 text-primary" />
+                    <ChartColumnBig className="size-4 text-primary" />
                     Dashboard de falas
                   </div>
                   <button
