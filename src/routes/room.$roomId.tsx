@@ -148,6 +148,8 @@ function Room() {
   const makeMinutes = useServerFn(generateMinutes);
   const runSentiment = useServerFn(analyzeSentiment);
   const runDashboard = useServerFn(analyzeDashboard);
+  const loadChannels = useServerFn(listSlackChannels);
+  const postToSlack = useServerFn(sendToSlack);
   const [showMinutes, setShowMinutes] = useState(false);
   const [minutesTemplate, setMinutesTemplate] = useState("formal");
   const [minutesText, setMinutesText] = useState("");
