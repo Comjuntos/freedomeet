@@ -20,6 +20,14 @@ import { getJaasToken } from "@/lib/jaas.functions";
 const JITSI_DOMAIN = "8x8.vc";
 const SCRIPT_SRC = `https://${JITSI_DOMAIN}/external_api.js`;
 
+function formatDuration(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+}
+
 export const Route = createFileRoute("/room/$roomId")({
   head: () => ({
     meta: [{ title: "Sala — FreedoMeet" }],
