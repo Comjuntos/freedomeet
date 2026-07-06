@@ -10,6 +10,7 @@ import {
   Copy,
   Loader2,
   SmilePlus,
+  Clock,
 } from "lucide-react";
 import { translateText } from "@/lib/translate.functions";
 import { punctuateText } from "@/lib/punctuate.functions";
@@ -19,6 +20,14 @@ import { getJaasToken } from "@/lib/jaas.functions";
 
 const JITSI_DOMAIN = "8x8.vc";
 const SCRIPT_SRC = `https://${JITSI_DOMAIN}/external_api.js`;
+
+function formatDuration(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+}
 
 export const Route = createFileRoute("/room/$roomId")({
   head: () => ({
@@ -112,6 +121,8 @@ function Room() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [ended, setEnded] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
+  const startTimeRef = useRef<number | null>(null);
   const [showCaptions, setShowCaptions] = useState(false);
   const [listening, setListening] = useState(false);
   const [sourceLang, setSourceLang] = useState("pt-BR");
@@ -203,6 +214,20 @@ function Room() {
   useEffect(() => {
     targetRef.current = targetLang;
   }, [targetLang]);
+
+  // Meeting duration timer: starts once the room mounts, stops when it ends.
+  useEffect(() => {
+    if (startTimeRef.current === null) startTimeRef.current = Date.now();
+    if (ended) return;
+    const tick = () => {
+      if (startTimeRef.current !== null) {
+        setElapsed(Math.floor((Date.now() - startTimeRef.current) / 1000));
+      }
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [ended]);
 
   const startListening = useCallback(() => {
     const Ctor = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -343,6 +368,10 @@ function Room() {
             <p className="mt-2 text-muted-foreground">
               Obrigado por usar o FreedoMeet.
             </p>
+            <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium">
+              <Clock className="size-4 text-primary" />
+              Duração total: {formatDuration(elapsed)}
+            </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
             <button
@@ -372,6 +401,10 @@ function Room() {
       ) : (
         <div className="relative flex flex-1 overflow-hidden">
           <div ref={containerRef} className="flex-1" />
+          <div className="pointer-events-none absolute left-4 top-4 z-10 flex items-center gap-2 rounded-full bg-black/60 px-3 py-1.5 text-sm font-medium text-white">
+            <Clock className="size-4" />
+            {formatDuration(elapsed)}
+          </div>
           {showCaptions && (
             <aside className="flex w-80 flex-col border-l border-border bg-card">
               <div className="flex items-center justify-between border-b border-border px-4 py-3">
