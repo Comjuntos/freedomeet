@@ -6,7 +6,7 @@ const SCRIPT_SRC = `https://${JITSI_DOMAIN}/external_api.js`;
 
 export const Route = createFileRoute("/room/$roomId")({
   head: () => ({
-    meta: [{ title: "Sala — Encontro" }],
+    meta: [{ title: "Sala — FreedoMeet" }],
   }),
   component: Room,
 });
@@ -66,9 +66,9 @@ function Room() {
           interfaceConfigOverwrite: {
             MOBILE_APP_PROMO: false,
             LANG_DETECTION: false,
-            APP_NAME: "Encontro",
-            NATIVE_APP_NAME: "Encontro",
-            PROVIDER_NAME: "Encontro",
+            APP_NAME: "FreedoMeet",
+            NATIVE_APP_NAME: "FreedoMeet",
+            PROVIDER_NAME: "FreedoMeet",
             SHOW_JITSI_WATERMARK: false,
             SHOW_WATERMARK_FOR_GUESTS: false,
             SHOW_BRAND_WATERMARK: false,
