@@ -129,6 +129,7 @@ function Room() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [ended, setEnded] = useState(false);
+  const [isHost, setIsHost] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const startTimeRef = useRef<number | null>(null);
   const [showCaptions, setShowCaptions] = useState(false);
@@ -142,6 +143,11 @@ function Room() {
   const listeningRef = useRef(false);
   const targetRef = useRef(targetLang);
   const idRef = useRef(0);
+
+  // Apenas quem criou a sala é o administrador (host) da reunião.
+  useEffect(() => {
+    setIsHost(sessionStorage.getItem(`freedomeet-host-${roomId}`) === "1");
+  }, [roomId]);
   const translate = useServerFn(translateText);
   const punctuate = useServerFn(punctuateText);
   const fetchToken = useServerFn(getJaasToken);
@@ -579,25 +585,33 @@ function Room() {
                 >
                   {listening ? "Parar transcrição" : "Iniciar transcrição"}
                 </button>
-                <button
-                  onClick={downloadTranscript}
-                  disabled={captions.length === 0}
-                  className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary disabled:opacity-60"
-                >
-                  <Download className="size-4" />
-                  Baixar transcrição
-                </button>
-                <button
-                  onClick={() => setShowAiTools((v) => !v)}
-                  className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
-                >
-                  <Sparkles className="size-4" />
-                  Ferramentas IA
-                  <ChevronDown
-                    className={`size-4 transition-transform ${showAiTools ? "rotate-180" : ""}`}
-                  />
-                </button>
-                {showAiTools && (
+                {isHost ? (
+                  <>
+                    <button
+                      onClick={downloadTranscript}
+                      disabled={captions.length === 0}
+                      className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary disabled:opacity-60"
+                    >
+                      <Download className="size-4" />
+                      Baixar transcrição
+                    </button>
+                    <button
+                      onClick={() => setShowAiTools((v) => !v)}
+                      className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
+                    >
+                      <Sparkles className="size-4" />
+                      Ferramentas IA
+                      <ChevronDown
+                        className={`size-4 transition-transform ${showAiTools ? "rotate-180" : ""}`}
+                      />
+                    </button>
+                  </>
+                ) : (
+                  <p className="rounded-md bg-secondary/50 px-3 py-2 text-center text-xs text-muted-foreground">
+                    Apenas o administrador da sala pode baixar a transcrição e usar as ferramentas de IA.
+                  </p>
+                )}
+                {isHost && showAiTools && (
                   <div className="space-y-2">
                     <button
                       onClick={generateAta}
