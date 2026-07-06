@@ -1,6 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 
-type MinutesInput = { transcript: string; title?: string; template?: string };
+type MinutesInput = {
+  transcript: string;
+  title?: string;
+  template?: string;
+  members?: string[];
+  startedAt?: string;
+};
 
 const TEMPLATES: Record<string, string> = {
   formal:
@@ -20,6 +26,10 @@ function validate(input: unknown): MinutesInput {
     transcript: i.transcript,
     title: typeof i.title === "string" ? i.title : undefined,
     template: typeof i.template === "string" ? i.template : "formal",
+    members: Array.isArray(i.members)
+      ? i.members.filter((m): m is string => typeof m === "string" && m.trim() !== "")
+      : undefined,
+    startedAt: typeof i.startedAt === "string" ? i.startedAt : undefined,
   };
 }
 
@@ -36,6 +46,12 @@ export const generateMinutes = createServerFn({ method: "POST" })
       year: "numeric",
     });
 
+    const membersList =
+      data.members && data.members.length > 0
+        ? data.members.map((m) => `- ${m}`).join("\n")
+        : "Não informados";
+    const startedInfo = data.startedAt || "Não informado";
+
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
@@ -49,9 +65,11 @@ export const generateMinutes = createServerFn({ method: "POST" })
 Responda APENAS em Markdown, sem blocos de código. Use esta estrutura:
 # Ata de Reunião${data.title ? `: ${data.title}` : ""}
 **Data:** ${today}
+**Início da reunião:** ${startedInfo}
 
 ## Participantes
-(liste os participantes se identificáveis, senão "Não identificados")
+(use exatamente a lista de membros informada abaixo, com os nomes completos)
+${membersList}
 
 ## Pauta / Assuntos Tratados
 (tópicos discutidos em bullets)

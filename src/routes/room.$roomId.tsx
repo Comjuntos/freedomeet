@@ -171,6 +171,7 @@ function Room() {
   const [showMinutes, setShowMinutes] = useState(false);
   const [minutesTemplate, setMinutesTemplate] = useState("formal");
   const [minutesText, setMinutesText] = useState("");
+  const [membersInput, setMembersInput] = useState("");
   const [minutesLoading, setMinutesLoading] = useState(false);
   const [minutesError, setMinutesError] = useState<string | null>(null);
   const [showSentiment, setShowSentiment] = useState(false);
@@ -242,6 +243,17 @@ function Room() {
       .map((c) => c.original)
       .join("\n")
       .trim();
+    const members = membersInput
+      .split("\n")
+      .map((m) => m.trim())
+      .filter(Boolean);
+    if (members.length === 0) {
+      setMinutesError(
+        "Informe os membros da reunião (nome completo de cada um, um por linha).",
+      );
+      setShowMinutes(true);
+      return;
+    }
     if (!transcript) {
       setMinutesError(
         "Não há transcrição ainda. Ative a transcrição e fale durante a reunião.",
@@ -254,8 +266,12 @@ function Room() {
     setMinutesError(null);
     setMinutesText("");
     try {
+      const startedAt =
+        startTimeRef.current !== null
+          ? new Date(startTimeRef.current).toLocaleString("pt-BR")
+          : undefined;
       const res = await makeMinutes({
-        data: { transcript, template: minutesTemplate, title: roomId },
+        data: { transcript, template: minutesTemplate, title: roomId, members, startedAt },
       });
       setMinutesText(res.minutes);
     } catch {
@@ -263,7 +279,7 @@ function Room() {
     } finally {
       setMinutesLoading(false);
     }
-  }, [captions, makeMinutes, minutesTemplate, roomId]);
+  }, [captions, makeMinutes, minutesTemplate, roomId, membersInput]);
 
   const downloadAta = useCallback(() => {
     const blob = new Blob([minutesText], { type: "text/markdown;charset=utf-8" });
@@ -719,6 +735,18 @@ function Room() {
                 </div>
 
                 <div className="flex flex-wrap items-end gap-3 border-b border-border px-5 py-3 text-sm">
+                  <label className="flex w-full flex-col gap-1">
+                    <span className="text-xs text-muted-foreground">
+                      Membros da reunião (nome completo, um por linha)
+                    </span>
+                    <textarea
+                      value={membersInput}
+                      onChange={(e) => setMembersInput(e.target.value)}
+                      rows={3}
+                      placeholder={"Maria da Silva Santos\nJoão Pereira de Souza"}
+                      className="w-full resize-y rounded-md border border-border bg-background px-2 py-1.5"
+                    />
+                  </label>
                   <label className="flex flex-col gap-1">
                     <span className="text-xs text-muted-foreground">Modelo</span>
                     <select
