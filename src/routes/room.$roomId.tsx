@@ -112,6 +112,8 @@ function Room() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [ended, setEnded] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
+  const startTimeRef = useRef<number | null>(null);
   const [showCaptions, setShowCaptions] = useState(false);
   const [listening, setListening] = useState(false);
   const [sourceLang, setSourceLang] = useState("pt-BR");
