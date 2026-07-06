@@ -130,6 +130,7 @@ function Room() {
   const [elapsed, setElapsed] = useState(0);
   const startTimeRef = useRef<number | null>(null);
   const [showCaptions, setShowCaptions] = useState(false);
+  const [showAiTools, setShowAiTools] = useState(false);
   const [listening, setListening] = useState(false);
   const [sourceLang, setSourceLang] = useState("pt-BR");
   const [targetLang, setTargetLang] = useState("");
