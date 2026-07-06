@@ -510,6 +510,51 @@ function Room() {
             Voltar ao início
           </button>
         </div>
+      ) : !name ? (
+        <div className="flex flex-1 flex-col items-center justify-center gap-6 px-4 text-center">
+          <div className="flex items-center gap-2">
+            <Captions className="size-7 text-primary" />
+            <span className="text-2xl font-medium">FreedoMeet</span>
+          </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const v = nameInput.trim();
+              if (!v) return;
+              sessionStorage.setItem("freedomeet-name", v);
+              setName(v);
+            }}
+            className="flex w-full max-w-sm flex-col items-center gap-4"
+          >
+            <div>
+              <h1 className="text-xl font-semibold">Como você quer aparecer?</h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Seu nome gera um avatar visível para todos os participantes.
+              </p>
+            </div>
+            {nameInput.trim() && (
+              <img
+                src={`https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(nameInput.trim())}`}
+                alt="Prévia do avatar"
+                className="size-20 rounded-full border border-border bg-secondary"
+              />
+            )}
+            <input
+              autoFocus
+              value={nameInput}
+              onChange={(e) => setNameInput(e.target.value)}
+              placeholder="Seu nome"
+              className="w-full rounded-lg border border-border bg-background px-4 py-2 text-center"
+            />
+            <button
+              type="submit"
+              disabled={!nameInput.trim()}
+              className="w-full rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            >
+              Entrar na reunião
+            </button>
+          </form>
+        </div>
       ) : (
         <div className="relative flex flex-1 overflow-hidden">
           <div ref={containerRef} className="flex-1" />
