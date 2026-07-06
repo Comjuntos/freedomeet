@@ -528,7 +528,7 @@ function Room() {
                   onClick={generateAta}
                   className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
                 >
-                  <FileText className="size-4" />
+                  <ClipboardList className="size-4" />
                   Gerar ata
                 </button>
                 <button
@@ -589,7 +589,7 @@ function Room() {
                     {minutesLoading ? (
                       <Loader2 className="size-4 animate-spin" />
                     ) : (
-                      <FileText className="size-4" />
+                      <ClipboardList className="size-4" />
                     )}
                     {minutesText ? "Gerar novamente" : "Gerar ata"}
                   </button>
