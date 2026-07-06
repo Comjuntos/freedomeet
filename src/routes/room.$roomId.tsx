@@ -10,6 +10,7 @@ import {
   Copy,
   Loader2,
   SmilePlus,
+  Clock,
 } from "lucide-react";
 import { translateText } from "@/lib/translate.functions";
 import { punctuateText } from "@/lib/punctuate.functions";
