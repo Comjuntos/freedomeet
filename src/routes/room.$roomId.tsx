@@ -1,10 +1,20 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Captions, X, Languages, FileText, Download, Copy, Loader2 } from "lucide-react";
+import {
+  Captions,
+  X,
+  Languages,
+  FileText,
+  Download,
+  Copy,
+  Loader2,
+  SmilePlus,
+} from "lucide-react";
 import { translateText } from "@/lib/translate.functions";
 import { punctuateText } from "@/lib/punctuate.functions";
 import { generateMinutes } from "@/lib/minutes.functions";
+import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment.functions";
 import { getJaasToken } from "@/lib/jaas.functions";
 
 const JITSI_DOMAIN = "8x8.vc";
@@ -116,11 +126,41 @@ function Room() {
   const punctuate = useServerFn(punctuateText);
   const fetchToken = useServerFn(getJaasToken);
   const makeMinutes = useServerFn(generateMinutes);
+  const runSentiment = useServerFn(analyzeSentiment);
   const [showMinutes, setShowMinutes] = useState(false);
   const [minutesTemplate, setMinutesTemplate] = useState("formal");
   const [minutesText, setMinutesText] = useState("");
   const [minutesLoading, setMinutesLoading] = useState(false);
   const [minutesError, setMinutesError] = useState<string | null>(null);
+  const [showSentiment, setShowSentiment] = useState(false);
+  const [sentiment, setSentiment] = useState<SentimentResult | null>(null);
+  const [sentimentLoading, setSentimentLoading] = useState(false);
+  const [sentimentError, setSentimentError] = useState<string | null>(null);
+
+  const analyze = useCallback(async () => {
+    const transcript = captions
+      .map((c) => c.original)
+      .join("\n")
+      .trim();
+    setShowSentiment(true);
+    if (!transcript) {
+      setSentiment(null);
+      setSentimentError(
+        "Não há transcrição ainda. Ative a transcrição e fale durante a reunião.",
+      );
+      return;
+    }
+    setSentimentLoading(true);
+    setSentimentError(null);
+    try {
+      const res = await runSentiment({ data: { transcript } });
+      setSentiment(res);
+    } catch {
+      setSentimentError("Não foi possível analisar o sentimento. Tente novamente.");
+    } finally {
+      setSentimentLoading(false);
+    }
+  }, [captions, runSentiment]);
 
   const generateAta = useCallback(async () => {
     const transcript = captions
@@ -423,6 +463,13 @@ function Room() {
                   <FileText className="size-4" />
                   Gerar ata
                 </button>
+                <button
+                  onClick={analyze}
+                  className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
+                >
+                  <SmilePlus className="size-4" />
+                  Análise de sentimento
+                </button>
               </div>
             </aside>
           )}
@@ -506,6 +553,87 @@ function Room() {
                       documento a partir da transcrição.
                     </p>
                   )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showSentiment && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 p-4">
+              <div className="flex max-h-[85vh] w-full max-w-md flex-col rounded-xl border border-border bg-card shadow-xl">
+                <div className="flex items-center justify-between border-b border-border px-5 py-3">
+                  <div className="flex items-center gap-2 font-medium">
+                    <SmilePlus className="size-4 text-primary" />
+                    Análise de sentimento
+                  </div>
+                  <button
+                    onClick={() => setShowSentiment(false)}
+                    className="rounded-md p-1 text-muted-foreground hover:bg-secondary"
+                    aria-label="Fechar"
+                  >
+                    <X className="size-4" />
+                  </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto px-5 py-4 text-sm">
+                  {sentimentError ? (
+                    <p className="text-destructive">{sentimentError}</p>
+                  ) : sentimentLoading ? (
+                    <p className="text-muted-foreground">
+                      Analisando o clima da reunião…
+                    </p>
+                  ) : sentiment ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${
+                            sentiment.label === "positivo"
+                              ? "bg-green-500/15 text-green-600"
+                              : sentiment.label === "negativo"
+                                ? "bg-destructive/15 text-destructive"
+                                : "bg-secondary text-muted-foreground"
+                          }`}
+                        >
+                          {sentiment.label}
+                        </span>
+                        <span className="text-2xl font-semibold">
+                          {sentiment.score}
+                          <span className="text-sm text-muted-foreground">/100</span>
+                        </span>
+                      </div>
+                      <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
+                        <div
+                          className={`h-full rounded-full ${
+                            sentiment.label === "positivo"
+                              ? "bg-green-500"
+                              : sentiment.label === "negativo"
+                                ? "bg-destructive"
+                                : "bg-muted-foreground"
+                          }`}
+                          style={{ width: `${sentiment.score}%` }}
+                        />
+                      </div>
+                      <p className="text-muted-foreground">{sentiment.summary}</p>
+                      {sentiment.emotions.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {sentiment.emotions.map((e) => (
+                            <span
+                              key={e}
+                              className="rounded-md bg-secondary px-2 py-1 text-xs capitalize"
+                            >
+                              {e}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      <button
+                        onClick={analyze}
+                        className="w-full rounded-md border border-border px-3 py-2 font-medium hover:bg-secondary"
+                      >
+                        Analisar novamente
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </div>
