@@ -150,6 +150,16 @@ function Room() {
   useEffect(() => {
     setIsHost(sessionStorage.getItem(`freedomeet-host-${roomId}`) === "1");
   }, [roomId]);
+
+  // Nome do participante (usado para gerar o avatar de cada um).
+  useEffect(() => {
+    const saved = sessionStorage.getItem("freedomeet-name");
+    if (saved) setName(saved);
+  }, []);
+
+  const avatarUrl = name
+    ? `https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(name)}`
+    : "";
   const translate = useServerFn(translateText);
   const punctuate = useServerFn(punctuateText);
   const fetchToken = useServerFn(getJaasToken);
