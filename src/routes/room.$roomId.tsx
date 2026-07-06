@@ -191,6 +191,7 @@ function Room() {
           configOverwrite: {
             prejoinPageEnabled: true,
             defaultLanguage: "ptBR",
+            disableDeepLinking: true,
           },
           interfaceConfigOverwrite: {
             MOBILE_APP_PROMO: false,
