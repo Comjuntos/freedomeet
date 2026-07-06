@@ -16,12 +16,14 @@ import {
   Loader2,
   Clock,
   Hash,
+  Send,
 } from "lucide-react";
 import { translateText } from "@/lib/translate.functions";
 import { punctuateText } from "@/lib/punctuate.functions";
 import { generateMinutes } from "@/lib/minutes.functions";
 import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment.functions";
 import { analyzeDashboard, type DashboardResult } from "@/lib/dashboard.functions";
+import { listSlackChannels, sendToSlack, type SlackChannel } from "@/lib/slack.functions";
 import { getJaasToken } from "@/lib/jaas.functions";
 
 const JITSI_DOMAIN = "8x8.vc";
