@@ -131,6 +131,8 @@ function Room() {
   const [ended, setEnded] = useState(false);
   const [isHost, setIsHost] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+  const [name, setName] = useState<string | null>(null);
+  const [nameInput, setNameInput] = useState("");
   const startTimeRef = useRef<number | null>(null);
   const [showCaptions, setShowCaptions] = useState(false);
   const [showAiTools, setShowAiTools] = useState(false);
