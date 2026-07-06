@@ -319,7 +319,7 @@ function Room() {
         const raw = r[0].transcript.trim();
         if (!raw) continue;
         const id = ++idRef.current;
-        setCaptions((prev) => [...prev.slice(-30), { id, original: raw }]);
+        setCaptions((prev) => [...prev, { id, original: raw }]);
         // Polish the raw speech-to-text into natural, punctuated text,
         // then translate the polished version.
         punctuate({ data: { text: raw, lang: sourceLang } })
