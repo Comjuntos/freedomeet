@@ -206,6 +206,8 @@ function Room() {
             SHOW_PROMOTIONAL_CLOSE_PAGE: false,
             HIDE_DEEP_LINKING_LOGO: true,
             JITSI_WATERMARK_LINK: "",
+            DEFAULT_LOGO_URL: "",
+            DEFAULT_WELCOME_PAGE_LOGO_URL: "",
           },
         });
         api.addEventListener("readyToClose", () => {
