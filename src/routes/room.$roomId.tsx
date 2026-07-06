@@ -113,6 +113,7 @@ function Room() {
   const targetRef = useRef(targetLang);
   const idRef = useRef(0);
   const translate = useServerFn(translateText);
+  const punctuate = useServerFn(punctuateText);
   const fetchToken = useServerFn(getJaasToken);
   const makeMinutes = useServerFn(generateMinutes);
   const [showMinutes, setShowMinutes] = useState(false);
