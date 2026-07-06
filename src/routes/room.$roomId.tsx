@@ -92,6 +92,7 @@ function Room() {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
+  const [ended, setEnded] = useState(false);
   const [showCaptions, setShowCaptions] = useState(false);
   const [listening, setListening] = useState(false);
   const [sourceLang, setSourceLang] = useState("pt-BR");
@@ -207,7 +208,7 @@ function Room() {
           },
         });
         api.addEventListener("readyToClose", () => {
-          navigate({ to: "/" });
+          setEnded(true);
         });
       })
       .catch(() => {
@@ -222,7 +223,34 @@ function Room() {
 
   return (
     <div className="flex h-screen flex-col bg-background text-foreground">
-      {error ? (
+      {ended ? (
+        <div className="flex flex-1 flex-col items-center justify-center gap-6 px-4 text-center">
+          <div className="flex items-center gap-2">
+            <Captions className="size-7 text-primary" />
+            <span className="text-2xl font-medium">FreedoMeet</span>
+          </div>
+          <div>
+            <h1 className="text-2xl font-semibold">Você saiu da reunião</h1>
+            <p className="mt-2 text-muted-foreground">
+              Obrigado por usar o FreedoMeet.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <button
+              onClick={() => window.location.reload()}
+              className="rounded-lg border border-border px-4 py-2 font-medium hover:bg-secondary"
+            >
+              Voltar a entrar
+            </button>
+            <button
+              onClick={() => navigate({ to: "/" })}
+              className="rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              Voltar ao início
+            </button>
+          </div>
+        </div>
+      ) : error ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-4 px-4 text-center">
           <p className="text-muted-foreground">{error}</p>
           <button
