@@ -171,6 +171,7 @@ function Room() {
   const [showMinutes, setShowMinutes] = useState(false);
   const [minutesTemplate, setMinutesTemplate] = useState("formal");
   const [minutesText, setMinutesText] = useState("");
+  const [membersInput, setMembersInput] = useState("");
   const [minutesLoading, setMinutesLoading] = useState(false);
   const [minutesError, setMinutesError] = useState<string | null>(null);
   const [showSentiment, setShowSentiment] = useState(false);
