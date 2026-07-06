@@ -59,8 +59,24 @@ function Room() {
           parentNode: containerRef.current,
           width: "100%",
           height: "100%",
-          configOverwrite: { prejoinPageEnabled: true, defaultLanguage: "ptBR" },
-          interfaceConfigOverwrite: { MOBILE_APP_PROMO: false, LANG_DETECTION: false },
+          configOverwrite: {
+            prejoinPageEnabled: true,
+            defaultLanguage: "ptBR",
+          },
+          interfaceConfigOverwrite: {
+            MOBILE_APP_PROMO: false,
+            LANG_DETECTION: false,
+            APP_NAME: "Encontro",
+            NATIVE_APP_NAME: "Encontro",
+            PROVIDER_NAME: "Encontro",
+            SHOW_JITSI_WATERMARK: false,
+            SHOW_WATERMARK_FOR_GUESTS: false,
+            SHOW_BRAND_WATERMARK: false,
+            SHOW_POWERED_BY: false,
+            SHOW_PROMOTIONAL_CLOSE_PAGE: false,
+            HIDE_DEEP_LINKING_LOGO: true,
+            JITSI_WATERMARK_LINK: "",
+          },
         });
         api.addEventListener("readyToClose", () => {
           navigate({ to: "/" });
