@@ -105,6 +105,7 @@ function Room() {
   const targetRef = useRef(targetLang);
   const idRef = useRef(0);
   const translate = useServerFn(translateText);
+  const fetchToken = useServerFn(getJaasToken);
 
   useEffect(() => {
     targetRef.current = targetLang;
@@ -181,11 +182,12 @@ function Room() {
       null;
     let cancelled = false;
 
-    loadJitsiScript()
-      .then(() => {
+    Promise.all([loadJitsiScript(), fetchToken({ data: { room: roomId } })])
+      .then(([, tokenRes]) => {
         if (cancelled || !containerRef.current || !window.JitsiMeetExternalAPI) return;
         api = new window.JitsiMeetExternalAPI(JITSI_DOMAIN, {
-          roomName: roomId,
+          roomName: `${tokenRes.appId}/${roomId}`,
+          jwt: tokenRes.token,
           parentNode: containerRef.current,
           width: "100%",
           height: "100%",
@@ -223,7 +225,7 @@ function Room() {
       cancelled = true;
       api?.dispose();
     };
-  }, [roomId, navigate]);
+  }, [roomId, navigate, fetchToken]);
 
   return (
     <div className="flex h-screen flex-col bg-background text-foreground">
