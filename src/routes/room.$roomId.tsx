@@ -214,7 +214,7 @@ function Room() {
     listeningRef.current = true;
     setListening(true);
     recognition.start();
-  }, [sourceLang, translate]);
+  }, [sourceLang, translate, punctuate]);
 
   const stopListening = useCallback(() => {
     listeningRef.current = false;
