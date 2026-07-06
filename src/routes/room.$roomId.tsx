@@ -59,8 +59,8 @@ function Room() {
           parentNode: containerRef.current,
           width: "100%",
           height: "100%",
-          configOverwrite: { prejoinPageEnabled: true },
-          interfaceConfigOverwrite: { MOBILE_APP_PROMO: false },
+          configOverwrite: { prejoinPageEnabled: true, defaultLanguage: "ptBR" },
+          interfaceConfigOverwrite: { MOBILE_APP_PROMO: false, LANG_DETECTION: false },
         });
         api.addEventListener("readyToClose", () => {
           navigate({ to: "/" });
