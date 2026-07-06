@@ -129,6 +129,7 @@ function Room() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [ended, setEnded] = useState(false);
+  const [isHost, setIsHost] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const startTimeRef = useRef<number | null>(null);
   const [showCaptions, setShowCaptions] = useState(false);
@@ -142,6 +143,11 @@ function Room() {
   const listeningRef = useRef(false);
   const targetRef = useRef(targetLang);
   const idRef = useRef(0);
+
+  // Apenas quem criou a sala é o administrador (host) da reunião.
+  useEffect(() => {
+    setIsHost(sessionStorage.getItem(`freedomeet-host-${roomId}`) === "1");
+  }, [roomId]);
   const translate = useServerFn(translateText);
   const punctuate = useServerFn(punctuateText);
   const fetchToken = useServerFn(getJaasToken);
