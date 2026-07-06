@@ -11,11 +11,14 @@ import {
   Loader2,
   SmilePlus,
   Clock,
+  BarChart3,
+  Hash,
 } from "lucide-react";
 import { translateText } from "@/lib/translate.functions";
 import { punctuateText } from "@/lib/punctuate.functions";
 import { generateMinutes } from "@/lib/minutes.functions";
 import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment.functions";
+import { analyzeDashboard, type DashboardResult } from "@/lib/dashboard.functions";
 import { getJaasToken } from "@/lib/jaas.functions";
 
 const JITSI_DOMAIN = "8x8.vc";
@@ -138,6 +141,7 @@ function Room() {
   const fetchToken = useServerFn(getJaasToken);
   const makeMinutes = useServerFn(generateMinutes);
   const runSentiment = useServerFn(analyzeSentiment);
+  const runDashboard = useServerFn(analyzeDashboard);
   const [showMinutes, setShowMinutes] = useState(false);
   const [minutesTemplate, setMinutesTemplate] = useState("formal");
   const [minutesText, setMinutesText] = useState("");
@@ -147,6 +151,36 @@ function Room() {
   const [sentiment, setSentiment] = useState<SentimentResult | null>(null);
   const [sentimentLoading, setSentimentLoading] = useState(false);
   const [sentimentError, setSentimentError] = useState<string | null>(null);
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [dashboard, setDashboard] = useState<DashboardResult | null>(null);
+  const [dashboardStats, setDashboardStats] = useState({ words: 0, segments: 0 });
+  const [dashboardLoading, setDashboardLoading] = useState(false);
+  const [dashboardError, setDashboardError] = useState<string | null>(null);
+
+  const openDashboard = useCallback(async () => {
+    const segments = captions.map((c) => c.original).filter(Boolean);
+    const transcript = segments.join("\n").trim();
+    setShowDashboard(true);
+    if (!transcript) {
+      setDashboard(null);
+      setDashboardError(
+        "Não há transcrição ainda. Ative a transcrição e fale durante a reunião.",
+      );
+      return;
+    }
+    const words = transcript.split(/\s+/).filter(Boolean).length;
+    setDashboardStats({ words, segments: segments.length });
+    setDashboardLoading(true);
+    setDashboardError(null);
+    try {
+      const res = await runDashboard({ data: { transcript } });
+      setDashboard(res);
+    } catch {
+      setDashboardError("Não foi possível gerar o dashboard. Tente novamente.");
+    } finally {
+      setDashboardLoading(false);
+    }
+  }, [captions, runDashboard]);
 
   const analyze = useCallback(async () => {
     const transcript = captions
@@ -503,6 +537,13 @@ function Room() {
                   <SmilePlus className="size-4" />
                   Análise de sentimento
                 </button>
+                <button
+                  onClick={openDashboard}
+                  className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
+                >
+                  <BarChart3 className="size-4" />
+                  Dashboard de falas
+                </button>
               </div>
             </aside>
           )}
@@ -664,6 +705,109 @@ function Room() {
                         className="w-full rounded-md border border-border px-3 py-2 font-medium hover:bg-secondary"
                       >
                         Analisar novamente
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showDashboard && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 p-4">
+              <div className="flex max-h-[85vh] w-full max-w-lg flex-col rounded-xl border border-border bg-card shadow-xl">
+                <div className="flex items-center justify-between border-b border-border px-5 py-3">
+                  <div className="flex items-center gap-2 font-medium">
+                    <BarChart3 className="size-4 text-primary" />
+                    Dashboard de falas
+                  </div>
+                  <button
+                    onClick={() => setShowDashboard(false)}
+                    className="rounded-md p-1 text-muted-foreground hover:bg-secondary"
+                    aria-label="Fechar"
+                  >
+                    <X className="size-4" />
+                  </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto px-5 py-4 text-sm">
+                  {dashboardError ? (
+                    <p className="text-destructive">{dashboardError}</p>
+                  ) : dashboardLoading ? (
+                    <p className="text-muted-foreground">Analisando as falas…</p>
+                  ) : dashboard ? (
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="rounded-lg border border-border p-3">
+                          <div className="text-2xl font-semibold">
+                            {dashboardStats.words}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            Palavras faladas
+                          </div>
+                        </div>
+                        <div className="rounded-lg border border-border p-3">
+                          <div className="text-2xl font-semibold">
+                            {dashboardStats.segments}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            Trechos de fala
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h3 className="mb-3 font-medium">Assuntos mais citados</h3>
+                        {dashboard.topics.length === 0 ? (
+                          <p className="text-muted-foreground">Nenhum assunto identificado.</p>
+                        ) : (
+                          <div className="space-y-2">
+                            {dashboard.topics.map((t) => {
+                              const max = dashboard.topics[0]?.mentions || 1;
+                              return (
+                                <div key={t.topic}>
+                                  <div className="mb-1 flex justify-between text-xs">
+                                    <span className="capitalize">{t.topic}</span>
+                                    <span className="text-muted-foreground">{t.mentions}x</span>
+                                  </div>
+                                  <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
+                                    <div
+                                      className="h-full rounded-full bg-primary"
+                                      style={{ width: `${Math.max(6, (t.mentions / max) * 100)}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <h3 className="mb-3 font-medium">Palavras-chave</h3>
+                        {dashboard.keywords.length === 0 ? (
+                          <p className="text-muted-foreground">Nenhuma palavra-chave identificada.</p>
+                        ) : (
+                          <div className="flex flex-wrap gap-2">
+                            {dashboard.keywords.map((k) => (
+                              <span
+                                key={k.word}
+                                className="flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs"
+                              >
+                                <Hash className="size-3 text-primary" />
+                                {k.word}
+                                <span className="text-muted-foreground">{k.count}</span>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={openDashboard}
+                        className="w-full rounded-md border border-border px-3 py-2 font-medium hover:bg-secondary"
+                      >
+                        Atualizar
                       </button>
                     </div>
                   ) : null}
