@@ -151,6 +151,32 @@ function Index() {
           </p>
         </div>
       </main>
+
+      <section className="border-t border-border bg-secondary/30 px-6 py-16">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="text-2xl font-medium md:text-3xl">
+            Por que escolher o FreedoMeet
+          </h2>
+          <p className="mt-2 max-w-xl text-muted-foreground">
+            Muito além de uma chamada de vídeo: recursos de IA que economizam
+            seu tempo em cada reunião.
+          </p>
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {FEATURES.map((f) => (
+              <div
+                key={f.title}
+                className="rounded-xl border border-border bg-background p-6"
+              >
+                <div className="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <f.icon className="size-6" />
+                </div>
+                <h3 className="mt-4 font-medium">{f.title}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
