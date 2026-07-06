@@ -528,7 +528,6 @@ function Room() {
                   {listening ? "Parar transcrição" : "Iniciar transcrição"}
                 </button>
                 <button
-                <button
                   onClick={() => setShowAiTools((v) => !v)}
                   className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
                 >
