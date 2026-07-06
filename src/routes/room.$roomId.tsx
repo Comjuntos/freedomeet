@@ -9,6 +9,8 @@ import {
   ClipboardList,
   Gauge,
   ChartColumnBig,
+  Sparkles,
+  ChevronDown,
   Download,
   Copy,
   Loader2,
