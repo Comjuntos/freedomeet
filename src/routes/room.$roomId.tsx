@@ -257,6 +257,33 @@ function Room() {
     URL.revokeObjectURL(url);
   }, [minutesText, roomId]);
 
+  // Carrega os canais do Slack quando a ata é gerada.
+  useEffect(() => {
+    if (!minutesText || slackChannels.length > 0) return;
+    loadChannels()
+      .then((chs) => {
+        setSlackChannels(chs);
+        if (chs[0]) setSlackChannel(chs[0].id);
+      })
+      .catch(() => setSlackStatus("Não foi possível carregar os canais do Slack."));
+  }, [minutesText, slackChannels.length, loadChannels]);
+
+  const sendAtaToSlack = useCallback(async () => {
+    if (!slackChannel || !minutesText) return;
+    setSlackSending(true);
+    setSlackStatus(null);
+    try {
+      await postToSlack({
+        data: { channel: slackChannel, text: `*Ata da reunião ${roomId}*\n\n${minutesText}` },
+      });
+      setSlackStatus("Ata enviada para o Slack! ✅");
+    } catch {
+      setSlackStatus("Falha ao enviar para o Slack.");
+    } finally {
+      setSlackSending(false);
+    }
+  }, [slackChannel, minutesText, postToSlack, roomId]);
+
   useEffect(() => {
     targetRef.current = targetLang;
   }, [targetLang]);
