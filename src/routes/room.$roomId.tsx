@@ -126,11 +126,41 @@ function Room() {
   const punctuate = useServerFn(punctuateText);
   const fetchToken = useServerFn(getJaasToken);
   const makeMinutes = useServerFn(generateMinutes);
+  const runSentiment = useServerFn(analyzeSentiment);
   const [showMinutes, setShowMinutes] = useState(false);
   const [minutesTemplate, setMinutesTemplate] = useState("formal");
   const [minutesText, setMinutesText] = useState("");
   const [minutesLoading, setMinutesLoading] = useState(false);
   const [minutesError, setMinutesError] = useState<string | null>(null);
+  const [showSentiment, setShowSentiment] = useState(false);
+  const [sentiment, setSentiment] = useState<SentimentResult | null>(null);
+  const [sentimentLoading, setSentimentLoading] = useState(false);
+  const [sentimentError, setSentimentError] = useState<string | null>(null);
+
+  const analyze = useCallback(async () => {
+    const transcript = captions
+      .map((c) => c.original)
+      .join("\n")
+      .trim();
+    setShowSentiment(true);
+    if (!transcript) {
+      setSentiment(null);
+      setSentimentError(
+        "Não há transcrição ainda. Ative a transcrição e fale durante a reunião.",
+      );
+      return;
+    }
+    setSentimentLoading(true);
+    setSentimentError(null);
+    try {
+      const res = await runSentiment({ data: { transcript } });
+      setSentiment(res);
+    } catch {
+      setSentimentError("Não foi possível analisar o sentimento. Tente novamente.");
+    } finally {
+      setSentimentLoading(false);
+    }
+  }, [captions, runSentiment]);
 
   const generateAta = useCallback(async () => {
     const transcript = captions
