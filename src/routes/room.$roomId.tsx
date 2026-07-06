@@ -6,12 +6,13 @@ import {
   X,
   Languages,
   FileText,
+  ClipboardList,
+  Gauge,
+  ChartColumnBig,
   Download,
   Copy,
   Loader2,
-  SmilePlus,
   Clock,
-  BarChart3,
   Hash,
 } from "lucide-react";
 import { translateText } from "@/lib/translate.functions";
