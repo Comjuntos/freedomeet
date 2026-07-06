@@ -92,6 +92,7 @@ function Room() {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
+  const [ended, setEnded] = useState(false);
   const [showCaptions, setShowCaptions] = useState(false);
   const [listening, setListening] = useState(false);
   const [sourceLang, setSourceLang] = useState("pt-BR");
@@ -207,7 +208,7 @@ function Room() {
           },
         });
         api.addEventListener("readyToClose", () => {
-          navigate({ to: "/" });
+          setEnded(true);
         });
       })
       .catch(() => {
