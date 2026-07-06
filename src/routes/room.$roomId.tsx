@@ -417,8 +417,12 @@ function Room() {
     let api: { dispose: () => void; addEventListener: (e: string, cb: () => void) => void } | null =
       null;
     let cancelled = false;
+    if (!name) return;
 
-    Promise.all([loadJitsiScript(), fetchToken({ data: { room: roomId } })])
+    Promise.all([
+      loadJitsiScript(),
+      fetchToken({ data: { room: roomId, name, avatar: avatarUrl } }),
+    ])
       .then(([, tokenRes]) => {
         if (cancelled || !containerRef.current || !window.JitsiMeetExternalAPI) return;
         api = new window.JitsiMeetExternalAPI(JITSI_DOMAIN, {
@@ -461,7 +465,7 @@ function Room() {
       cancelled = true;
       api?.dispose();
     };
-  }, [roomId, navigate, fetchToken]);
+  }, [roomId, navigate, fetchToken, name, avatarUrl]);
 
   return (
     <div className="flex h-screen flex-col bg-background text-foreground">
