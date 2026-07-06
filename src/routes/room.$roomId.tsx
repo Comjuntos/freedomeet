@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Captions, X, Languages, FileText, Download, Copy, Loader2 } from "lucide-react";
 import { translateText } from "@/lib/translate.functions";
+import { punctuateText } from "@/lib/punctuate.functions";
 import { generateMinutes } from "@/lib/minutes.functions";
 import { getJaasToken } from "@/lib/jaas.functions";
 
@@ -112,6 +113,7 @@ function Room() {
   const targetRef = useRef(targetLang);
   const idRef = useRef(0);
   const translate = useServerFn(translateText);
+  const punctuate = useServerFn(punctuateText);
   const fetchToken = useServerFn(getJaasToken);
   const makeMinutes = useServerFn(generateMinutes);
   const [showMinutes, setShowMinutes] = useState(false);
@@ -176,22 +178,32 @@ function Room() {
       for (let i = e.resultIndex; i < e.results.length; i++) {
         const r = e.results[i];
         if (!r.isFinal) continue;
-        const text = r[0].transcript.trim();
-        if (!text) continue;
+        const raw = r[0].transcript.trim();
+        if (!raw) continue;
         const id = ++idRef.current;
-        setCaptions((prev) => [...prev.slice(-30), { id, original: text }]);
-        const target = targetRef.current;
-        if (target) {
-          translate({ data: { text, target } })
-            .then((res) => {
-              setCaptions((prev) =>
-                prev.map((c) =>
-                  c.id === id ? { ...c, translated: res.translation } : c,
-                ),
-              );
-            })
-            .catch(() => {});
-        }
+        setCaptions((prev) => [...prev.slice(-30), { id, original: raw }]);
+        // Polish the raw speech-to-text into natural, punctuated text,
+        // then translate the polished version.
+        punctuate({ data: { text: raw, lang: sourceLang } })
+          .then((res) => {
+            const clean = res.text || raw;
+            setCaptions((prev) =>
+              prev.map((c) => (c.id === id ? { ...c, original: clean } : c)),
+            );
+            const target = targetRef.current;
+            if (target) {
+              translate({ data: { text: clean, target } })
+                .then((tr) => {
+                  setCaptions((prev) =>
+                    prev.map((c) =>
+                      c.id === id ? { ...c, translated: tr.translation } : c,
+                    ),
+                  );
+                })
+                .catch(() => {});
+            }
+          })
+          .catch(() => {});
       }
     };
     recognition.onend = () => {
@@ -202,7 +214,7 @@ function Room() {
     listeningRef.current = true;
     setListening(true);
     recognition.start();
-  }, [sourceLang, translate]);
+  }, [sourceLang, translate, punctuate]);
 
   const stopListening = useCallback(() => {
     listeningRef.current = false;
