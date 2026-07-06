@@ -5,7 +5,7 @@ import { Video, Keyboard, HelpCircle, Settings } from "lucide-react";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Encontro — Videoconferência aberta" },
+      { title: "FreedoMeet — Videoconferência aberta" },
       {
         name: "description",
         content:
@@ -40,7 +40,7 @@ function Index() {
       <header className="flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-2">
           <Video className="size-7 text-primary" />
-          <span className="text-xl text-muted-foreground">Meet</span>
+          <span className="text-xl font-medium">FreedoMeet</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="mr-2 hidden text-sm text-muted-foreground sm:block">
