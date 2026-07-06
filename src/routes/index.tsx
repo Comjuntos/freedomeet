@@ -1,6 +1,43 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Video, Keyboard, HelpCircle, Settings } from "lucide-react";
+import {
+  Video,
+  Keyboard,
+  HelpCircle,
+  Settings,
+  Captions,
+  Languages,
+  FileText,
+  ShieldCheck,
+  Link2,
+} from "lucide-react";
+const FEATURES = [
+  {
+    icon: Captions,
+    title: "Transcrição ao vivo com IA",
+    desc: "A fala vira texto em tempo real, com pontuação e acentuação natural — nada de legenda robótica.",
+  },
+  {
+    icon: Languages,
+    title: "Tradução em tempo real",
+    desc: "Traduza as legendas na hora para inglês, espanhol, francês, alemão, italiano e mais.",
+  },
+  {
+    icon: FileText,
+    title: "Ata gerada por IA",
+    desc: "Ao final, gere uma ata profissional a partir da transcrição — modelos formal, executivo ou detalhado.",
+  },
+  {
+    icon: Link2,
+    title: "Sem cadastro nem instalação",
+    desc: "Crie ou entre em salas direto do navegador e compartilhe o link com quem quiser.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Vídeo HD seguro",
+    desc: "Câmera, áudio, chat e compartilhamento de tela com acesso protegido por tokens assinados.",
+  },
+];
 
 export const Route = createFileRoute("/")({
   head: () => ({
