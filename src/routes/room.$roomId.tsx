@@ -214,6 +214,20 @@ function Room() {
     targetRef.current = targetLang;
   }, [targetLang]);
 
+  // Meeting duration timer: starts once the room mounts, stops when it ends.
+  useEffect(() => {
+    if (startTimeRef.current === null) startTimeRef.current = Date.now();
+    if (ended) return;
+    const tick = () => {
+      if (startTimeRef.current !== null) {
+        setElapsed(Math.floor((Date.now() - startTimeRef.current) / 1000));
+      }
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [ended]);
+
   const startListening = useCallback(() => {
     const Ctor = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!Ctor) {
