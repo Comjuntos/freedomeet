@@ -233,7 +233,7 @@ function Room() {
           </button>
         </div>
       ) : (
-        <div className="flex flex-1 overflow-hidden">
+        <div className="relative flex flex-1 overflow-hidden">
           <div ref={containerRef} className="flex-1" />
           {showCaptions && (
             <aside className="flex w-80 flex-col border-l border-border bg-card">
