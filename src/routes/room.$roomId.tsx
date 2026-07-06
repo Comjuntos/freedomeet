@@ -1,8 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Captions, X, Languages } from "lucide-react";
+import { Captions, X, Languages, FileText, Download, Copy, Loader2 } from "lucide-react";
 import { translateText } from "@/lib/translate.functions";
+import { generateMinutes } from "@/lib/minutes.functions";
 import { getJaasToken } from "@/lib/jaas.functions";
 
 const JITSI_DOMAIN = "8x8.vc";
@@ -60,6 +61,12 @@ const TARGET_LANGS = [
   { code: "Francês", label: "Francês" },
   { code: "Alemão", label: "Alemão" },
   { code: "Italiano", label: "Italiano" },
+];
+
+const MINUTES_TEMPLATES = [
+  { code: "formal", label: "Formal / Corporativa" },
+  { code: "executiva", label: "Executiva (resumida)" },
+  { code: "detalhada", label: "Detalhada" },
 ];
 
 interface Caption {
