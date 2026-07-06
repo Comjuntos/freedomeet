@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Video, Plus, ArrowRight } from "lucide-react";
+import { Video, Keyboard, HelpCircle, Settings } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -36,55 +36,82 @@ function Index() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="mx-auto flex max-w-6xl items-center gap-2 px-6 py-6">
-        <Video className="size-6 text-primary" />
-        <span className="text-lg font-semibold">Encontro</span>
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
+      <header className="flex items-center justify-between px-6 py-4">
+        <div className="flex items-center gap-2">
+          <Video className="size-7 text-primary" />
+          <span className="text-xl text-muted-foreground">Meet</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="mr-2 hidden text-sm text-muted-foreground sm:block">
+            {new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+          </span>
+          <button className="rounded-full p-2.5 text-muted-foreground hover:bg-secondary" aria-label="Ajuda">
+            <HelpCircle className="size-5" />
+          </button>
+          <button className="rounded-full p-2.5 text-muted-foreground hover:bg-secondary" aria-label="Configurações">
+            <Settings className="size-5" />
+          </button>
+          <div className="ml-1 flex size-9 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground">
+            U
+          </div>
+        </div>
       </header>
 
-      <main className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-12 md:grid-cols-2 md:py-24">
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
-            Reuniões de vídeo para todos
+      <main className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-12 px-6 py-8 md:grid-cols-2">
+        <div className="max-w-md">
+          <h1 className="text-4xl font-normal leading-tight tracking-tight md:text-5xl">
+            Chamadas de vídeo e reuniões para todos
           </h1>
-          <p className="mt-4 max-w-md text-muted-foreground">
-            Crie uma sala em um clique ou entre com um código. Câmera, áudio,
-            chat e compartilhamento de tela — sem instalar nada.
+          <p className="mt-5 text-lg text-muted-foreground">
+            Conecte-se, colabore e comemore de qualquer lugar com o Meet.
           </p>
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-8 flex flex-col items-stretch gap-4 sm:flex-row sm:items-center">
             <button
               onClick={createMeeting}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-5 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
-              <Plus className="size-4" />
+              <Video className="size-5" />
               Nova reunião
             </button>
 
-            <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-2 py-1.5">
-              <input
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && joinMeeting()}
-                placeholder="Digite um código"
-                className="w-40 bg-transparent px-2 py-1.5 text-sm outline-none placeholder:text-muted-foreground"
-              />
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 rounded-md border border-border px-3 py-2.5">
+                <Keyboard className="size-5 text-muted-foreground" />
+                <input
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && joinMeeting()}
+                  placeholder="Digite um código ou link"
+                  className="w-44 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                />
+              </div>
               <button
                 onClick={joinMeeting}
                 disabled={!code.trim()}
-                className="inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-secondary disabled:opacity-40"
+                className="px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-secondary/70 rounded-md disabled:text-muted-foreground disabled:opacity-60"
               >
-                Entrar
-                <ArrowRight className="size-4" />
+                Participar
               </button>
             </div>
           </div>
+
+          <hr className="mt-8 border-border" />
+          <p className="mt-4 text-sm text-muted-foreground">
+            <a className="text-primary hover:underline" href="#">Saiba mais</a> sobre o Meet
+          </p>
         </div>
 
-        <div className="rounded-2xl border border-border bg-card p-2 shadow-2xl">
-          <div className="flex aspect-video items-center justify-center rounded-xl bg-secondary">
-            <Video className="size-16 text-muted-foreground" />
+        <div className="flex flex-col items-center justify-center text-center">
+          <div className="flex size-72 items-center justify-center rounded-full bg-secondary">
+            <Video className="size-24 text-primary" />
           </div>
+          <h2 className="mt-8 text-xl font-medium">Receba um link para compartilhar</h2>
+          <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+            Clique em <span className="font-medium">Nova reunião</span> para receber um link
+            que você pode enviar às pessoas com quem quer se reunir.
+          </p>
         </div>
       </main>
     </div>
