@@ -1,6 +1,43 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Video, Keyboard, HelpCircle, Settings } from "lucide-react";
+import {
+  Video,
+  Keyboard,
+  HelpCircle,
+  Settings,
+  Captions,
+  Languages,
+  FileText,
+  ShieldCheck,
+  Link2,
+} from "lucide-react";
+const FEATURES = [
+  {
+    icon: Captions,
+    title: "Transcrição ao vivo com IA",
+    desc: "A fala vira texto em tempo real, com pontuação e acentuação natural — nada de legenda robótica.",
+  },
+  {
+    icon: Languages,
+    title: "Tradução em tempo real",
+    desc: "Traduza as legendas na hora para inglês, espanhol, francês, alemão, italiano e mais.",
+  },
+  {
+    icon: FileText,
+    title: "Ata gerada por IA",
+    desc: "Ao final, gere uma ata profissional a partir da transcrição — modelos formal, executivo ou detalhado.",
+  },
+  {
+    icon: Link2,
+    title: "Sem cadastro nem instalação",
+    desc: "Crie ou entre em salas direto do navegador e compartilhe o link com quem quiser.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Vídeo HD seguro",
+    desc: "Câmera, áudio, chat e compartilhamento de tela com acesso protegido por tokens assinados.",
+  },
+];
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -114,6 +151,32 @@ function Index() {
           </p>
         </div>
       </main>
+
+      <section className="border-t border-border bg-secondary/30 px-6 py-16">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="text-2xl font-medium md:text-3xl">
+            Por que escolher o FreedoMeet
+          </h2>
+          <p className="mt-2 max-w-xl text-muted-foreground">
+            Muito além de uma chamada de vídeo: recursos de IA que economizam
+            seu tempo em cada reunião.
+          </p>
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {FEATURES.map((f) => (
+              <div
+                key={f.title}
+                className="rounded-xl border border-border bg-background p-6"
+              >
+                <div className="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <f.icon className="size-6" />
+                </div>
+                <h3 className="mt-4 font-medium">{f.title}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
