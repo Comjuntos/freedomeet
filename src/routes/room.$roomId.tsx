@@ -164,6 +164,10 @@ function Room() {
   const [dashboardStats, setDashboardStats] = useState({ words: 0, segments: 0 });
   const [dashboardLoading, setDashboardLoading] = useState(false);
   const [dashboardError, setDashboardError] = useState<string | null>(null);
+  const [slackChannels, setSlackChannels] = useState<SlackChannel[]>([]);
+  const [slackChannel, setSlackChannel] = useState("");
+  const [slackSending, setSlackSending] = useState(false);
+  const [slackStatus, setSlackStatus] = useState<string | null>(null);
 
   const openDashboard = useCallback(async () => {
     const segments = captions.map((c) => c.original).filter(Boolean);
