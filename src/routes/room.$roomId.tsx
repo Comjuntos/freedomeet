@@ -3,8 +3,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Captions, X, Languages } from "lucide-react";
 import { translateText } from "@/lib/translate.functions";
+import { getJaasToken } from "@/lib/jaas.functions";
 
-const JITSI_DOMAIN = "meet.jit.si";
+const JITSI_DOMAIN = "8x8.vc";
 const SCRIPT_SRC = `https://${JITSI_DOMAIN}/external_api.js`;
 
 export const Route = createFileRoute("/room/$roomId")({
