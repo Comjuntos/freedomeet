@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Captions, X, Languages, FileText, Download, Copy, Loader2 } from "lucide-react";
 import { translateText } from "@/lib/translate.functions";
+import { punctuateText } from "@/lib/punctuate.functions";
 import { generateMinutes } from "@/lib/minutes.functions";
 import { getJaasToken } from "@/lib/jaas.functions";
 
