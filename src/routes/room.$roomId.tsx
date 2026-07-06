@@ -131,6 +131,8 @@ function Room() {
   const [ended, setEnded] = useState(false);
   const [isHost, setIsHost] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+  const [name, setName] = useState<string | null>(null);
+  const [nameInput, setNameInput] = useState("");
   const startTimeRef = useRef<number | null>(null);
   const [showCaptions, setShowCaptions] = useState(false);
   const [showAiTools, setShowAiTools] = useState(false);
@@ -148,6 +150,16 @@ function Room() {
   useEffect(() => {
     setIsHost(sessionStorage.getItem(`freedomeet-host-${roomId}`) === "1");
   }, [roomId]);
+
+  // Nome do participante (usado para gerar o avatar de cada um).
+  useEffect(() => {
+    const saved = sessionStorage.getItem("freedomeet-name");
+    if (saved) setName(saved);
+  }, []);
+
+  const avatarUrl = name
+    ? `https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(name)}`
+    : "";
   const translate = useServerFn(translateText);
   const punctuate = useServerFn(punctuateText);
   const fetchToken = useServerFn(getJaasToken);
@@ -405,8 +417,12 @@ function Room() {
     let api: { dispose: () => void; addEventListener: (e: string, cb: () => void) => void } | null =
       null;
     let cancelled = false;
+    if (!name) return;
 
-    Promise.all([loadJitsiScript(), fetchToken({ data: { room: roomId } })])
+    Promise.all([
+      loadJitsiScript(),
+      fetchToken({ data: { room: roomId, name, avatar: avatarUrl } }),
+    ])
       .then(([, tokenRes]) => {
         if (cancelled || !containerRef.current || !window.JitsiMeetExternalAPI) return;
         api = new window.JitsiMeetExternalAPI(JITSI_DOMAIN, {
@@ -449,7 +465,7 @@ function Room() {
       cancelled = true;
       api?.dispose();
     };
-  }, [roomId, navigate, fetchToken]);
+  }, [roomId, navigate, fetchToken, name, avatarUrl]);
 
   return (
     <div className="flex h-screen flex-col bg-background text-foreground">
@@ -493,6 +509,51 @@ function Room() {
           >
             Voltar ao início
           </button>
+        </div>
+      ) : !name ? (
+        <div className="flex flex-1 flex-col items-center justify-center gap-6 px-4 text-center">
+          <div className="flex items-center gap-2">
+            <Captions className="size-7 text-primary" />
+            <span className="text-2xl font-medium">FreedoMeet</span>
+          </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const v = nameInput.trim();
+              if (!v) return;
+              sessionStorage.setItem("freedomeet-name", v);
+              setName(v);
+            }}
+            className="flex w-full max-w-sm flex-col items-center gap-4"
+          >
+            <div>
+              <h1 className="text-xl font-semibold">Como você quer aparecer?</h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Seu nome gera um avatar visível para todos os participantes.
+              </p>
+            </div>
+            {nameInput.trim() && (
+              <img
+                src={`https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(nameInput.trim())}`}
+                alt="Prévia do avatar"
+                className="size-20 rounded-full border border-border bg-secondary"
+              />
+            )}
+            <input
+              autoFocus
+              value={nameInput}
+              onChange={(e) => setNameInput(e.target.value)}
+              placeholder="Seu nome"
+              className="w-full rounded-lg border border-border bg-background px-4 py-2 text-center"
+            />
+            <button
+              type="submit"
+              disabled={!nameInput.trim()}
+              className="w-full rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            >
+              Entrar na reunião
+            </button>
+          </form>
         </div>
       ) : (
         <div className="relative flex flex-1 overflow-hidden">
