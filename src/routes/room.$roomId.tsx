@@ -11,11 +11,14 @@ import {
   Loader2,
   SmilePlus,
   Clock,
+  BarChart3,
+  Hash,
 } from "lucide-react";
 import { translateText } from "@/lib/translate.functions";
 import { punctuateText } from "@/lib/punctuate.functions";
 import { generateMinutes } from "@/lib/minutes.functions";
 import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment.functions";
+import { analyzeDashboard, type DashboardResult } from "@/lib/dashboard.functions";
 import { getJaasToken } from "@/lib/jaas.functions";
 
 const JITSI_DOMAIN = "8x8.vc";
