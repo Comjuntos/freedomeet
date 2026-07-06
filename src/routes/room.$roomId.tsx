@@ -735,6 +735,18 @@ function Room() {
                 </div>
 
                 <div className="flex flex-wrap items-end gap-3 border-b border-border px-5 py-3 text-sm">
+                  <label className="flex w-full flex-col gap-1">
+                    <span className="text-xs text-muted-foreground">
+                      Membros da reunião (nome completo, um por linha)
+                    </span>
+                    <textarea
+                      value={membersInput}
+                      onChange={(e) => setMembersInput(e.target.value)}
+                      rows={3}
+                      placeholder={"Maria da Silva Santos\nJoão Pereira de Souza"}
+                      className="w-full resize-y rounded-md border border-border bg-background px-2 py-1.5"
+                    />
+                  </label>
                   <label className="flex flex-col gap-1">
                     <span className="text-xs text-muted-foreground">Modelo</span>
                     <select
