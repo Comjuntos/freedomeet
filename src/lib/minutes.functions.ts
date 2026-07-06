@@ -62,6 +62,8 @@ export const generateMinutes = createServerFn({ method: "POST" })
             role: "system",
             content: `Você é um assistente que redige atas de reunião profissionais em português do Brasil. ${style}
 
+IMPORTANTE: A transcrição pode vir sem acentuação e com erros de reconhecimento de voz. Reescreva todo o conteúdo em português do Brasil correto, com acentuação, pontuação, maiúsculas e ortografia adequadas. Nunca deixe palavras sem acento (ex.: "reuniao" → "reunião", "decisao" → "decisão", "nao" → "não").
+
 Responda APENAS em Markdown, sem blocos de código. Use esta estrutura:
 # Ata de Reunião${data.title ? `: ${data.title}` : ""}
 **Data:** ${today}
