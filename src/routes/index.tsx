@@ -64,7 +64,10 @@ function Index() {
   const [code, setCode] = useState("");
 
   const createMeeting = () => {
-    navigate({ to: "/room/$roomId", params: { roomId: randomRoom() } });
+    const roomId = randomRoom();
+    // Marca quem criou a sala como administrador (host) desta reunião.
+    sessionStorage.setItem(`freedomeet-host-${roomId}`, "1");
+    navigate({ to: "/room/$roomId", params: { roomId } });
   };
 
   const joinMeeting = () => {
