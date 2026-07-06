@@ -512,7 +512,7 @@ function Room() {
       cancelled = true;
       api?.dispose();
     };
-  }, [roomId, navigate, fetchToken, name, avatarUrl]);
+  }, [roomId, navigate, fetchToken, name, avatarUrl, isHost]);
 
   return (
     <div className="flex h-screen flex-col bg-background text-foreground">
