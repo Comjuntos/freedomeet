@@ -471,10 +471,12 @@ function Room() {
           parentNode: containerRef.current,
           width: "100%",
           height: "100%",
+          userInfo: { displayName: name },
           configOverwrite: {
             prejoinPageEnabled: false,
             defaultLanguage: "ptBR",
             disableDeepLinking: true,
+            readOnlyName: true,
           },
           interfaceConfigOverwrite: {
             MOBILE_APP_PROMO: false,
@@ -496,6 +498,7 @@ function Room() {
         api.addEventListener("readyToClose", () => {
           setEnded(true);
         });
+        api.executeCommand("displayName", name);
       })
       .catch(() => {
         if (!cancelled) setError("Não foi possível carregar a sala de vídeo.");
