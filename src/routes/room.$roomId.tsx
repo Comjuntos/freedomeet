@@ -243,6 +243,17 @@ function Room() {
       .map((c) => c.original)
       .join("\n")
       .trim();
+    const members = membersInput
+      .split("\n")
+      .map((m) => m.trim())
+      .filter(Boolean);
+    if (members.length === 0) {
+      setMinutesError(
+        "Informe os membros da reunião (nome completo de cada um, um por linha).",
+      );
+      setShowMinutes(true);
+      return;
+    }
     if (!transcript) {
       setMinutesError(
         "Não há transcrição ainda. Ative a transcrição e fale durante a reunião.",
@@ -255,8 +266,12 @@ function Room() {
     setMinutesError(null);
     setMinutesText("");
     try {
+      const startedAt =
+        startTimeRef.current !== null
+          ? new Date(startTimeRef.current).toLocaleString("pt-BR")
+          : undefined;
       const res = await makeMinutes({
-        data: { transcript, template: minutesTemplate, title: roomId },
+        data: { transcript, template: minutesTemplate, title: roomId, members, startedAt },
       });
       setMinutesText(res.minutes);
     } catch {
@@ -264,7 +279,7 @@ function Room() {
     } finally {
       setMinutesLoading(false);
     }
-  }, [captions, makeMinutes, minutesTemplate, roomId]);
+  }, [captions, makeMinutes, minutesTemplate, roomId, membersInput]);
 
   const downloadAta = useCallback(() => {
     const blob = new Blob([minutesText], { type: "text/markdown;charset=utf-8" });
