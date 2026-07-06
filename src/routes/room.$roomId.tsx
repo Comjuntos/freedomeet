@@ -257,6 +257,23 @@ function Room() {
     URL.revokeObjectURL(url);
   }, [minutesText, roomId]);
 
+  const downloadTranscript = useCallback(() => {
+    const lines = captions
+      .map((c) => (c.translated ? `${c.original}\n  → ${c.translated}` : c.original))
+      .filter(Boolean);
+    if (lines.length === 0) return;
+    const header = `Transcrição da reunião: ${roomId}\nData: ${new Date().toLocaleString("pt-BR")}\n\n`;
+    const blob = new Blob([header + lines.join("\n")], {
+      type: "text/plain;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `transcricao-${roomId}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [captions, roomId]);
+
   // Carrega os canais do Slack quando a ata é gerada.
   useEffect(() => {
     if (!minutesText || slackChannels.length > 0) return;
