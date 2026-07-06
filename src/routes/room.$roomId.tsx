@@ -281,12 +281,36 @@ function Room() {
     }
   }, [captions, makeMinutes, minutesTemplate, roomId, membersInput]);
 
-  const downloadAta = useCallback(() => {
-    const blob = new Blob([minutesText], { type: "text/markdown;charset=utf-8" });
+  const downloadAta = useCallback(async () => {
+    if (!minutesText.trim()) return;
+    const { Document, Packer, Paragraph, TextRun, HeadingLevel } = await import("docx");
+
+    const paragraphs = minutesText.split("\n").map((raw) => {
+      const line = raw.trimEnd();
+      if (line.startsWith("# "))
+        return new Paragraph({ heading: HeadingLevel.HEADING_1, children: [new TextRun(line.slice(2))] });
+      if (line.startsWith("## "))
+        return new Paragraph({ heading: HeadingLevel.HEADING_2, children: [new TextRun(line.slice(3))] });
+      if (line.startsWith("### "))
+        return new Paragraph({ heading: HeadingLevel.HEADING_3, children: [new TextRun(line.slice(4))] });
+      if (/^\s*[-*]\s+/.test(line))
+        return new Paragraph({ bullet: { level: 0 }, children: [new TextRun(line.replace(/^\s*[-*]\s+/, ""))] });
+      // Renderiza **negrito** de forma simples.
+      const parts = line.split(/(\*\*[^*]+\*\*)/g).filter(Boolean);
+      const runs = parts.map((p) =>
+        p.startsWith("**") && p.endsWith("**")
+          ? new TextRun({ text: p.slice(2, -2), bold: true })
+          : new TextRun(p),
+      );
+      return new Paragraph({ children: runs.length ? runs : [new TextRun("")] });
+    });
+
+    const doc = new Document({ sections: [{ children: paragraphs }] });
+    const blob = await Packer.toBlob(doc);
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `ata-${roomId}.md`;
+    a.download = `ata-${roomId}.docx`;
     a.click();
     URL.revokeObjectURL(url);
   }, [minutesText, roomId]);
