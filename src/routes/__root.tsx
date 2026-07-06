@@ -77,14 +77,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "FreedoMeet — Videoconferência aberta" },
+      { name: "description", content: "Crie ou entre em reuniões de vídeo com câmera, áudio, chat e compartilhamento de tela. Rápido, seguro e gratuito." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "FreedoMeet — Videoconferência aberta" },
+      { property: "og:description", content: "Crie ou entre em reuniões de vídeo com câmera, áudio, chat e compartilhamento de tela. Rápido, seguro e gratuito." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "FreedoMeet — Videoconferência aberta" },
+      { name: "twitter:description", content: "Crie ou entre em reuniões de vídeo com câmera, áudio, chat e compartilhamento de tela. Rápido, seguro e gratuito." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/a62b2aff-c134-4e96-9143-036026b81a07/id-preview-aa7c0da2--fca5f314-dc96-4f42-9621-ef069f73e496.lovable.app-1783378986119.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/a62b2aff-c134-4e96-9143-036026b81a07/id-preview-aa7c0da2--fca5f314-dc96-4f42-9621-ef069f73e496.lovable.app-1783378986119.png" },
     ],
     links: [
       {
