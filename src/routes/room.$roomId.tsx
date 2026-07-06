@@ -237,7 +237,7 @@ function Room() {
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
             <button
-              onClick={() => setEnded(false)}
+              onClick={() => window.location.reload()}
               className="rounded-lg border border-border px-4 py-2 font-medium hover:bg-secondary"
             >
               Voltar a entrar
