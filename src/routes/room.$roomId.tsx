@@ -113,6 +113,50 @@ function Room() {
   const idRef = useRef(0);
   const translate = useServerFn(translateText);
   const fetchToken = useServerFn(getJaasToken);
+  const makeMinutes = useServerFn(generateMinutes);
+  const [showMinutes, setShowMinutes] = useState(false);
+  const [minutesTemplate, setMinutesTemplate] = useState("formal");
+  const [minutesText, setMinutesText] = useState("");
+  const [minutesLoading, setMinutesLoading] = useState(false);
+  const [minutesError, setMinutesError] = useState<string | null>(null);
+
+  const generateAta = useCallback(async () => {
+    const transcript = captions
+      .map((c) => c.original)
+      .join("\n")
+      .trim();
+    if (!transcript) {
+      setMinutesError(
+        "Não há transcrição ainda. Ative a transcrição e fale durante a reunião.",
+      );
+      setShowMinutes(true);
+      return;
+    }
+    setShowMinutes(true);
+    setMinutesLoading(true);
+    setMinutesError(null);
+    setMinutesText("");
+    try {
+      const res = await makeMinutes({
+        data: { transcript, template: minutesTemplate, title: roomId },
+      });
+      setMinutesText(res.minutes);
+    } catch {
+      setMinutesError("Não foi possível gerar a ata. Tente novamente.");
+    } finally {
+      setMinutesLoading(false);
+    }
+  }, [captions, makeMinutes, minutesTemplate, roomId]);
+
+  const downloadAta = useCallback(() => {
+    const blob = new Blob([minutesText], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `ata-${roomId}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [minutesText, roomId]);
 
   useEffect(() => {
     targetRef.current = targetLang;
