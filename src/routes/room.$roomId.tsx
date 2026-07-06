@@ -189,7 +189,7 @@ function Room() {
           width: "100%",
           height: "100%",
           configOverwrite: {
-            prejoinPageEnabled: true,
+            prejoinPageEnabled: false,
             defaultLanguage: "ptBR",
             disableDeepLinking: true,
           },
