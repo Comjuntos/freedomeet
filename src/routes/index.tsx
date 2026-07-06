@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   Video,
@@ -92,9 +92,12 @@ function Index() {
           <button className="rounded-full p-2.5 text-muted-foreground hover:bg-secondary" aria-label="Configurações">
             <Settings className="size-5" />
           </button>
-          <div className="ml-1 flex size-9 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground">
-            U
-          </div>
+          <Link
+            to="/app"
+            className="ml-1 inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          >
+            Painel
+          </Link>
         </div>
       </header>
 
