@@ -455,8 +455,11 @@ function Room() {
   }, [sourceLang]);
 
   useEffect(() => {
-    let api: { dispose: () => void; addEventListener: (e: string, cb: () => void) => void } | null =
-      null;
+    let api: {
+      dispose: () => void;
+      addEventListener: (e: string, cb: () => void) => void;
+      executeCommand: (command: string, ...args: unknown[]) => void;
+    } | null = null;
     let cancelled = false;
     if (!name) return;
 
