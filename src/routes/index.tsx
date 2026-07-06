@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Video, Plus, Keyboard, MoreVertical, HelpCircle, Settings } from "lucide-react";
+import { Video, Keyboard, HelpCircle, Settings } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
