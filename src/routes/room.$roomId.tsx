@@ -141,6 +141,7 @@ function Room() {
   const fetchToken = useServerFn(getJaasToken);
   const makeMinutes = useServerFn(generateMinutes);
   const runSentiment = useServerFn(analyzeSentiment);
+  const runDashboard = useServerFn(analyzeDashboard);
   const [showMinutes, setShowMinutes] = useState(false);
   const [minutesTemplate, setMinutesTemplate] = useState("formal");
   const [minutesText, setMinutesText] = useState("");
@@ -150,6 +151,36 @@ function Room() {
   const [sentiment, setSentiment] = useState<SentimentResult | null>(null);
   const [sentimentLoading, setSentimentLoading] = useState(false);
   const [sentimentError, setSentimentError] = useState<string | null>(null);
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [dashboard, setDashboard] = useState<DashboardResult | null>(null);
+  const [dashboardStats, setDashboardStats] = useState({ words: 0, segments: 0 });
+  const [dashboardLoading, setDashboardLoading] = useState(false);
+  const [dashboardError, setDashboardError] = useState<string | null>(null);
+
+  const openDashboard = useCallback(async () => {
+    const segments = captions.map((c) => c.original).filter(Boolean);
+    const transcript = segments.join("\n").trim();
+    setShowDashboard(true);
+    if (!transcript) {
+      setDashboard(null);
+      setDashboardError(
+        "Não há transcrição ainda. Ative a transcrição e fale durante a reunião.",
+      );
+      return;
+    }
+    const words = transcript.split(/\s+/).filter(Boolean).length;
+    setDashboardStats({ words, segments: segments.length });
+    setDashboardLoading(true);
+    setDashboardError(null);
+    try {
+      const res = await runDashboard({ data: { transcript } });
+      setDashboard(res);
+    } catch {
+      setDashboardError("Não foi possível gerar o dashboard. Tente novamente.");
+    } finally {
+      setDashboardLoading(false);
+    }
+  }, [captions, runDashboard]);
 
   const analyze = useCallback(async () => {
     const transcript = captions
