@@ -537,6 +537,13 @@ function Room() {
                   <SmilePlus className="size-4" />
                   Análise de sentimento
                 </button>
+                <button
+                  onClick={openDashboard}
+                  className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
+                >
+                  <BarChart3 className="size-4" />
+                  Dashboard de falas
+                </button>
               </div>
             </aside>
           )}
