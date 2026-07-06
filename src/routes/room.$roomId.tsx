@@ -528,26 +528,41 @@ function Room() {
                   {listening ? "Parar transcrição" : "Iniciar transcrição"}
                 </button>
                 <button
-                  onClick={generateAta}
-                  className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
-                >
-                  <ClipboardList className="size-4" />
-                  Gerar ata
-                </button>
                 <button
-                  onClick={analyze}
+                  onClick={() => setShowAiTools((v) => !v)}
                   className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
                 >
-                  <Gauge className="size-4" />
-                  Análise de sentimento
+                  <Sparkles className="size-4" />
+                  Ferramentas IA
+                  <ChevronDown
+                    className={`size-4 transition-transform ${showAiTools ? "rotate-180" : ""}`}
+                  />
                 </button>
-                <button
-                  onClick={openDashboard}
-                  className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
-                >
-                  <ChartColumnBig className="size-4" />
-                  Dashboard de falas
-                </button>
+                {showAiTools && (
+                  <div className="space-y-2">
+                    <button
+                      onClick={generateAta}
+                      className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
+                    >
+                      <ClipboardList className="size-4" />
+                      Gerar ata
+                    </button>
+                    <button
+                      onClick={analyze}
+                      className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
+                    >
+                      <Gauge className="size-4" />
+                      Análise de sentimento
+                    </button>
+                    <button
+                      onClick={openDashboard}
+                      className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
+                    >
+                      <ChartColumnBig className="size-4" />
+                      Dashboard de falas
+                    </button>
+                  </div>
+                )}
               </div>
             </aside>
           )}
