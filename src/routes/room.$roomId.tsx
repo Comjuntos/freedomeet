@@ -661,9 +661,39 @@ function Room() {
                         <Download className="size-4" />
                         Baixar
                       </button>
+                      <select
+                        value={slackChannel}
+                        onChange={(e) => setSlackChannel(e.target.value)}
+                        className="rounded-md border border-border bg-background px-2 py-2 text-sm"
+                      >
+                        {slackChannels.length === 0 ? (
+                          <option value="">Carregando canais…</option>
+                        ) : (
+                          slackChannels.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              #{c.name}
+                            </option>
+                          ))
+                        )}
+                      </select>
+                      <button
+                        onClick={sendAtaToSlack}
+                        disabled={slackSending || !slackChannel}
+                        className="flex items-center gap-2 rounded-md border border-border px-3 py-2 font-medium hover:bg-secondary disabled:opacity-60"
+                      >
+                        {slackSending ? (
+                          <Loader2 className="size-4 animate-spin" />
+                        ) : (
+                          <Send className="size-4" />
+                        )}
+                        Enviar ao Slack
+                      </button>
                     </>
                   )}
                 </div>
+                {slackStatus && (
+                  <p className="px-5 pt-1 text-xs text-muted-foreground">{slackStatus}</p>
+                )}
 
                 <div className="flex-1 overflow-y-auto px-5 py-4 text-sm">
                   {minutesError ? (
