@@ -401,6 +401,10 @@ function Room() {
       ) : (
         <div className="relative flex flex-1 overflow-hidden">
           <div ref={containerRef} className="flex-1" />
+          <div className="pointer-events-none absolute left-4 top-4 z-10 flex items-center gap-2 rounded-full bg-black/60 px-3 py-1.5 text-sm font-medium text-white">
+            <Clock className="size-4" />
+            {formatDuration(elapsed)}
+          </div>
           {showCaptions && (
             <aside className="flex w-80 flex-col border-l border-border bg-card">
               <div className="flex items-center justify-between border-b border-border px-4 py-3">
