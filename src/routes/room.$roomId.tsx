@@ -1,8 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Captions, X, Languages } from "lucide-react";
+import { Captions, X, Languages, FileText, Download, Copy, Loader2 } from "lucide-react";
 import { translateText } from "@/lib/translate.functions";
+import { generateMinutes } from "@/lib/minutes.functions";
 import { getJaasToken } from "@/lib/jaas.functions";
 
 const JITSI_DOMAIN = "8x8.vc";
@@ -62,6 +63,12 @@ const TARGET_LANGS = [
   { code: "Italiano", label: "Italiano" },
 ];
 
+const MINUTES_TEMPLATES = [
+  { code: "formal", label: "Formal / Corporativa" },
+  { code: "executiva", label: "Executiva (resumida)" },
+  { code: "detalhada", label: "Detalhada" },
+];
+
 interface Caption {
   id: number;
   original: string;
@@ -106,6 +113,50 @@ function Room() {
   const idRef = useRef(0);
   const translate = useServerFn(translateText);
   const fetchToken = useServerFn(getJaasToken);
+  const makeMinutes = useServerFn(generateMinutes);
+  const [showMinutes, setShowMinutes] = useState(false);
+  const [minutesTemplate, setMinutesTemplate] = useState("formal");
+  const [minutesText, setMinutesText] = useState("");
+  const [minutesLoading, setMinutesLoading] = useState(false);
+  const [minutesError, setMinutesError] = useState<string | null>(null);
+
+  const generateAta = useCallback(async () => {
+    const transcript = captions
+      .map((c) => c.original)
+      .join("\n")
+      .trim();
+    if (!transcript) {
+      setMinutesError(
+        "Não há transcrição ainda. Ative a transcrição e fale durante a reunião.",
+      );
+      setShowMinutes(true);
+      return;
+    }
+    setShowMinutes(true);
+    setMinutesLoading(true);
+    setMinutesError(null);
+    setMinutesText("");
+    try {
+      const res = await makeMinutes({
+        data: { transcript, template: minutesTemplate, title: roomId },
+      });
+      setMinutesText(res.minutes);
+    } catch {
+      setMinutesError("Não foi possível gerar a ata. Tente novamente.");
+    } finally {
+      setMinutesLoading(false);
+    }
+  }, [captions, makeMinutes, minutesTemplate, roomId]);
+
+  const downloadAta = useCallback(() => {
+    const blob = new Blob([minutesText], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `ata-${roomId}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [minutesText, roomId]);
 
   useEffect(() => {
     targetRef.current = targetLang;
@@ -342,7 +393,7 @@ function Room() {
                 )}
               </div>
 
-              <div className="border-t border-border p-3">
+              <div className="space-y-2 border-t border-border p-3">
                 <button
                   onClick={listening ? stopListening : startListening}
                   className={`w-full rounded-md px-3 py-2 text-sm font-medium transition-colors ${
@@ -353,8 +404,99 @@ function Room() {
                 >
                   {listening ? "Parar transcrição" : "Iniciar transcrição"}
                 </button>
+                <button
+                  onClick={generateAta}
+                  className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
+                >
+                  <FileText className="size-4" />
+                  Gerar ata
+                </button>
               </div>
             </aside>
+          )}
+
+          {showMinutes && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 p-4">
+              <div className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-xl border border-border bg-card shadow-xl">
+                <div className="flex items-center justify-between border-b border-border px-5 py-3">
+                  <div className="flex items-center gap-2 font-medium">
+                    <FileText className="size-4 text-primary" />
+                    Ata da reunião
+                  </div>
+                  <button
+                    onClick={() => setShowMinutes(false)}
+                    className="rounded-md p-1 text-muted-foreground hover:bg-secondary"
+                    aria-label="Fechar"
+                  >
+                    <X className="size-4" />
+                  </button>
+                </div>
+
+                <div className="flex flex-wrap items-end gap-3 border-b border-border px-5 py-3 text-sm">
+                  <label className="flex flex-col gap-1">
+                    <span className="text-xs text-muted-foreground">Modelo</span>
+                    <select
+                      value={minutesTemplate}
+                      onChange={(e) => setMinutesTemplate(e.target.value)}
+                      className="rounded-md border border-border bg-background px-2 py-1.5"
+                    >
+                      {MINUTES_TEMPLATES.map((t) => (
+                        <option key={t.code} value={t.code}>
+                          {t.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <button
+                    onClick={generateAta}
+                    disabled={minutesLoading}
+                    className="flex items-center gap-2 rounded-md bg-primary px-3 py-2 font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+                  >
+                    {minutesLoading ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <FileText className="size-4" />
+                    )}
+                    {minutesText ? "Gerar novamente" : "Gerar ata"}
+                  </button>
+                  {minutesText && !minutesLoading && (
+                    <>
+                      <button
+                        onClick={() => navigator.clipboard?.writeText(minutesText)}
+                        className="flex items-center gap-2 rounded-md border border-border px-3 py-2 font-medium hover:bg-secondary"
+                      >
+                        <Copy className="size-4" />
+                        Copiar
+                      </button>
+                      <button
+                        onClick={downloadAta}
+                        className="flex items-center gap-2 rounded-md border border-border px-3 py-2 font-medium hover:bg-secondary"
+                      >
+                        <Download className="size-4" />
+                        Baixar
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                <div className="flex-1 overflow-y-auto px-5 py-4 text-sm">
+                  {minutesError ? (
+                    <p className="text-destructive">{minutesError}</p>
+                  ) : minutesLoading ? (
+                    <p className="text-muted-foreground">Gerando a ata com base na transcrição…</p>
+                  ) : minutesText ? (
+                    <pre className="whitespace-pre-wrap font-sans leading-relaxed">
+                      {minutesText}
+                    </pre>
+                  ) : (
+                    <p className="text-muted-foreground">
+                      Escolha um modelo e clique em “Gerar ata” para criar o
+                      documento a partir da transcrição.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
           )}
 
           {!showCaptions && (
