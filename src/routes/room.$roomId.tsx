@@ -16,12 +16,14 @@ import {
   Loader2,
   Clock,
   Hash,
+  Send,
 } from "lucide-react";
 import { translateText } from "@/lib/translate.functions";
 import { punctuateText } from "@/lib/punctuate.functions";
 import { generateMinutes } from "@/lib/minutes.functions";
 import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment.functions";
 import { analyzeDashboard, type DashboardResult } from "@/lib/dashboard.functions";
+import { listSlackChannels, sendToSlack, type SlackChannel } from "@/lib/slack.functions";
 import { getJaasToken } from "@/lib/jaas.functions";
 
 const JITSI_DOMAIN = "8x8.vc";
@@ -146,6 +148,8 @@ function Room() {
   const makeMinutes = useServerFn(generateMinutes);
   const runSentiment = useServerFn(analyzeSentiment);
   const runDashboard = useServerFn(analyzeDashboard);
+  const loadChannels = useServerFn(listSlackChannels);
+  const postToSlack = useServerFn(sendToSlack);
   const [showMinutes, setShowMinutes] = useState(false);
   const [minutesTemplate, setMinutesTemplate] = useState("formal");
   const [minutesText, setMinutesText] = useState("");
@@ -160,6 +164,10 @@ function Room() {
   const [dashboardStats, setDashboardStats] = useState({ words: 0, segments: 0 });
   const [dashboardLoading, setDashboardLoading] = useState(false);
   const [dashboardError, setDashboardError] = useState<string | null>(null);
+  const [slackChannels, setSlackChannels] = useState<SlackChannel[]>([]);
+  const [slackChannel, setSlackChannel] = useState("");
+  const [slackSending, setSlackSending] = useState(false);
+  const [slackStatus, setSlackStatus] = useState<string | null>(null);
 
   const openDashboard = useCallback(async () => {
     const segments = captions.map((c) => c.original).filter(Boolean);
@@ -248,6 +256,33 @@ function Room() {
     a.click();
     URL.revokeObjectURL(url);
   }, [minutesText, roomId]);
+
+  // Carrega os canais do Slack quando a ata é gerada.
+  useEffect(() => {
+    if (!minutesText || slackChannels.length > 0) return;
+    loadChannels()
+      .then((chs) => {
+        setSlackChannels(chs);
+        if (chs[0]) setSlackChannel(chs[0].id);
+      })
+      .catch(() => setSlackStatus("Não foi possível carregar os canais do Slack."));
+  }, [minutesText, slackChannels.length, loadChannels]);
+
+  const sendAtaToSlack = useCallback(async () => {
+    if (!slackChannel || !minutesText) return;
+    setSlackSending(true);
+    setSlackStatus(null);
+    try {
+      await postToSlack({
+        data: { channel: slackChannel, text: `*Ata da reunião ${roomId}*\n\n${minutesText}` },
+      });
+      setSlackStatus("Ata enviada para o Slack! ✅");
+    } catch {
+      setSlackStatus("Falha ao enviar para o Slack.");
+    } finally {
+      setSlackSending(false);
+    }
+  }, [slackChannel, minutesText, postToSlack, roomId]);
 
   useEffect(() => {
     targetRef.current = targetLang;
@@ -626,9 +661,39 @@ function Room() {
                         <Download className="size-4" />
                         Baixar
                       </button>
+                      <select
+                        value={slackChannel}
+                        onChange={(e) => setSlackChannel(e.target.value)}
+                        className="rounded-md border border-border bg-background px-2 py-2 text-sm"
+                      >
+                        {slackChannels.length === 0 ? (
+                          <option value="">Carregando canais…</option>
+                        ) : (
+                          slackChannels.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              #{c.name}
+                            </option>
+                          ))
+                        )}
+                      </select>
+                      <button
+                        onClick={sendAtaToSlack}
+                        disabled={slackSending || !slackChannel}
+                        className="flex items-center gap-2 rounded-md border border-border px-3 py-2 font-medium hover:bg-secondary disabled:opacity-60"
+                      >
+                        {slackSending ? (
+                          <Loader2 className="size-4 animate-spin" />
+                        ) : (
+                          <Send className="size-4" />
+                        )}
+                        Enviar ao Slack
+                      </button>
                     </>
                   )}
                 </div>
+                {slackStatus && (
+                  <p className="px-5 pt-1 text-xs text-muted-foreground">{slackStatus}</p>
+                )}
 
                 <div className="flex-1 overflow-y-auto px-5 py-4 text-sm">
                   {minutesError ? (
