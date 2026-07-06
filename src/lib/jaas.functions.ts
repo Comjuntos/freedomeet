@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { SignJWT, importPKCS8 } from "jose";
 
-type TokenInput = { room: string; name?: string; email?: string };
+type TokenInput = { room: string; name?: string; email?: string; avatar?: string };
 
 function validate(input: unknown): TokenInput {
   const i = (input ?? {}) as Partial<TokenInput>;
@@ -12,6 +12,7 @@ function validate(input: unknown): TokenInput {
     room: i.room,
     name: typeof i.name === "string" ? i.name : undefined,
     email: typeof i.email === "string" ? i.email : undefined,
+    avatar: typeof i.avatar === "string" ? i.avatar : undefined,
   };
 }
 
@@ -41,6 +42,7 @@ export const getJaasToken = createServerFn({ method: "POST" })
         user: {
           name: data.name || "Convidado",
           email: data.email || "",
+          avatar: data.avatar || "",
           moderator: true,
           "hidden-from-recorder": false,
         },
