@@ -465,7 +465,7 @@ function Room() {
 
     Promise.all([
       loadJitsiScript(),
-      fetchToken({ data: { room: roomId, name, avatar: avatarUrl } }),
+      fetchToken({ data: { room: roomId, name, avatar: avatarUrl, moderator: isHost } }),
     ])
       .then(([, tokenRes]) => {
         if (cancelled || !containerRef.current || !window.JitsiMeetExternalAPI) return;
@@ -512,7 +512,7 @@ function Room() {
       cancelled = true;
       api?.dispose();
     };
-  }, [roomId, navigate, fetchToken, name, avatarUrl]);
+  }, [roomId, navigate, fetchToken, name, avatarUrl, isHost]);
 
   return (
     <div className="flex h-screen flex-col bg-background text-foreground">
