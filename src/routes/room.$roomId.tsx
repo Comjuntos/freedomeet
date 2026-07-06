@@ -465,7 +465,7 @@ function Room() {
 
     Promise.all([
       loadJitsiScript(),
-      fetchToken({ data: { room: roomId, name, avatar: avatarUrl } }),
+      fetchToken({ data: { room: roomId, name, avatar: avatarUrl, moderator: isHost } }),
     ])
       .then(([, tokenRes]) => {
         if (cancelled || !containerRef.current || !window.JitsiMeetExternalAPI) return;
