@@ -49,6 +49,7 @@ declare global {
     JitsiMeetExternalAPI?: new (domain: string, options: Record<string, unknown>) => {
       dispose: () => void;
       addEventListener: (event: string, cb: () => void) => void;
+      executeCommand: (command: string, ...args: unknown[]) => void;
     };
     SpeechRecognition?: new () => SpeechRecognitionLike;
     webkitSpeechRecognition?: new () => SpeechRecognitionLike;
