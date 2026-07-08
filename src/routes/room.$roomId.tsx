@@ -39,7 +39,7 @@ function formatDuration(seconds: number): string {
 
 export const Route = createFileRoute("/room/$roomId")({
   head: () => ({
-    meta: [{ title: "Sala — FreedoMeet" }],
+    meta: [{ title: "Sala — FreeduMeet" }],
   }),
   component: Room,
 });
@@ -485,9 +485,9 @@ function Room() {
           interfaceConfigOverwrite: {
             MOBILE_APP_PROMO: false,
             LANG_DETECTION: false,
-            APP_NAME: "FreedoMeet",
-            NATIVE_APP_NAME: "FreedoMeet",
-            PROVIDER_NAME: "FreedoMeet",
+            APP_NAME: "FreeduMeet",
+            NATIVE_APP_NAME: "FreeduMeet",
+            PROVIDER_NAME: "FreeduMeet",
             SHOW_JITSI_WATERMARK: false,
             SHOW_WATERMARK_FOR_GUESTS: false,
             SHOW_BRAND_WATERMARK: false,
@@ -520,12 +520,12 @@ function Room() {
         <div className="flex flex-1 flex-col items-center justify-center gap-6 px-4 text-center">
           <div className="flex items-center gap-2">
             <Captions className="size-7 text-primary" />
-            <span className="text-2xl font-medium">FreedoMeet</span>
+            <span className="text-2xl font-medium">FreeduMeet</span>
           </div>
           <div>
             <h1 className="text-2xl font-semibold">Você saiu da reunião</h1>
             <p className="mt-2 text-muted-foreground">
-              Obrigado por usar o FreedoMeet.
+              Obrigado por usar o FreeduMeet.
             </p>
             <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium">
               <Clock className="size-4 text-primary" />
@@ -561,7 +561,7 @@ function Room() {
         <div className="flex flex-1 flex-col items-center justify-center gap-6 px-4 text-center">
           <div className="flex items-center gap-2">
             <Captions className="size-7 text-primary" />
-            <span className="text-2xl font-medium">FreedoMeet</span>
+            <span className="text-2xl font-medium">FreeduMeet</span>
           </div>
           <form
             onSubmit={(e) => {

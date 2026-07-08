@@ -6,7 +6,7 @@ import { Video, Plus, Trash2, Users, LogOut, DoorOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/app")({
-  head: () => ({ meta: [{ title: "Painel — FreedoMeet" }] }),
+  head: () => ({ meta: [{ title: "Painel — FreeduMeet" }] }),
   component: Dashboard,
 });
 
@@ -165,7 +165,7 @@ function Dashboard() {
       <header className="flex items-center justify-between border-b border-border px-6 py-4">
         <div className="flex items-center gap-2">
           <Video className="size-6 text-primary" />
-          <span className="text-lg font-medium">FreedoMeet — Painel</span>
+          <span className="text-lg font-medium">FreeduMeet — Painel</span>
         </div>
         <button
           onClick={signOut}
