@@ -8,8 +8,8 @@ import { lovable } from "@/integrations/lovable/index";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Entrar — FreedoMeet" },
-      { name: "description", content: "Acesse o painel de salas de projetos e equipes do FreedoMeet." },
+      { title: "Entrar — FreeduMeet" },
+      { name: "description", content: "Acesse o painel de salas de projetos e equipes do FreeduMeet." },
     ],
   }),
   component: AuthPage,
@@ -77,7 +77,7 @@ function AuthPage() {
       <div className="w-full max-w-sm">
         <div className="mb-8 flex items-center justify-center gap-2">
           <Video className="size-7 text-primary" />
-          <span className="text-xl font-medium">FreedoMeet</span>
+          <span className="text-xl font-medium">FreeduMeet</span>
         </div>
 
         <h1 className="text-2xl font-semibold">{mode === "login" ? "Entrar" : "Criar conta"}</h1>

@@ -42,7 +42,7 @@ const FEATURES = [
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "FreedoMeet — Videoconferência aberta" },
+      { title: "FreeduMeet — Videoconferência aberta" },
       {
         name: "description",
         content:
@@ -80,7 +80,7 @@ function Index() {
       <header className="flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-2">
           <Video className="size-7 text-primary" />
-          <span className="text-xl font-medium">FreedoMeet</span>
+          <span className="text-xl font-medium">FreeduMeet</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="mr-2 hidden text-sm text-muted-foreground sm:block">
@@ -161,7 +161,7 @@ function Index() {
       <section className="border-t border-border bg-secondary/30 px-6 py-16">
         <div className="mx-auto max-w-6xl">
           <h2 className="text-2xl font-medium md:text-3xl">
-            Por que escolher o FreedoMeet
+            Por que escolher o FreeduMeet
           </h2>
           <p className="mt-2 max-w-xl text-muted-foreground">
             Muito além de uma chamada de vídeo: recursos de IA que economizam
