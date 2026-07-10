@@ -170,17 +170,31 @@ function Index() {
         </div>
 
         <div className="flex flex-col items-center justify-center text-center">
-          <div className="relative flex size-80 items-center justify-center">
+          <div className="relative flex size-80 items-center justify-center [perspective:1200px]">
+            {/* living aura */}
             <div className="absolute inset-0 animate-pulse rounded-full bg-gradient-to-br from-primary/30 to-accent/30 blur-3xl" />
-            <div className="absolute size-72 rounded-full border border-primary/15" />
-            <div className="absolute size-60 rounded-full border border-primary/10" />
-            <div className="glass relative flex size-52 items-center justify-center rounded-full glow">
+            <div className="absolute size-80 breathe rounded-full bg-gradient-to-tr from-primary/10 to-accent/10 blur-2xl" />
+
+            {/* rotating orbital rings */}
+            <div className="spin-slow absolute size-72 rounded-full border border-dashed border-primary/25" />
+            <div className="spin-slow-rev absolute size-60 rounded-full border border-primary/15" />
+            <div className="spin-slow absolute size-72">
+              <span className="absolute left-1/2 top-0 size-2 -translate-x-1/2 rounded-full bg-primary glow" />
+            </div>
+            <div className="spin-slow-rev absolute size-60">
+              <span className="absolute left-1/2 top-0 size-1.5 -translate-x-1/2 rounded-full bg-accent" />
+            </div>
+
+            {/* floating logo core */}
+            <div className="glass breathe tilt-3d relative flex size-52 items-center justify-center rounded-full glow">
               <img
                 src={logoTransparentUrl.url}
                 alt="FreeduMeet"
-                className="size-36 object-contain"
+                className="float size-36 object-contain drop-shadow-[0_10px_30px_oklch(0.58_0.17_258_/_35%)]"
               />
             </div>
+
+            {/* live floating feature objects */}
             {FEATURES.map((f, i) => {
               const angle = (i / FEATURES.length) * 2 * Math.PI - Math.PI / 2;
               const radius = 168;
@@ -189,8 +203,13 @@ function Index() {
               return (
                 <span
                   key={f.title}
-                  style={{ transform: `translate(${x}px, ${y}px)` }}
-                  className="glass absolute flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium shadow-sm"
+                  style={{
+                    transform: `translate(${x}px, ${y}px)`,
+                    animationDelay: `${i * 0.6}s`,
+                  }}
+                  className={`glass absolute flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium shadow-lg transition-transform hover:scale-110 ${
+                    i % 2 === 0 ? "float" : "float-slow"
+                  }`}
                 >
                   <f.icon className="size-3.5 shrink-0 text-primary" />
                   {f.title}
