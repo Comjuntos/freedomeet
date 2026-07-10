@@ -172,6 +172,18 @@ function Dashboard() {
     },
   });
 
+  const activitiesQ = useQuery({
+    queryKey: ["team_activities"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("team_activities")
+        .select("id, team_id, title, due_date, done")
+        .order("due_date", { ascending: true, nullsFirst: false });
+      if (error) throw error;
+      return data as Activity[];
+    },
+  });
+
   const roomsQ = useQuery({
     queryKey: ["project_rooms"],
     queryFn: async () => {
