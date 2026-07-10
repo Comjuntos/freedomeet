@@ -23,6 +23,7 @@ export type Database = {
           how_evolve: string | null
           id: string
           impact: string
+          member_id: string | null
           owner_id: string
           responsible: string | null
           team_id: string | null
@@ -37,6 +38,7 @@ export type Database = {
           how_evolve?: string | null
           id?: string
           impact?: string
+          member_id?: string | null
           owner_id: string
           responsible?: string | null
           team_id?: string | null
@@ -51,6 +53,7 @@ export type Database = {
           how_evolve?: string | null
           id?: string
           impact?: string
+          member_id?: string | null
           owner_id?: string
           responsible?: string | null
           team_id?: string | null
@@ -58,6 +61,13 @@ export type Database = {
           why_critical?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "competency_maps_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "team_members"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "competency_maps_team_id_fkey"
             columns: ["team_id"]
