@@ -81,10 +81,27 @@ function Dashboard() {
     },
   });
 
+  const recordsQ = useQuery({
+    queryKey: ["meeting_records"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("meeting_records")
+        .select("id, title, team_id, minutes, created_at, started_at, ended_at")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as MeetingRecord[];
+    },
+  });
+
   const [teamName, setTeamName] = useState("");
   const [memberInputs, setMemberInputs] = useState<Record<string, string>>({});
   const [roomName, setRoomName] = useState("");
   const [roomTeamSel, setRoomTeamSel] = useState<Record<string, boolean>>({});
+  const [histTeam, setHistTeam] = useState("");
+  const [histFrom, setHistFrom] = useState("");
+  const [histTo, setHistTo] = useState("");
+  const [histSearch, setHistSearch] = useState("");
+  const [openRecord, setOpenRecord] = useState<MeetingRecord | null>(null);
 
   const signOut = async () => {
     await qc.cancelQueries();
