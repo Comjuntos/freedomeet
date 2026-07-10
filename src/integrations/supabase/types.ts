@@ -14,6 +14,59 @@ export type Database = {
   }
   public: {
     Tables: {
+      competency_maps: {
+        Row: {
+          competency: string
+          created_at: string
+          current_level: number
+          deadline: string | null
+          how_evolve: string | null
+          id: string
+          impact: string
+          owner_id: string
+          responsible: string | null
+          team_id: string | null
+          updated_at: string
+          why_critical: string | null
+        }
+        Insert: {
+          competency: string
+          created_at?: string
+          current_level?: number
+          deadline?: string | null
+          how_evolve?: string | null
+          id?: string
+          impact?: string
+          owner_id: string
+          responsible?: string | null
+          team_id?: string | null
+          updated_at?: string
+          why_critical?: string | null
+        }
+        Update: {
+          competency?: string
+          created_at?: string
+          current_level?: number
+          deadline?: string | null
+          how_evolve?: string | null
+          id?: string
+          impact?: string
+          owner_id?: string
+          responsible?: string | null
+          team_id?: string | null
+          updated_at?: string
+          why_critical?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competency_maps_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       meeting_records: {
         Row: {
           created_at: string
