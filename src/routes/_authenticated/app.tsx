@@ -241,6 +241,7 @@ function Dashboard() {
   const [actDate, setActDate] = useState<Record<string, string>>({});
   const [actMember, setActMember] = useState<Record<string, string>>({});
   const [filterMember, setFilterMember] = useState<Record<string, string>>({});
+  const [filterStatus, setFilterStatus] = useState<Record<string, string>>({});
   const [roomName, setRoomName] = useState("");
   const [roomTeamSel, setRoomTeamSel] = useState<Record<string, boolean>>({});
   const [histTeam, setHistTeam] = useState("");
@@ -753,6 +754,19 @@ function Dashboard() {
                         ))}
                       </select>
                     )}
+                    <select
+                      value={filterStatus[team.id] || ""}
+                      onChange={(e) =>
+                        setFilterStatus((s) => ({ ...s, [team.id]: e.target.value }))
+                      }
+                      className="mb-2 w-full rounded-md border border-border bg-background px-2 py-1 text-[11px] outline-none focus:border-primary"
+                      aria-label="Filtrar por situação"
+                    >
+                      <option value="">Todas as situações</option>
+                      <option value="todo">A Fazer</option>
+                      <option value="doing">Fazendo</option>
+                      <option value="done">Feito</option>
+                    </select>
                     {(() => {
                       const today = new Date().toISOString().slice(0, 10);
                       const teamActs = activities.filter((a) => a.team_id === team.id);
@@ -766,6 +780,11 @@ function Dashboard() {
                       const latePct = (lateCount / total) * 100;
                       return (
                         <div className="mb-2">
+                          {lateCount > 0 && (
+                            <p className="mb-1 inline-flex items-center gap-1 rounded-full bg-destructive/10 px-2 py-0.5 text-[10px] font-medium text-destructive">
+                              ⚠ {lateCount} aviso{lateCount > 1 ? "s" : ""} de atraso
+                            </p>
+                          )}
                           <div className="flex h-1.5 w-full overflow-hidden rounded-full bg-muted">
                             <div className="bg-emerald-500" style={{ width: `${donePct}%` }} />
                             <div className="bg-destructive" style={{ width: `${latePct}%` }} />
@@ -787,6 +806,8 @@ function Dashboard() {
                           { key: "done", label: "Feito", next: "todo" },
                         ] as const
                       ).map((lane) => {
+                        if (filterStatus[team.id] && filterStatus[team.id] !== lane.key)
+                          return null;
                         const laneActs = activities.filter(
                           (a) =>
                             a.team_id === team.id &&
