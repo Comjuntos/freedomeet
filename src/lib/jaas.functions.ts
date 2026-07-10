@@ -14,11 +14,14 @@ function validate(input: unknown): TokenInput {
   if (typeof i.room !== "string" || !i.room.trim()) {
     throw new Error("Invalid room");
   }
+  if (i.room.length > 200) throw new Error("Invalid room");
+  const cap = (v: unknown) =>
+    typeof v === "string" ? v.slice(0, 300) : undefined;
   return {
     room: i.room,
-    name: typeof i.name === "string" ? i.name : undefined,
-    email: typeof i.email === "string" ? i.email : undefined,
-    avatar: typeof i.avatar === "string" ? i.avatar : undefined,
+    name: cap(i.name),
+    email: cap(i.email),
+    avatar: typeof i.avatar === "string" ? i.avatar.slice(0, 1000) : undefined,
     moderator: i.moderator === true,
   };
 }
