@@ -152,18 +152,42 @@ function Index() {
 
           <hr className="mt-8 border-border" />
           <p className="mt-4 text-sm text-muted-foreground">
-            <a className="text-primary hover:underline" href="#">Saiba mais</a> sobre o Meet
+            <a className="text-primary hover:underline" href="#planos">Saiba mais</a> sobre o Meet
           </p>
+
+          <dl className="mt-8 grid grid-cols-3 gap-4">
+            {[
+              { k: "20%", v: "mais barato" },
+              { k: "HD", v: "vídeo seguro" },
+              { k: "IA", v: "ata automática" },
+            ].map((s) => (
+              <div key={s.v}>
+                <dt className="text-gradient font-display text-2xl font-bold">{s.k}</dt>
+                <dd className="text-xs text-muted-foreground">{s.v}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
 
         <div className="flex flex-col items-center justify-center text-center">
-          <div className="relative flex size-72 items-center justify-center">
-            <div className="absolute inset-0 animate-pulse rounded-full bg-gradient-to-br from-primary/30 to-accent/30 blur-2xl" />
-            <div className="glass relative flex size-56 items-center justify-center rounded-full glow">
+          <div className="relative flex size-80 items-center justify-center">
+            <div className="absolute inset-0 animate-pulse rounded-full bg-gradient-to-br from-primary/30 to-accent/30 blur-3xl" />
+            <div className="absolute size-72 rounded-full border border-primary/15" />
+            <div className="absolute size-60 rounded-full border border-primary/10" />
+            <div className="glass relative flex size-52 items-center justify-center rounded-full glow">
               <Video className="size-24 text-primary" />
             </div>
+            <span className="glass absolute -left-2 top-8 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium">
+              <Captions className="size-3.5 text-primary" /> Legendas ao vivo
+            </span>
+            <span className="glass absolute -right-3 top-1/2 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium">
+              <Languages className="size-3.5 text-primary" /> Tradução
+            </span>
+            <span className="glass absolute -bottom-1 left-10 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium">
+              <FileText className="size-3.5 text-primary" /> Ata por IA
+            </span>
           </div>
-          <h2 className="mt-8 text-xl font-semibold">Receba um link para compartilhar</h2>
+          <h2 className="mt-10 text-xl font-semibold">Receba um link para compartilhar</h2>
           <p className="mt-2 max-w-sm text-sm text-muted-foreground">
             Clique em <span className="font-medium">Nova reunião</span> para receber um link
             que você pode enviar às pessoas com quem quer se reunir.
@@ -173,7 +197,8 @@ function Index() {
 
       <section className="border-t border-border bg-secondary/20 px-6 py-16">
         <div className="mx-auto max-w-6xl">
-          <h2 className="text-2xl font-semibold md:text-3xl">
+          <span className="text-xs font-semibold uppercase tracking-widest text-primary">Recursos</span>
+          <h2 className="mt-2 text-2xl font-semibold md:text-3xl">
             Por que escolher o FreeduMeet
           </h2>
           <p className="mt-2 max-w-xl text-muted-foreground">
