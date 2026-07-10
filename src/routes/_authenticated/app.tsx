@@ -159,7 +159,7 @@ function Dashboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("team_members")
-        .select("id, team_id, full_name, email, role");
+        .select("id, team_id, full_name, email, role, activity");
       if (error) throw error;
       return data as Member[];
     },
