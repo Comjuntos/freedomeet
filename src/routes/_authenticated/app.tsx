@@ -119,6 +119,7 @@ type Schedule = {
 type Competency = {
   id: string;
   team_id: string | null;
+  member_id: string | null;
   competency: string;
   why_critical: string | null;
   current_level: number;
