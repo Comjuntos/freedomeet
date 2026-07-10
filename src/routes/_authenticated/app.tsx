@@ -235,6 +235,8 @@ function Dashboard() {
   const [dragMember, setDragMember] = useState<string | null>(null);
   const [dragOverTeam, setDragOverTeam] = useState<string | null>(null);
   const [profileMember, setProfileMember] = useState<Member | null>(null);
+  const [actTitle, setActTitle] = useState<Record<string, string>>({});
+  const [actDate, setActDate] = useState<Record<string, string>>({});
   const [roomName, setRoomName] = useState("");
   const [roomTeamSel, setRoomTeamSel] = useState<Record<string, boolean>>({});
   const [histTeam, setHistTeam] = useState("");
