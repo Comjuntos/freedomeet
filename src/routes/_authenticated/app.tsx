@@ -176,6 +176,11 @@ function Dashboard() {
     qc.invalidateQueries({ queryKey: ["room_teams"] });
   };
 
+  const deleteRecord = async (id: string) => {
+    await supabase.from("meeting_records").delete().eq("id", id);
+    qc.invalidateQueries({ queryKey: ["meeting_records"] });
+  };
+
   const openRoom = (slug: string) => {
     sessionStorage.setItem(`freedomeet-host-${slug}`, "1");
     navigate({ to: "/room/$roomId", params: { roomId: slug } });
@@ -185,6 +190,20 @@ function Dashboard() {
   const members = membersQ.data ?? [];
   const rooms = roomsQ.data ?? [];
   const roomTeams = roomTeamsQ.data ?? [];
+  const records = recordsQ.data ?? [];
+
+  const filteredRecords = records.filter((r) => {
+    if (histTeam && r.team_id !== histTeam) return false;
+    const date = (r.started_at ?? r.created_at).slice(0, 10);
+    if (histFrom && date < histFrom) return false;
+    if (histTo && date > histTo) return false;
+    if (histSearch) {
+      const q = histSearch.toLowerCase();
+      const hay = `${r.title} ${r.minutes ?? ""}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
 
   return (
     <div className="min-h-screen bg-background text-foreground">
