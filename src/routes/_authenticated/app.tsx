@@ -717,6 +717,86 @@ function Dashboard() {
                       <Plus className="size-4" />
                     </button>
                   </div>
+
+                  <div className="mt-4 border-t border-border/60 pt-3">
+                    <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      <CalendarClock className="size-3.5" /> Atividades & prazos
+                    </p>
+                    <div className="space-y-1.5">
+                      {activities
+                        .filter((a) => a.team_id === team.id)
+                        .map((a) => {
+                          const overdue =
+                            !a.done &&
+                            a.due_date &&
+                            a.due_date < new Date().toISOString().slice(0, 10);
+                          return (
+                            <div
+                              key={a.id}
+                              className="flex items-center gap-2 rounded-md border border-border bg-background px-2 py-1.5"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={a.done}
+                                onChange={(e) => toggleActivity(a.id, e.target.checked)}
+                                className="size-3.5 shrink-0 accent-primary"
+                              />
+                              <div className="min-w-0 flex-1">
+                                <p
+                                  className={`truncate text-xs ${a.done ? "text-muted-foreground line-through" : ""}`}
+                                >
+                                  {a.title}
+                                </p>
+                                {a.due_date && (
+                                  <p
+                                    className={`text-[10px] ${overdue ? "font-medium text-destructive" : "text-muted-foreground"}`}
+                                  >
+                                    {new Date(a.due_date + "T00:00:00").toLocaleDateString("pt-BR")}
+                                    {overdue ? " · atrasada" : ""}
+                                  </p>
+                                )}
+                              </div>
+                              <button
+                                onClick={() => deleteActivity(a.id)}
+                                className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-destructive"
+                                aria-label="Remover atividade"
+                              >
+                                <Trash2 className="size-3.5" />
+                              </button>
+                            </div>
+                          );
+                        })}
+                    </div>
+                    <div className="mt-2 space-y-1.5">
+                      <input
+                        value={actTitle[team.id] || ""}
+                        onChange={(e) =>
+                          setActTitle((s) => ({ ...s, [team.id]: e.target.value }))
+                        }
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") addActivity(team.id);
+                        }}
+                        placeholder="Nova atividade…"
+                        className="w-full rounded-md border border-border bg-background px-2 py-1.5 text-xs outline-none focus:border-primary"
+                      />
+                      <div className="flex gap-2">
+                        <input
+                          type="date"
+                          value={actDate[team.id] || ""}
+                          onChange={(e) =>
+                            setActDate((s) => ({ ...s, [team.id]: e.target.value }))
+                          }
+                          className="flex-1 rounded-md border border-border bg-background px-2 py-1.5 text-xs outline-none focus:border-primary"
+                        />
+                        <button
+                          onClick={() => addActivity(team.id)}
+                          className="inline-flex items-center gap-1 rounded-md bg-primary px-2 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
+                        >
+                          <Plus className="size-3.5" /> Add
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                   </div>
                 </div>
               );
