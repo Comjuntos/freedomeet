@@ -1440,6 +1440,7 @@ function Dashboard() {
         </section>
       </main>
 
+
       {openRecord && (
         <div
           className="fixed inset-0 z-30 flex items-center justify-center bg-black/50 p-4"
