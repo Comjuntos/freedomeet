@@ -83,6 +83,7 @@ type Member = {
   full_name: string;
   email: string | null;
   role: string;
+  activity: string | null;
 };
 type Room = { id: string; name: string; room_slug: string };
 type MeetingRecord = {
