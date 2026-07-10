@@ -203,6 +203,7 @@ export type Database = {
           done: boolean
           due_date: string | null
           id: string
+          member_id: string | null
           owner_id: string
           team_id: string
           title: string
@@ -213,6 +214,7 @@ export type Database = {
           done?: boolean
           due_date?: string | null
           id?: string
+          member_id?: string | null
           owner_id?: string
           team_id: string
           title: string
@@ -223,12 +225,20 @@ export type Database = {
           done?: boolean
           due_date?: string | null
           id?: string
+          member_id?: string | null
           owner_id?: string
           team_id?: string
           title?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "team_activities_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "team_members"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "team_activities_team_id_fkey"
             columns: ["team_id"]
