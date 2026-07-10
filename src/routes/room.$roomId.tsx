@@ -573,7 +573,9 @@ function Room() {
           userInfo: { displayName: name },
           configOverwrite: {
             prejoinPageEnabled: false,
+            prejoinConfig: { enabled: false },
             defaultLanguage: "ptBR",
+            localSubject: "FreeduMeet",
             disableDeepLinking: true,
             readOnlyName: true,
             startWithAudioMuted: false,
