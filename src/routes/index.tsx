@@ -208,7 +208,7 @@ function Index() {
                 >
                   <span
                     style={{ animationDelay: `${i * 0.6}s` }}
-                    className={`glass flex -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium shadow-lg transition-transform hover:scale-110 ${
+                    className={`glass flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium shadow-lg transition-transform hover:scale-110 ${
                       i % 2 === 0 ? "float" : "float-slow"
                     }`}
                   >
