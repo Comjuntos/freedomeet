@@ -254,6 +254,42 @@ function Dashboard() {
     qc.invalidateQueries({ queryKey: ["meeting_records"] });
   };
 
+  const addSchedule = async () => {
+    const title = schedTitle.trim();
+    if (!title || !schedRoom) return;
+    const { data: u } = await supabase.auth.getUser();
+    if (!u.user) return;
+    const room = rooms.find((r) => r.id === schedRoom);
+    if (!room) return;
+    const next_at = nextOccurrence(schedWeekday, schedTime).toISOString();
+    const { error } = await supabase.from("scheduled_meetings").insert({
+      owner_id: u.user.id,
+      title,
+      room_id: room.id,
+      room_slug: room.room_slug,
+      team_id: schedTeam || null,
+      weekday: schedWeekday,
+      time_of_day: schedTime,
+      next_at,
+    });
+    if (!error) {
+      setSchedTitle("");
+      setSchedRoom("");
+      setSchedTeam("");
+      qc.invalidateQueries({ queryKey: ["scheduled_meetings"] });
+    }
+  };
+
+  const toggleSchedule = async (id: string, active: boolean) => {
+    await supabase.from("scheduled_meetings").update({ active: !active }).eq("id", id);
+    qc.invalidateQueries({ queryKey: ["scheduled_meetings"] });
+  };
+
+  const deleteSchedule = async (id: string) => {
+    await supabase.from("scheduled_meetings").delete().eq("id", id);
+    qc.invalidateQueries({ queryKey: ["scheduled_meetings"] });
+  };
+
   const openRoom = (slug: string) => {
     sessionStorage.setItem(`freedomeet-host-${slug}`, "1");
     navigate({ to: "/room/$roomId", params: { roomId: slug } });
@@ -264,6 +300,7 @@ function Dashboard() {
   const rooms = roomsQ.data ?? [];
   const roomTeams = roomTeamsQ.data ?? [];
   const records = recordsQ.data ?? [];
+  const schedules = schedulesQ.data ?? [];
 
   const filteredRecords = records.filter((r) => {
     if (histTeam && r.team_id !== histTeam) return false;
