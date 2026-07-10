@@ -11,7 +11,13 @@ export const Route = createFileRoute("/_authenticated/app")({
 });
 
 type Team = { id: string; name: string };
-type Member = { id: string; team_id: string; full_name: string; email: string | null };
+type Member = {
+  id: string;
+  team_id: string;
+  full_name: string;
+  email: string | null;
+  role: string;
+};
 type Room = { id: string; name: string; room_slug: string };
 type MeetingRecord = {
   id: string;
@@ -54,7 +60,7 @@ function Dashboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("team_members")
-        .select("id, team_id, full_name, email");
+        .select("id, team_id, full_name, email, role");
       if (error) throw error;
       return data as Member[];
     },
