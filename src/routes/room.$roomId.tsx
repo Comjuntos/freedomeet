@@ -371,6 +371,39 @@ function Room() {
     }
   }, [slackChannel, minutesText, postToSlack, roomId]);
 
+  const saveToHistory = useCallback(
+    async (minutes: string) => {
+      if (!minutes.trim()) return;
+      setSaving(true);
+      setSaveStatus(null);
+      const transcript = captions.map((c) => c.original).join("\n").trim();
+      try {
+        await saveRecord({
+          data: {
+            title: roomId,
+            transcript,
+            minutes,
+            sentiment: sentiment ?? null,
+            dashboard: dashboard ?? null,
+            startedAt:
+              startTimeRef.current !== null
+                ? new Date(startTimeRef.current).toISOString()
+                : null,
+            endedAt: new Date().toISOString(),
+          },
+        });
+        setSaveStatus("Reunião salva no histórico! ✅");
+      } catch {
+        setSaveStatus(
+          "Não foi possível salvar. Faça login no painel para guardar o histórico.",
+        );
+      } finally {
+        setSaving(false);
+      }
+    },
+    [captions, roomId, sentiment, dashboard, saveRecord],
+  );
+
   useEffect(() => {
     targetRef.current = targetLang;
   }, [targetLang]);
