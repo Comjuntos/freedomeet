@@ -280,13 +280,24 @@ function Dashboard() {
                           {m.full_name}
                           {m.email ? ` · ${m.email}` : ""}
                         </span>
-                        <button
-                          onClick={() => deleteMember(m.id)}
-                          className="rounded p-0.5 hover:text-destructive"
-                          aria-label="Remover membro"
-                        >
-                          <Trash2 className="size-3.5" />
-                        </button>
+                        <span className="flex items-center gap-2">
+                          <select
+                            value={m.role}
+                            onChange={(e) => setMemberRole(m.id, e.target.value)}
+                            className="rounded border border-border bg-background px-1.5 py-0.5 text-xs"
+                            aria-label="Papel do membro"
+                          >
+                            <option value="membro">Membro</option>
+                            <option value="admin">Admin</option>
+                          </select>
+                          <button
+                            onClick={() => deleteMember(m.id)}
+                            className="rounded p-0.5 hover:text-destructive"
+                            aria-label="Remover membro"
+                          >
+                            <Trash2 className="size-3.5" />
+                          </button>
+                        </span>
                       </li>
                     ))}
                 </ul>
