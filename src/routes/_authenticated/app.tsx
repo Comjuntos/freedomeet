@@ -402,17 +402,23 @@ function Dashboard() {
           )}
 
           <div className="mt-4 flex gap-4 overflow-x-auto pb-4">
-            {teams.map((team) => {
+            {teams.map((team, ti) => {
               const teamMembers = members.filter((m) => m.team_id === team.id);
+              const c = COLUMN_COLORS[ti % COLUMN_COLORS.length];
               return (
                 <div
                   key={team.id}
-                  className="flex w-72 shrink-0 flex-col rounded-xl bg-secondary/50 p-3"
+                  className={`flex w-72 shrink-0 flex-col overflow-hidden rounded-xl ${c.tint} ring-1 ${c.ring}`}
                 >
+                  <div className={`h-1.5 w-full ${c.bar}`} />
+                  <div className="flex flex-col p-3">
                   <div className="flex items-center justify-between px-1">
-                    <span className="font-semibold">{team.name}</span>
+                    <span className="flex items-center gap-2 font-semibold">
+                      <span className={`inline-block size-2.5 rounded-full ${c.bar}`} />
+                      {team.name}
+                    </span>
                     <span className="flex items-center gap-2">
-                      <span className="rounded-full bg-background px-2 py-0.5 text-xs text-muted-foreground">
+                      <span className="rounded-full bg-background px-2 py-0.5 text-xs font-medium text-muted-foreground">
                         {teamMembers.length}
                       </span>
                       <button
@@ -426,17 +432,31 @@ function Dashboard() {
                   </div>
 
                   <div className="mt-3 space-y-2">
+                    {teamMembers.length === 0 && (
+                      <p className="px-1 text-xs text-muted-foreground">
+                        Sem membros ainda.
+                      </p>
+                    )}
                     {teamMembers.map((m) => (
                       <div
                         key={m.id}
-                        className="rounded-lg border border-border bg-background p-2.5 shadow-sm"
+                        className="rounded-lg border border-border bg-background p-2.5 shadow-sm transition-shadow hover:shadow-md"
                       >
                         <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-medium">{m.full_name}</p>
-                            {m.email && (
-                              <p className="truncate text-xs text-muted-foreground">{m.email}</p>
-                            )}
+                          <div className="flex min-w-0 items-center gap-2">
+                            <span
+                              className={`grid size-8 shrink-0 place-items-center rounded-full text-xs font-semibold text-white ${c.bar}`}
+                            >
+                              {initials(m.full_name)}
+                            </span>
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-medium">{m.full_name}</p>
+                              {m.email && (
+                                <p className="truncate text-xs text-muted-foreground">
+                                  {m.email}
+                                </p>
+                              )}
+                            </div>
                           </div>
                           <button
                             onClick={() => deleteMember(m.id)}
@@ -449,7 +469,11 @@ function Dashboard() {
                         <select
                           value={m.role}
                           onChange={(e) => setMemberRole(m.id, e.target.value)}
-                          className="mt-2 rounded border border-border bg-secondary px-1.5 py-0.5 text-xs"
+                          className={`mt-2 rounded-full border-0 px-2 py-0.5 text-xs font-medium ${
+                            m.role === "admin"
+                              ? "bg-amber-500/15 text-amber-600"
+                              : "bg-secondary text-muted-foreground"
+                          }`}
                           aria-label="Papel do membro"
                         >
                           <option value="membro">Membro</option>
@@ -478,6 +502,7 @@ function Dashboard() {
                     >
                       <Plus className="size-4" />
                     </button>
+                  </div>
                   </div>
                 </div>
               );
