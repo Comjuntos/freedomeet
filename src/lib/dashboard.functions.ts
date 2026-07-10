@@ -12,7 +12,7 @@ function validate(input: unknown): DashboardInput {
   if (typeof i.transcript !== "string" || !i.transcript.trim()) {
     throw new Error("Transcrição vazia. Ative a transcrição durante a reunião.");
   }
-  return { transcript: i.transcript };
+  return { transcript: i.transcript.slice(0, 200000) };
 }
 
 export const analyzeDashboard = createServerFn({ method: "POST" })

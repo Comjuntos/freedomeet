@@ -7,7 +7,7 @@ function validate(input: unknown): TranslateInput {
   if (!i || typeof i.text !== "string" || typeof i.target !== "string") {
     throw new Error("Invalid input");
   }
-  return { text: i.text, target: i.target };
+  return { text: i.text.slice(0, 20000), target: i.target.slice(0, 40) };
 }
 
 export const translateText = createServerFn({ method: "POST" })
