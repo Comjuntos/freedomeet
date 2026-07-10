@@ -325,10 +325,12 @@ function Dashboard() {
       team_id: teamId,
       title,
       due_date: actDate[teamId] || null,
+      member_id: actMember[teamId] || null,
     });
     if (!error) {
       setActTitle((s) => ({ ...s, [teamId]: "" }));
       setActDate((s) => ({ ...s, [teamId]: "" }));
+      setActMember((s) => ({ ...s, [teamId]: "" }));
       qc.invalidateQueries({ queryKey: ["team_activities"] });
       toast.success("Atividade criada");
     } else {
