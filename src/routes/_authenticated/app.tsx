@@ -451,6 +451,7 @@ function Dashboard() {
       <main className="mx-auto grid w-full max-w-6xl gap-8 px-6 py-8 lg:grid-cols-2">
         {/* EQUIPES */}
         <section className="lg:col-span-2">
+          <TooltipProvider>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="flex items-center gap-2 text-xl font-semibold">
               <Users className="size-5 text-primary" /> Quadro de equipes
