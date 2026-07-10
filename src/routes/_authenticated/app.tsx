@@ -333,13 +333,10 @@ function Dashboard() {
     { bar: "bg-rose-500", tint: "bg-rose-500/10", ring: "ring-rose-500/30" },
     { bar: "bg-cyan-500", tint: "bg-cyan-500/10", ring: "ring-cyan-500/30" },
   ];
-  const initials = (n: string) =>
-    n
-      .trim()
-      .split(/\s+/)
-      .slice(0, 2)
-      .map((p) => p[0]?.toUpperCase() ?? "")
-      .join("");
+  const avatarUrlFor = (seed: string) =>
+    `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(
+      seed.trim().toLowerCase(),
+    )}&radius=50&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
 
   const filteredRecords = records.filter((r) => {
     if (histTeam && r.team_id !== histTeam) return false;
