@@ -17,11 +17,64 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({ meta: [{ title: "Painel — FreeduMeet" }] }),
   component: Dashboard,
 });
+
+const initials = (n: string) =>
+  n
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? "")
+    .join("");
+
+function MemberAvatar({
+  member,
+  url,
+  className = "size-8",
+  ringClass,
+}: {
+  member: { full_name: string };
+  url: string;
+  className?: string;
+  ringClass?: string;
+}) {
+  const [failed, setFailed] = useState(false);
+  if (failed) {
+    return (
+      <span
+        className={`grid shrink-0 place-items-center rounded-full bg-primary text-xs font-semibold text-primary-foreground ${className} ${ringClass ?? ""}`}
+      >
+        {initials(member.full_name)}
+      </span>
+    );
+  }
+  return (
+    <img
+      src={url}
+      alt={`Avatar de ${member.full_name}`}
+      loading="lazy"
+      onError={() => setFailed(true)}
+      className={`shrink-0 rounded-full bg-background ${className} ${ringClass ?? ""}`}
+    />
+  );
+}
 
 type Team = { id: string; name: string };
 type Member = {
@@ -161,6 +214,7 @@ function Dashboard() {
   const [memberSearch, setMemberSearch] = useState("");
   const [dragMember, setDragMember] = useState<string | null>(null);
   const [dragOverTeam, setDragOverTeam] = useState<string | null>(null);
+  const [profileMember, setProfileMember] = useState<Member | null>(null);
   const [roomName, setRoomName] = useState("");
   const [roomTeamSel, setRoomTeamSel] = useState<Record<string, boolean>>({});
   const [histTeam, setHistTeam] = useState("");
@@ -397,6 +451,7 @@ function Dashboard() {
       <main className="mx-auto grid w-full max-w-6xl gap-8 px-6 py-8 lg:grid-cols-2">
         {/* EQUIPES */}
         <section className="lg:col-span-2">
+          <TooltipProvider>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="flex items-center gap-2 text-xl font-semibold">
               <Users className="size-5 text-primary" /> Quadro de equipes
@@ -514,12 +569,24 @@ function Dashboard() {
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex min-w-0 items-center gap-2">
-                            <img
-                              src={avatarUrlFor(m.email || m.full_name)}
-                              alt={`Avatar de ${m.full_name}`}
-                              loading="lazy"
-                              className={`size-8 shrink-0 rounded-full ring-2 ${c.ring} bg-background`}
-                            />
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  onClick={() => setProfileMember(m)}
+                                  aria-label={`Ver perfil de ${m.full_name}`}
+                                  className="rounded-full"
+                                >
+                                  <MemberAvatar
+                                    member={m}
+                                    url={avatarUrlFor(m.email || m.full_name)}
+                                    className="size-8"
+                                    ringClass={`ring-2 ${c.ring}`}
+                                  />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent>Ver perfil de {m.full_name}</TooltipContent>
+                            </Tooltip>
                             <div className="min-w-0">
                               <p className="truncate text-sm font-medium">{m.full_name}</p>
                               {m.email && (
@@ -579,6 +646,49 @@ function Dashboard() {
               );
             })}
           </div>
+          </TooltipProvider>
+
+          <Dialog
+            open={!!profileMember}
+            onOpenChange={(o) => !o && setProfileMember(null)}
+          >
+            <DialogContent>
+              {profileMember && (
+                <>
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-3">
+                      <MemberAvatar
+                        member={profileMember}
+                        url={avatarUrlFor(
+                          profileMember.email || profileMember.full_name,
+                        )}
+                        className="size-12"
+                      />
+                      {profileMember.full_name}
+                    </DialogTitle>
+                    <DialogDescription>
+                      {profileMember.email || "Sem email cadastrado"}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-2 text-sm">
+                    <p>
+                      <span className="text-muted-foreground">Papel: </span>
+                      <span className="font-medium capitalize">
+                        {profileMember.role}
+                      </span>
+                    </p>
+                    <p>
+                      <span className="text-muted-foreground">Equipe: </span>
+                      <span className="font-medium">
+                        {teams.find((t) => t.id === profileMember.team_id)?.name ??
+                          "—"}
+                      </span>
+                    </p>
+                  </div>
+                </>
+              )}
+            </DialogContent>
+          </Dialog>
         </section>
 
         {/* SALAS */}
