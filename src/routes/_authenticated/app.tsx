@@ -726,6 +726,32 @@ function Dashboard() {
                     <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                       <CalendarClock className="size-3.5" /> Atividades & prazos
                     </p>
+                    {(() => {
+                      const today = new Date().toISOString().slice(0, 10);
+                      const teamActs = activities.filter((a) => a.team_id === team.id);
+                      const total = teamActs.length;
+                      const doneCount = teamActs.filter((a) => a.done).length;
+                      const lateCount = teamActs.filter(
+                        (a) => !a.done && a.due_date && a.due_date < today,
+                      ).length;
+                      if (total === 0) return null;
+                      const donePct = (doneCount / total) * 100;
+                      const latePct = (lateCount / total) * 100;
+                      return (
+                        <div className="mb-2">
+                          <div className="flex h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                            <div className="bg-emerald-500" style={{ width: `${donePct}%` }} />
+                            <div className="bg-destructive" style={{ width: `${latePct}%` }} />
+                          </div>
+                          <p className="mt-1 text-[10px] text-muted-foreground">
+                            {doneCount}/{total} concluídas
+                            {lateCount > 0 && (
+                              <span className="text-destructive"> · {lateCount} atrasada{lateCount > 1 ? "s" : ""}</span>
+                            )}
+                          </p>
+                        </div>
+                      );
+                    })()}
                     <div className="space-y-1.5">
                       {activities
                         .filter((a) => a.team_id === team.id)
