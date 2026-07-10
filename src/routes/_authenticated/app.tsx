@@ -480,6 +480,48 @@ function Dashboard() {
     navigate({ to: "/room/$roomId", params: { roomId: slug } });
   };
 
+  const addCompetency = async () => {
+    const competency = compName.trim();
+    if (!competency) return;
+    const { data: u } = await supabase.auth.getUser();
+    if (!u.user) return;
+    const { error } = await supabase.from("competency_maps").insert({
+      owner_id: u.user.id,
+      team_id: compTeam || null,
+      competency,
+      why_critical: compWhy.trim() || null,
+      current_level: compLevel,
+      impact: compImpact,
+      how_evolve: compHow.trim() || null,
+      responsible: compResp.trim() || null,
+      deadline: compDeadline || null,
+    });
+    if (!error) {
+      setCompName("");
+      setCompWhy("");
+      setCompLevel(1);
+      setCompImpact("medio");
+      setCompHow("");
+      setCompResp("");
+      setCompDeadline("");
+      qc.invalidateQueries({ queryKey: ["competency_maps"] });
+      toast.success("Competência adicionada ao mapa");
+    } else {
+      toast.error("Não foi possível adicionar a competência");
+    }
+  };
+
+  const updateCompetency = async (id: string, patch: Partial<Competency>) => {
+    await supabase.from("competency_maps").update(patch).eq("id", id);
+    qc.invalidateQueries({ queryKey: ["competency_maps"] });
+  };
+
+  const deleteCompetency = async (id: string) => {
+    await supabase.from("competency_maps").delete().eq("id", id);
+    qc.invalidateQueries({ queryKey: ["competency_maps"] });
+    toast.success("Competência removida");
+  };
+
   const teams = teamsQ.data ?? [];
   const members = membersQ.data ?? [];
   const activities = activitiesQ.data ?? [];
