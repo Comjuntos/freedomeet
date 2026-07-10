@@ -152,6 +152,11 @@ function Dashboard() {
     qc.invalidateQueries({ queryKey: ["team_members"] });
   };
 
+  const setMemberRole = async (id: string, role: string) => {
+    await supabase.from("team_members").update({ role }).eq("id", id);
+    qc.invalidateQueries({ queryKey: ["team_members"] });
+  };
+
   const addRoom = async () => {
     const name = roomName.trim();
     if (!name) return;
