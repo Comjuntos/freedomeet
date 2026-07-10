@@ -243,6 +243,20 @@ function Dashboard() {
     },
   });
 
+  const competenciesQ = useQuery({
+    queryKey: ["competency_maps"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("competency_maps")
+        .select(
+          "id, team_id, competency, why_critical, current_level, impact, how_evolve, responsible, deadline",
+        )
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return data as Competency[];
+    },
+  });
+
   const [teamName, setTeamName] = useState("");
   const [memberInputs, setMemberInputs] = useState<Record<string, string>>({});
   const [memberSearch, setMemberSearch] = useState("");
