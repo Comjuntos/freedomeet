@@ -615,12 +615,14 @@ function Room() {
   }, [roomId, navigate, fetchToken, name, avatarUrl, isHost]);
 
   return (
-    <div className="flex h-screen flex-col bg-background text-foreground">
+    <div className="aurora-bg flex h-screen flex-col bg-background text-foreground">
       {ended ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-6 px-4 text-center">
           <div className="flex items-center gap-2">
-            <Captions className="size-7 text-primary" />
-            <span className="text-2xl font-medium">FreeduMeet</span>
+            <span className="grid size-9 place-items-center rounded-lg bg-gradient-to-br from-primary to-accent glow">
+              <Captions className="size-5 text-primary-foreground" />
+            </span>
+            <span className="font-display text-2xl font-semibold">FreeduMeet</span>
           </div>
           <div>
             <h1 className="text-2xl font-semibold">Você saiu da reunião</h1>
@@ -720,8 +722,10 @@ function Room() {
       ) : !name ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-6 px-4 text-center">
           <div className="flex items-center gap-2">
-            <Captions className="size-7 text-primary" />
-            <span className="text-2xl font-medium">FreeduMeet</span>
+            <span className="grid size-9 place-items-center rounded-lg bg-gradient-to-br from-primary to-accent glow">
+              <Captions className="size-5 text-primary-foreground" />
+            </span>
+            <span className="font-display text-2xl font-semibold">FreeduMeet</span>
           </div>
           <form
             onSubmit={(e) => {
@@ -731,7 +735,7 @@ function Room() {
               sessionStorage.setItem("freedomeet-name", v);
               setName(v);
             }}
-            className="flex w-full max-w-sm flex-col items-center gap-4"
+            className="glass flex w-full max-w-sm flex-col items-center gap-4 rounded-2xl p-6"
           >
             <div>
               <h1 className="text-xl font-semibold">Como você quer aparecer?</h1>
