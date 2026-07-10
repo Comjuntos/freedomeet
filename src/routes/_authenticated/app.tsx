@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Video, Plus, Trash2, Users, LogOut, DoorOpen } from "lucide-react";
+import { Video, Plus, Trash2, Users, LogOut, DoorOpen, History, Search } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 
@@ -13,6 +13,15 @@ export const Route = createFileRoute("/_authenticated/app")({
 type Team = { id: string; name: string };
 type Member = { id: string; team_id: string; full_name: string; email: string | null };
 type Room = { id: string; name: string; room_slug: string };
+type MeetingRecord = {
+  id: string;
+  title: string;
+  team_id: string | null;
+  minutes: string | null;
+  created_at: string;
+  started_at: string | null;
+  ended_at: string | null;
+};
 
 function slugify(name: string) {
   const base = name
