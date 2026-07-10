@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      meeting_records: {
+        Row: {
+          created_at: string
+          dashboard: Json | null
+          ended_at: string | null
+          id: string
+          minutes: string | null
+          owner_id: string
+          room_id: string | null
+          sentiment: Json | null
+          started_at: string | null
+          team_id: string | null
+          title: string
+          transcript: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dashboard?: Json | null
+          ended_at?: string | null
+          id?: string
+          minutes?: string | null
+          owner_id: string
+          room_id?: string | null
+          sentiment?: Json | null
+          started_at?: string | null
+          team_id?: string | null
+          title: string
+          transcript?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dashboard?: Json | null
+          ended_at?: string | null
+          id?: string
+          minutes?: string | null
+          owner_id?: string
+          room_id?: string | null
+          sentiment?: Json | null
+          started_at?: string | null
+          team_id?: string | null
+          title?: string
+          transcript?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
