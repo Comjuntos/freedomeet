@@ -25,6 +25,7 @@ import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment.function
 import { analyzeDashboard, type DashboardResult } from "@/lib/dashboard.functions";
 import { listSlackChannels, sendToSlack, type SlackChannel } from "@/lib/slack.functions";
 import { getJaasToken } from "@/lib/jaas.functions";
+import { saveMeetingRecord } from "@/lib/history.functions";
 
 const JITSI_DOMAIN = "8x8.vc";
 const SCRIPT_SRC = `https://${JITSI_DOMAIN}/external_api.js`;
