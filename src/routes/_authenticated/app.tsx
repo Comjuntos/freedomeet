@@ -626,6 +626,187 @@ function Dashboard() {
             })}
           </div>
         </section>
+
+        {/* RELATÓRIOS DE ENGAJAMENTO */}
+        <section className="lg:col-span-2">
+          <h2 className="flex items-center gap-2 text-xl font-semibold">
+            <BarChart3 className="size-5 text-primary" /> Relatórios de engajamento
+          </h2>
+          <div className="mt-4 rounded-lg border border-border p-4">
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-xs text-muted-foreground">Equipe</span>
+              <select
+                value={repTeam}
+                onChange={(e) => setRepTeam(e.target.value)}
+                className="w-56 rounded-md border border-border bg-background px-2 py-1.5 text-sm"
+              >
+                <option value="">Todas</option>
+                {teams.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-lg border border-border p-4">
+                <p className="text-xs text-muted-foreground">Reuniões</p>
+                <p className="text-2xl font-semibold">{totalMeetings}</p>
+              </div>
+              <div className="rounded-lg border border-border p-4">
+                <p className="text-xs text-muted-foreground">Tempo total</p>
+                <p className="text-2xl font-semibold">
+                  {Math.round(totalMinutes)} <span className="text-sm font-normal">min</span>
+                </p>
+              </div>
+              <div className="rounded-lg border border-border p-4">
+                <p className="text-xs text-muted-foreground">Sentimento médio</p>
+                <p className="text-2xl font-semibold">
+                  {avgSentiment === null ? "—" : `${avgSentiment}/100`}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <p className="mb-2 text-sm font-medium">Tópicos recorrentes</p>
+              {topTopics.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Sem dados. Salve reuniões com análise para gerar relatórios.
+                </p>
+              ) : (
+                <ul className="space-y-1.5">
+                  {topTopics.map(([topic, count]) => (
+                    <li key={topic} className="flex items-center gap-2 text-sm">
+                      <span className="w-40 shrink-0 truncate">{topic}</span>
+                      <div className="h-2 flex-1 overflow-hidden rounded-full bg-secondary">
+                        <div
+                          className="h-full rounded-full bg-primary"
+                          style={{ width: `${(count / maxTopic) * 100}%` }}
+                        />
+                      </div>
+                      <span className="w-8 shrink-0 text-right text-xs text-muted-foreground">
+                        {count}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* AGENDA DE REUNIÕES RECORRENTES */}
+        <section className="lg:col-span-2">
+          <h2 className="flex items-center gap-2 text-xl font-semibold">
+            <CalendarClock className="size-5 text-primary" /> Agenda recorrente
+          </h2>
+          <div className="mt-4 flex flex-wrap items-end gap-3 rounded-lg border border-border p-4">
+            <input
+              value={schedTitle}
+              onChange={(e) => setSchedTitle(e.target.value)}
+              placeholder="Título da reunião"
+              className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+            />
+            <select
+              value={schedRoom}
+              onChange={(e) => setSchedRoom(e.target.value)}
+              className="rounded-md border border-border bg-background px-2 py-2 text-sm"
+            >
+              <option value="">Sala…</option>
+              {rooms.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.name}
+                </option>
+              ))}
+            </select>
+            <select
+              value={schedTeam}
+              onChange={(e) => setSchedTeam(e.target.value)}
+              className="rounded-md border border-border bg-background px-2 py-2 text-sm"
+            >
+              <option value="">Equipe (opcional)</option>
+              {teams.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+            <select
+              value={schedWeekday}
+              onChange={(e) => setSchedWeekday(Number(e.target.value))}
+              className="rounded-md border border-border bg-background px-2 py-2 text-sm"
+            >
+              {WEEKDAYS.map((d, i) => (
+                <option key={d} value={i}>
+                  {d}
+                </option>
+              ))}
+            </select>
+            <input
+              type="time"
+              value={schedTime}
+              onChange={(e) => setSchedTime(e.target.value)}
+              className="rounded-md border border-border bg-background px-2 py-2 text-sm"
+            />
+            <button
+              onClick={addSchedule}
+              className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              <Plus className="size-4" /> Agendar
+            </button>
+          </div>
+
+          <div className="mt-4 space-y-3">
+            {schedules.length === 0 && (
+              <p className="text-sm text-muted-foreground">Nenhuma reunião recorrente ainda.</p>
+            )}
+            {schedules.map((s) => {
+              const teamName = teams.find((t) => t.id === s.team_id)?.name;
+              return (
+                <div
+                  key={s.id}
+                  className="flex items-center justify-between rounded-lg border border-border p-4"
+                >
+                  <div>
+                    <p className="font-medium">
+                      {s.title}
+                      {!s.active && (
+                        <span className="ml-2 text-xs text-muted-foreground">(pausada)</span>
+                      )}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Toda {WEEKDAYS[s.weekday]} às {s.time_of_day}
+                      {teamName ? ` · ${teamName}` : ""}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => openRoom(s.room_slug)}
+                      className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                    >
+                      <Video className="size-4" /> Abrir
+                    </button>
+                    <button
+                      onClick={() => toggleSchedule(s.id, s.active)}
+                      className="rounded p-1 text-muted-foreground hover:text-foreground"
+                      aria-label="Pausar/retomar"
+                    >
+                      <Power className="size-4" />
+                    </button>
+                    <button
+                      onClick={() => deleteSchedule(s.id)}
+                      className="rounded p-1 text-muted-foreground hover:text-destructive"
+                      aria-label="Excluir agendamento"
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
       </main>
 
       {openRecord && (
