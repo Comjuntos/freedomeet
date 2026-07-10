@@ -188,6 +188,12 @@ function Room() {
   const [slackChannel, setSlackChannel] = useState("");
   const [slackSending, setSlackSending] = useState(false);
   const [slackStatus, setSlackStatus] = useState<string | null>(null);
+  // Fluxo automático de ata ao encerrar a reunião (somente administrador).
+  const [endMinutes, setEndMinutes] = useState("");
+  const [endLoading, setEndLoading] = useState(false);
+  const [endError, setEndError] = useState<string | null>(null);
+  const [endSlackStatus, setEndSlackStatus] = useState<string | null>(null);
+  const autoRanRef = useRef(false);
 
   const openDashboard = useCallback(async () => {
     const segments = captions.map((c) => c.original).filter(Boolean);
@@ -282,11 +288,12 @@ function Room() {
     }
   }, [captions, makeMinutes, minutesTemplate, roomId, membersInput]);
 
-  const downloadAta = useCallback(async () => {
-    if (!minutesText.trim()) return;
+  const downloadAta = useCallback(async (text?: unknown) => {
+    const content = (typeof text === "string" ? text : minutesText).trim();
+    if (!content) return;
     const { Document, Packer, Paragraph, TextRun, HeadingLevel } = await import("docx");
 
-    const paragraphs = minutesText.split("\n").map((raw) => {
+    const paragraphs = content.split("\n").map((raw) => {
       const line = raw.trimEnd();
       if (line.startsWith("# "))
         return new Paragraph({ heading: HeadingLevel.HEADING_1, children: [new TextRun(line.slice(2))] });
@@ -363,6 +370,57 @@ function Room() {
   useEffect(() => {
     targetRef.current = targetLang;
   }, [targetLang]);
+
+  // Ao encerrar a reunião, o administrador recebe automaticamente a ata
+  // gerada a partir da transcrição e enviada para o Slack — sem cliques.
+  useEffect(() => {
+    if (!ended || !isHost || autoRanRef.current) return;
+    autoRanRef.current = true;
+    const transcript = captions
+      .map((c) => c.original)
+      .join("\n")
+      .trim();
+    if (!transcript) {
+      setEndError(
+        "Nenhuma transcrição foi capturada nesta reunião, então não há ata para gerar.",
+      );
+      return;
+    }
+    setEndLoading(true);
+    (async () => {
+      try {
+        const startedAt =
+          startTimeRef.current !== null
+            ? new Date(startTimeRef.current).toLocaleString("pt-BR")
+            : undefined;
+        const res = await makeMinutes({
+          data: { transcript, template: "executiva", title: roomId, startedAt },
+        });
+        setEndMinutes(res.minutes);
+        try {
+          const chs = await loadChannels();
+          const ch = chs[0];
+          if (ch) {
+            await postToSlack({
+              data: {
+                channel: ch.id,
+                text: `*Ata automática — reunião ${roomId}*\n\n${res.minutes}`,
+              },
+            });
+            setEndSlackStatus(`Ata enviada automaticamente para #${ch.name} no Slack ✅`);
+          }
+        } catch {
+          setEndSlackStatus(
+            "Ata gerada, mas não foi possível enviá-la ao Slack automaticamente.",
+          );
+        }
+      } catch {
+        setEndError("Não foi possível gerar a ata automática. Tente gerar manualmente.");
+      } finally {
+        setEndLoading(false);
+      }
+    })();
+  }, [ended, isHost, captions, makeMinutes, roomId, loadChannels, postToSlack]);
 
   // Meeting duration timer: starts once the room mounts, stops when it ends.
   useEffect(() => {
@@ -532,6 +590,51 @@ function Room() {
               Duração total: {formatDuration(elapsed)}
             </p>
           </div>
+          {isHost && (endLoading || endMinutes || endError) && (
+            <div className="w-full max-w-2xl text-left">
+              <div className="flex max-h-[50vh] flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+                <div className="flex items-center gap-2 border-b border-border px-5 py-3 font-medium">
+                  <FileText className="size-4 text-primary" />
+                  Ata inteligente da reunião
+                </div>
+                <div className="flex-1 overflow-y-auto px-5 py-4 text-sm">
+                  {endLoading ? (
+                    <p className="flex items-center gap-2 text-muted-foreground">
+                      <Loader2 className="size-4 animate-spin" />
+                      Gerando a ata automaticamente a partir da transcrição…
+                    </p>
+                  ) : endError ? (
+                    <p className="text-muted-foreground">{endError}</p>
+                  ) : (
+                    <pre className="whitespace-pre-wrap font-sans leading-relaxed">
+                      {endMinutes}
+                    </pre>
+                  )}
+                </div>
+                {endMinutes && !endLoading && (
+                  <div className="flex flex-wrap items-center gap-2 border-t border-border px-5 py-3">
+                    <button
+                      onClick={() => navigator.clipboard?.writeText(endMinutes)}
+                      className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
+                    >
+                      <Copy className="size-4" />
+                      Copiar
+                    </button>
+                    <button
+                      onClick={() => downloadAta(endMinutes)}
+                      className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
+                    >
+                      <Download className="size-4" />
+                      Baixar
+                    </button>
+                    {endSlackStatus && (
+                      <span className="text-xs text-muted-foreground">{endSlackStatus}</span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           <div className="flex flex-col gap-3 sm:flex-row">
             <button
               onClick={() => window.location.reload()}
