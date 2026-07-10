@@ -178,7 +178,7 @@ function Dashboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("team_activities")
-        .select("id, team_id, title, due_date, done")
+        .select("id, team_id, title, due_date, done, member_id")
         .order("due_date", { ascending: true, nullsFirst: false });
       if (error) throw error;
       return data as Activity[];
