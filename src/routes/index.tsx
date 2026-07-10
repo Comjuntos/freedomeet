@@ -196,7 +196,6 @@ function Index() {
 
             {/* live floating feature objects */}
             {FEATURES.map((f, i) => {
-            {FEATURES.map((f, i) => {
               const delay = -(i / FEATURES.length) * 44;
               return (
                 <div
