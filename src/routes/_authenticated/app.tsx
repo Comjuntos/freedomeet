@@ -788,6 +788,21 @@ function Dashboard() {
                         placeholder="Nova atividade…"
                         className="w-full rounded-md border border-border bg-background px-2 py-1.5 text-xs outline-none focus:border-primary"
                       />
+                      <select
+                        value={actMember[team.id] || ""}
+                        onChange={(e) =>
+                          setActMember((s) => ({ ...s, [team.id]: e.target.value }))
+                        }
+                        className="w-full rounded-md border border-border bg-background px-2 py-1.5 text-xs outline-none focus:border-primary"
+                        aria-label="Responsável pela atividade"
+                      >
+                        <option value="">Sem responsável</option>
+                        {teamMembers.map((tm) => (
+                          <option key={tm.id} value={tm.id}>
+                            {tm.full_name}
+                          </option>
+                        ))}
+                      </select>
                       <div className="flex gap-2">
                         <input
                           type="date"
