@@ -281,6 +281,14 @@ function Dashboard() {
   const [schedWeekday, setSchedWeekday] = useState(1);
   const [schedTime, setSchedTime] = useState("09:00");
   const [repTeam, setRepTeam] = useState("");
+  const [compTeam, setCompTeam] = useState("");
+  const [compName, setCompName] = useState("");
+  const [compWhy, setCompWhy] = useState("");
+  const [compLevel, setCompLevel] = useState(1);
+  const [compImpact, setCompImpact] = useState("medio");
+  const [compHow, setCompHow] = useState("");
+  const [compResp, setCompResp] = useState("");
+  const [compDeadline, setCompDeadline] = useState("");
 
   const signOut = async () => {
     await qc.cancelQueries();
