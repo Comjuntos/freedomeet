@@ -12,7 +12,7 @@ import {
   Languages,
   FileText,
   ShieldCheck,
-  Link2,
+  KanbanSquare,
 } from "lucide-react";
 const FEATURES = [
   {
@@ -31,9 +31,9 @@ const FEATURES = [
     desc: "Ao final, gere uma ata profissional a partir da transcrição — modelos formal, executivo ou detalhado.",
   },
   {
-    icon: Link2,
-    title: "Sem cadastro nem instalação",
-    desc: "Crie ou entre em salas direto do navegador e compartilhe o link com quem quiser.",
+    icon: KanbanSquare,
+    title: "Gestão estilo Kanban",
+    desc: "Organize tarefas e acompanhamentos das reuniões em quadros Kanban, movendo cartões entre colunas.",
   },
   {
     icon: ShieldCheck,
