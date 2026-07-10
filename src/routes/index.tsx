@@ -109,7 +109,7 @@ function Index() {
       <main className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-12 px-6 py-8 md:grid-cols-2">
         <div className="max-w-md">
           <span className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-            Planos por assinatura • 20% mais barato que o mercado
+            Soberania Nacional
           </span>
           <h1 className="mt-5 text-4xl font-semibold leading-[1.05] tracking-tight md:text-6xl">
             Reuniões que{" "}
