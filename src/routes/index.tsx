@@ -234,6 +234,61 @@ function Index() {
           </div>
         </div>
       </section>
+
+      <section id="planos" className="border-t border-border px-6 py-16">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="text-2xl font-medium md:text-3xl">Planos e assinaturas</h2>
+          <p className="mt-2 max-w-xl text-muted-foreground">
+            Preços pensados para o mercado brasileiro, sempre cerca de 20% mais baratos
+            que as principais plataformas de videoconferência.
+          </p>
+          <div className="mt-10 grid gap-6 lg:grid-cols-3">
+            {PLANS.map((plan) => (
+              <div
+                key={plan.name}
+                className={`relative flex flex-col rounded-2xl border p-7 ${
+                  plan.highlight
+                    ? "border-primary bg-primary/5 shadow-sm"
+                    : "border-border bg-background"
+                }`}
+              >
+                {plan.highlight && (
+                  <span className="absolute -top-3 left-7 inline-flex items-center rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
+                    Mais popular
+                  </span>
+                )}
+                <h3 className="text-lg font-medium">{plan.name}</h3>
+                <div className="mt-3 flex items-baseline gap-1">
+                  <span className="text-3xl font-semibold">{plan.price}</span>
+                  <span className="text-sm text-muted-foreground">{plan.period}</span>
+                </div>
+                <p className="mt-2 text-sm text-muted-foreground">{plan.tagline}</p>
+                <ul className="mt-6 flex-1 space-y-3 text-sm">
+                  {plan.features.map((feat) => (
+                    <li key={feat} className="flex items-start gap-2">
+                      <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary" />
+                      <span>{feat}</span>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={createMeeting}
+                  className={`mt-7 inline-flex items-center justify-center rounded-md px-4 py-2.5 text-sm font-medium transition-colors ${
+                    plan.highlight
+                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                      : "border border-border hover:bg-secondary"
+                  }`}
+                >
+                  {plan.price === "R$ 0" ? "Começar grátis" : `Assinar ${plan.name}`}
+                </button>
+              </div>
+            ))}
+          </div>
+          <p className="mt-6 text-xs text-muted-foreground">
+            Valores mensais em reais. Assinaturas anuais têm desconto adicional.
+          </p>
+        </div>
+      </section>
     </div>
   );
 }
