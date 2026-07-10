@@ -360,92 +360,112 @@ function Dashboard() {
 
       <main className="mx-auto grid w-full max-w-6xl gap-8 px-6 py-8 lg:grid-cols-2">
         {/* EQUIPES */}
-        <section>
-          <h2 className="flex items-center gap-2 text-xl font-semibold">
-            <Users className="size-5 text-primary" /> Equipes
-          </h2>
-          <div className="mt-4 flex gap-2">
-            <input
-              value={teamName}
-              onChange={(e) => setTeamName(e.target.value)}
-              placeholder="Nome da equipe"
-              className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
-            />
-            <button
-              onClick={addTeam}
-              className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-            >
-              <Plus className="size-4" /> Criar
-            </button>
+        <section className="lg:col-span-2">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="flex items-center gap-2 text-xl font-semibold">
+              <Users className="size-5 text-primary" /> Quadro de equipes
+            </h2>
+            <div className="flex gap-2">
+              <input
+                value={teamName}
+                onChange={(e) => setTeamName(e.target.value)}
+                placeholder="Nome da equipe"
+                className="w-48 rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+              />
+              <button
+                onClick={addTeam}
+                className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              >
+                <Plus className="size-4" /> Nova lista
+              </button>
+            </div>
           </div>
 
-          <div className="mt-4 space-y-4">
-            {teams.length === 0 && (
-              <p className="text-sm text-muted-foreground">Nenhuma equipe ainda.</p>
-            )}
-            {teams.map((team) => (
-              <div key={team.id} className="rounded-lg border border-border p-4">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">{team.name}</span>
-                  <button
-                    onClick={() => deleteTeam(team.id)}
-                    className="rounded p-1 text-muted-foreground hover:text-destructive"
-                    aria-label="Excluir equipe"
-                  >
-                    <Trash2 className="size-4" />
-                  </button>
-                </div>
-                <ul className="mt-2 space-y-1">
-                  {members
-                    .filter((m) => m.team_id === team.id)
-                    .map((m) => (
-                      <li
-                        key={m.id}
-                        className="flex items-center justify-between text-sm text-muted-foreground"
+          {teams.length === 0 && (
+            <p className="mt-4 text-sm text-muted-foreground">Nenhuma equipe ainda.</p>
+          )}
+
+          <div className="mt-4 flex gap-4 overflow-x-auto pb-4">
+            {teams.map((team) => {
+              const teamMembers = members.filter((m) => m.team_id === team.id);
+              return (
+                <div
+                  key={team.id}
+                  className="flex w-72 shrink-0 flex-col rounded-xl bg-secondary/50 p-3"
+                >
+                  <div className="flex items-center justify-between px-1">
+                    <span className="font-semibold">{team.name}</span>
+                    <span className="flex items-center gap-2">
+                      <span className="rounded-full bg-background px-2 py-0.5 text-xs text-muted-foreground">
+                        {teamMembers.length}
+                      </span>
+                      <button
+                        onClick={() => deleteTeam(team.id)}
+                        className="rounded p-1 text-muted-foreground hover:text-destructive"
+                        aria-label="Excluir equipe"
                       >
-                        <span>
-                          {m.full_name}
-                          {m.email ? ` · ${m.email}` : ""}
-                        </span>
-                        <span className="flex items-center gap-2">
-                          <select
-                            value={m.role}
-                            onChange={(e) => setMemberRole(m.id, e.target.value)}
-                            className="rounded border border-border bg-background px-1.5 py-0.5 text-xs"
-                            aria-label="Papel do membro"
-                          >
-                            <option value="membro">Membro</option>
-                            <option value="admin">Admin</option>
-                          </select>
+                        <Trash2 className="size-4" />
+                      </button>
+                    </span>
+                  </div>
+
+                  <div className="mt-3 space-y-2">
+                    {teamMembers.map((m) => (
+                      <div
+                        key={m.id}
+                        className="rounded-lg border border-border bg-background p-2.5 shadow-sm"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium">{m.full_name}</p>
+                            {m.email && (
+                              <p className="truncate text-xs text-muted-foreground">{m.email}</p>
+                            )}
+                          </div>
                           <button
                             onClick={() => deleteMember(m.id)}
-                            className="rounded p-0.5 hover:text-destructive"
+                            className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-destructive"
                             aria-label="Remover membro"
                           >
                             <Trash2 className="size-3.5" />
                           </button>
-                        </span>
-                      </li>
+                        </div>
+                        <select
+                          value={m.role}
+                          onChange={(e) => setMemberRole(m.id, e.target.value)}
+                          className="mt-2 rounded border border-border bg-secondary px-1.5 py-0.5 text-xs"
+                          aria-label="Papel do membro"
+                        >
+                          <option value="membro">Membro</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      </div>
                     ))}
-                </ul>
-                <div className="mt-3 flex gap-2">
-                  <input
-                    value={memberInputs[team.id] || ""}
-                    onChange={(e) =>
-                      setMemberInputs((mi) => ({ ...mi, [team.id]: e.target.value }))
-                    }
-                    placeholder="Nome completo | email (opcional)"
-                    className="flex-1 rounded-md border border-border bg-background px-2 py-1.5 text-sm outline-none focus:border-primary"
-                  />
-                  <button
-                    onClick={() => addMember(team.id)}
-                    className="rounded-md border border-border px-2 py-1.5 text-sm hover:bg-secondary"
-                  >
-                    Adicionar
-                  </button>
+                  </div>
+
+                  <div className="mt-3 flex gap-2">
+                    <input
+                      value={memberInputs[team.id] || ""}
+                      onChange={(e) =>
+                        setMemberInputs((mi) => ({ ...mi, [team.id]: e.target.value }))
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") addMember(team.id);
+                      }}
+                      placeholder="Nome | email (opcional)"
+                      className="flex-1 rounded-md border border-border bg-background px-2 py-1.5 text-sm outline-none focus:border-primary"
+                    />
+                    <button
+                      onClick={() => addMember(team.id)}
+                      className="rounded-md bg-background px-2 py-1.5 text-sm hover:bg-background/70"
+                      aria-label="Adicionar membro"
+                    >
+                      <Plus className="size-4" />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
 
