@@ -664,8 +664,23 @@ function Room() {
                       <Download className="size-4" />
                       Baixar
                     </button>
+                    <button
+                      onClick={() => saveToHistory(endMinutes)}
+                      disabled={saving}
+                      className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary disabled:opacity-60"
+                    >
+                      {saving ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <ClipboardList className="size-4" />
+                      )}
+                      Salvar no histórico
+                    </button>
                     {endSlackStatus && (
                       <span className="text-xs text-muted-foreground">{endSlackStatus}</span>
+                    )}
+                    {saveStatus && (
+                      <span className="text-xs text-muted-foreground">{saveStatus}</span>
                     )}
                   </div>
                 )}
