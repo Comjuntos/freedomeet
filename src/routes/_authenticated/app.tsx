@@ -759,6 +759,11 @@ function Dashboard() {
                                     {overdue ? " · atrasada" : ""}
                                   </p>
                                 )}
+                                {a.member_id && (
+                                  <p className="truncate text-[10px] text-primary">
+                                    @{members.find((m) => m.id === a.member_id)?.full_name ?? "?"}
+                                  </p>
+                                )}
                               </div>
                               <button
                                 onClick={() => deleteActivity(a.id)}
