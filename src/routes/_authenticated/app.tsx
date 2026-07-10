@@ -727,6 +727,23 @@ function Dashboard() {
                     <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                       <CalendarClock className="size-3.5" /> Atividades & prazos
                     </p>
+                    {teamMembers.length > 0 && (
+                      <select
+                        value={filterMember[team.id] || ""}
+                        onChange={(e) =>
+                          setFilterMember((s) => ({ ...s, [team.id]: e.target.value }))
+                        }
+                        className="mb-2 w-full rounded-md border border-border bg-background px-2 py-1 text-[11px] outline-none focus:border-primary"
+                        aria-label="Filtrar por membro"
+                      >
+                        <option value="">Todos os membros</option>
+                        {teamMembers.map((tm) => (
+                          <option key={tm.id} value={tm.id}>
+                            {tm.full_name}
+                          </option>
+                        ))}
+                      </select>
+                    )}
                     {(() => {
                       const today = new Date().toISOString().slice(0, 10);
                       const teamActs = activities.filter((a) => a.team_id === team.id);
@@ -755,7 +772,11 @@ function Dashboard() {
                     })()}
                     <div className="space-y-1.5">
                       {activities
-                        .filter((a) => a.team_id === team.id)
+                        .filter(
+                          (a) =>
+                            a.team_id === team.id &&
+                            (!filterMember[team.id] || a.member_id === filterMember[team.id]),
+                        )
                         .map((a) => {
                           const overdue =
                             !a.done &&
