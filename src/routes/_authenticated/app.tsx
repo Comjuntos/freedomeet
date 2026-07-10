@@ -342,11 +342,13 @@ function Dashboard() {
   const maxTopic = topTopics[0]?.[1] ?? 1;
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="aurora-bg min-h-screen bg-background text-foreground">
       <header className="flex items-center justify-between border-b border-border px-6 py-4">
         <div className="flex items-center gap-2">
-          <Video className="size-6 text-primary" />
-          <span className="text-lg font-medium">FreeduMeet — Painel</span>
+          <span className="grid size-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-accent glow">
+            <Video className="size-4 text-primary-foreground" />
+          </span>
+          <span className="font-display text-lg font-semibold">FreeduMeet — Painel</span>
         </div>
         <button
           onClick={signOut}
