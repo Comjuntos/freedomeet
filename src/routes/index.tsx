@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { PLAN_LIST } from "@/lib/plans";
 import {
   Video,
   Keyboard,
@@ -39,54 +40,7 @@ const FEATURES = [
   },
 ];
 
-const PLANS = [
-  {
-    name: "Gratuito",
-    price: "R$ 0",
-    period: "/mês",
-    highlight: false,
-    tagline: "Para começar a se reunir agora mesmo.",
-    features: [
-      "Reuniões de até 40 minutos",
-      "Até 8 participantes por sala",
-      "Vídeo HD, áudio e chat",
-      "Compartilhamento de tela",
-      "Legendas ao vivo com IA",
-      "Ata gerada por IA",
-      "Análise de sentimentos",
-    ],
-  },
-  {
-    name: "Negócios",
-    price: "R$ 39",
-    period: "/mês por usuário",
-    highlight: true,
-    tagline: "Para equipes que se reúnem todos os dias.",
-    features: [
-      "Reuniões ilimitadas",
-      "Até 50 participantes por sala",
-      "Tudo do plano Gratuito",
-      "Tradução em tempo real",
-      "Ata gerada por IA ao final",
-      "Integração com Slack",
-    ],
-  },
-  {
-    name: "Empresarial",
-    price: "R$ 99",
-    period: "/mês por usuário",
-    highlight: false,
-    tagline: "Para organizações que precisam de escala e controle.",
-    features: [
-      "Tudo do plano Negócios",
-      "Até 300 participantes por sala",
-      "Análise de engajamento com IA",
-      "Salas persistentes e branding",
-      "Suporte prioritário dedicado",
-      "Opção de auto-hospedagem",
-    ],
-  },
-];
+const PLANS = PLAN_LIST;
 
 export const Route = createFileRoute("/")({
   head: () => ({
