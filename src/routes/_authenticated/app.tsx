@@ -315,6 +315,32 @@ function Dashboard() {
     return true;
   });
 
+  const reportRecords = records.filter((r) => !repTeam || r.team_id === repTeam);
+  const totalMeetings = reportRecords.length;
+  const totalMinutes = reportRecords.reduce((acc, r) => {
+    if (r.started_at && r.ended_at) {
+      return acc + Math.max(0, (new Date(r.ended_at).getTime() - new Date(r.started_at).getTime()) / 60000);
+    }
+    return acc;
+  }, 0);
+  const sentScores = reportRecords
+    .map((r) => (r.sentiment as { score?: number } | null)?.score)
+    .filter((s): s is number => typeof s === "number");
+  const avgSentiment = sentScores.length
+    ? Math.round(sentScores.reduce((a, b) => a + b, 0) / sentScores.length)
+    : null;
+  const topicCounts = new Map<string, number>();
+  for (const r of reportRecords) {
+    const topics = (r.dashboard as { topics?: { topic: string; mentions: number }[] } | null)?.topics;
+    if (Array.isArray(topics)) {
+      for (const t of topics) {
+        if (t?.topic) topicCounts.set(t.topic, (topicCounts.get(t.topic) ?? 0) + (t.mentions || 1));
+      }
+    }
+  }
+  const topTopics = [...topicCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
+  const maxTopic = topTopics[0]?.[1] ?? 1;
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="flex items-center justify-between border-b border-border px-6 py-4">
