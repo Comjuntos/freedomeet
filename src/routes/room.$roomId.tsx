@@ -288,11 +288,12 @@ function Room() {
     }
   }, [captions, makeMinutes, minutesTemplate, roomId, membersInput]);
 
-  const downloadAta = useCallback(async () => {
-    if (!minutesText.trim()) return;
+  const downloadAta = useCallback(async (text?: unknown) => {
+    const content = (typeof text === "string" ? text : minutesText).trim();
+    if (!content) return;
     const { Document, Packer, Paragraph, TextRun, HeadingLevel } = await import("docx");
 
-    const paragraphs = minutesText.split("\n").map((raw) => {
+    const paragraphs = content.split("\n").map((raw) => {
       const line = raw.trimEnd();
       if (line.startsWith("# "))
         return new Paragraph({ heading: HeadingLevel.HEADING_1, children: [new TextRun(line.slice(2))] });
