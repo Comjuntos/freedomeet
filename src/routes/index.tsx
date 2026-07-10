@@ -83,9 +83,7 @@ function Index() {
     <div className="aurora-bg flex min-h-screen flex-col bg-background text-foreground">
       <header className="flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-2">
-          <span className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-accent glow">
-            <Video className="size-5 text-primary-foreground" />
-          </span>
+          <img src={logoUrl.url} alt="FreeduMeet" className="size-9 rounded-xl object-cover" />
           <span className="font-display text-xl font-semibold tracking-tight">FreeduMeet</span>
         </div>
         <div className="flex items-center gap-2">
