@@ -79,11 +79,13 @@ function Index() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
+    <div className="aurora-bg flex min-h-screen flex-col bg-background text-foreground">
       <header className="flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-2">
-          <Video className="size-7 text-primary" />
-          <span className="text-xl font-medium">FreeduMeet</span>
+          <span className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-accent glow">
+            <Video className="size-5 text-primary-foreground" />
+          </span>
+          <span className="font-display text-xl font-semibold tracking-tight">FreeduMeet</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="mr-2 hidden text-sm text-muted-foreground sm:block">
@@ -97,7 +99,7 @@ function Index() {
           </button>
           <Link
             to="/app"
-            className="ml-1 inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            className="ml-1 inline-flex items-center rounded-full bg-gradient-to-r from-primary to-accent px-4 py-2 text-sm font-semibold text-primary-foreground transition-transform hover:scale-105"
           >
             Painel
           </Link>
@@ -106,11 +108,12 @@ function Index() {
 
       <main className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-12 px-6 py-8 md:grid-cols-2">
         <div className="max-w-md">
-          <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+          <span className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
             Planos por assinatura • 20% mais barato que o mercado
           </span>
-          <h1 className="text-4xl font-normal leading-tight tracking-tight md:text-5xl">
-            Chamadas de vídeo e reuniões para todos
+          <h1 className="mt-5 text-4xl font-semibold leading-[1.05] tracking-tight md:text-6xl">
+            Reuniões que{" "}
+            <span className="text-gradient">pensam</span> com você
           </h1>
           <p className="mt-5 text-lg text-muted-foreground">
             Conecte-se, colabore e comemore de qualquer lugar. Escolha o plano ideal —
@@ -120,14 +123,14 @@ function Index() {
           <div className="mt-8 flex flex-col items-stretch gap-4 sm:flex-row sm:items-center">
             <button
               onClick={createMeeting}
-              className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-5 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-primary to-accent px-6 py-3 font-semibold text-primary-foreground glow transition-transform hover:scale-105"
             >
               <Video className="size-5" />
               Nova reunião
             </button>
 
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-2 rounded-md border border-border px-3 py-2.5">
+              <div className="glass flex items-center gap-2 rounded-full px-4 py-2.5">
                 <Keyboard className="size-5 text-muted-foreground" />
                 <input
                   value={code}
@@ -154,10 +157,13 @@ function Index() {
         </div>
 
         <div className="flex flex-col items-center justify-center text-center">
-          <div className="flex size-72 items-center justify-center rounded-full bg-secondary">
-            <Video className="size-24 text-primary" />
+          <div className="relative flex size-72 items-center justify-center">
+            <div className="absolute inset-0 animate-pulse rounded-full bg-gradient-to-br from-primary/30 to-accent/30 blur-2xl" />
+            <div className="glass relative flex size-56 items-center justify-center rounded-full glow">
+              <Video className="size-24 text-primary" />
+            </div>
           </div>
-          <h2 className="mt-8 text-xl font-medium">Receba um link para compartilhar</h2>
+          <h2 className="mt-8 text-xl font-semibold">Receba um link para compartilhar</h2>
           <p className="mt-2 max-w-sm text-sm text-muted-foreground">
             Clique em <span className="font-medium">Nova reunião</span> para receber um link
             que você pode enviar às pessoas com quem quer se reunir.
@@ -165,9 +171,9 @@ function Index() {
         </div>
       </main>
 
-      <section className="border-t border-border bg-secondary/30 px-6 py-16">
+      <section className="border-t border-border bg-secondary/20 px-6 py-16">
         <div className="mx-auto max-w-6xl">
-          <h2 className="text-2xl font-medium md:text-3xl">
+          <h2 className="text-2xl font-semibold md:text-3xl">
             Por que escolher o FreeduMeet
           </h2>
           <p className="mt-2 max-w-xl text-muted-foreground">
@@ -178,12 +184,12 @@ function Index() {
             {FEATURES.map((f) => (
               <div
                 key={f.title}
-                className="rounded-xl border border-border bg-background p-6"
+                className="glass rounded-2xl p-6 transition-transform hover:-translate-y-1"
               >
-                <div className="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <div className="flex size-11 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 text-primary">
                   <f.icon className="size-6" />
                 </div>
-                <h3 className="mt-4 font-medium">{f.title}</h3>
+                <h3 className="mt-4 font-semibold">{f.title}</h3>
                 <p className="mt-2 text-sm text-muted-foreground">{f.desc}</p>
               </div>
             ))}
@@ -202,20 +208,20 @@ function Index() {
             {PLANS.map((plan) => (
               <div
                 key={plan.name}
-                className={`relative flex flex-col rounded-2xl border p-7 ${
+                className={`relative flex flex-col rounded-2xl p-7 transition-transform hover:-translate-y-1 ${
                   plan.highlight
-                    ? "border-primary bg-primary/5 shadow-sm"
-                    : "border-border bg-background"
+                    ? "glass glow border-primary/40"
+                    : "glass"
                 }`}
               >
                 {plan.highlight && (
-                  <span className="absolute -top-3 left-7 inline-flex items-center rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
+                  <span className="absolute -top-3 left-7 inline-flex items-center rounded-full bg-gradient-to-r from-primary to-accent px-3 py-1 text-xs font-semibold text-primary-foreground">
                     Mais popular
                   </span>
                 )}
-                <h3 className="text-lg font-medium">{plan.name}</h3>
+                <h3 className="text-lg font-semibold">{plan.name}</h3>
                 <div className="mt-3 flex items-baseline gap-1">
-                  <span className="text-3xl font-semibold">{plan.price}</span>
+                  <span className="text-3xl font-bold">{plan.price}</span>
                   <span className="text-sm text-muted-foreground">{plan.period}</span>
                 </div>
                 <p className="mt-2 text-sm text-muted-foreground">{plan.tagline}</p>
@@ -231,8 +237,8 @@ function Index() {
                   onClick={createMeeting}
                   className={`mt-7 inline-flex items-center justify-center rounded-md px-4 py-2.5 text-sm font-medium transition-colors ${
                     plan.highlight
-                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                      : "border border-border hover:bg-secondary"
+                      ? "rounded-full bg-gradient-to-r from-primary to-accent text-primary-foreground hover:scale-105"
+                      : "rounded-full border border-border hover:bg-secondary"
                   }`}
                 >
                   {plan.price === "R$ 0" ? "Começar grátis" : `Assinar ${plan.name}`}
