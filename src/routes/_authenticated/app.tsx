@@ -220,6 +220,13 @@ function Dashboard() {
     qc.invalidateQueries({ queryKey: ["team_members"] });
   };
 
+  const moveMember = async (id: string, teamId: string) => {
+    setDragOverTeam(null);
+    setDragMember(null);
+    await supabase.from("team_members").update({ team_id: teamId }).eq("id", id);
+    qc.invalidateQueries({ queryKey: ["team_members"] });
+  };
+
   const addRoom = async () => {
     const name = roomName.trim();
     if (!name) return;
