@@ -603,7 +603,7 @@ function Dashboard() {
 
       <main className="mx-auto grid w-full max-w-6xl gap-8 px-6 py-8 lg:grid-cols-2">
         {/* EQUIPES */}
-        <section className="lg:col-span-2">
+        <section className="min-w-0 lg:col-span-2">
           <TooltipProvider>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="flex items-center gap-2 text-xl font-semibold">
@@ -644,7 +644,7 @@ function Dashboard() {
             </div>
           )}
 
-          <div className="mt-4 flex gap-4 overflow-x-auto pb-4">
+          <div className="mt-4 flex gap-4 overflow-x-auto pb-4 [scrollbar-width:thin]">
             {teams.map((team, ti) => {
               const q = memberSearch.trim().toLowerCase();
               const teamMembers = members
