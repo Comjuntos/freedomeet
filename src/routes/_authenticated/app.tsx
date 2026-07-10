@@ -647,6 +647,48 @@ function Dashboard() {
             })}
           </div>
           </TooltipProvider>
+
+          <Dialog
+            open={!!profileMember}
+            onOpenChange={(o) => !o && setProfileMember(null)}
+          >
+            <DialogContent>
+              {profileMember && (
+                <>
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-3">
+                      <MemberAvatar
+                        member={profileMember}
+                        url={avatarUrlFor(
+                          profileMember.email || profileMember.full_name,
+                        )}
+                        className="size-12"
+                      />
+                      {profileMember.full_name}
+                    </DialogTitle>
+                    <DialogDescription>
+                      {profileMember.email || "Sem email cadastrado"}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-2 text-sm">
+                    <p>
+                      <span className="text-muted-foreground">Papel: </span>
+                      <span className="font-medium capitalize">
+                        {profileMember.role}
+                      </span>
+                    </p>
+                    <p>
+                      <span className="text-muted-foreground">Equipe: </span>
+                      <span className="font-medium">
+                        {teams.find((t) => t.id === profileMember.team_id)?.name ??
+                          "—"}
+                      </span>
+                    </p>
+                  </div>
+                </>
+              )}
+            </DialogContent>
+          </Dialog>
         </section>
 
         {/* SALAS */}
