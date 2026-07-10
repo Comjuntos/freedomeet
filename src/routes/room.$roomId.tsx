@@ -774,7 +774,7 @@ function Room() {
             {formatDuration(elapsed)}
           </div>
           {showCaptions && (
-            <aside className="flex w-80 flex-col border-l border-border bg-card">
+            <aside className="absolute inset-y-0 right-0 z-20 flex w-full flex-col border-l border-border bg-card sm:static sm:z-10 sm:w-80">
               <div className="flex items-center justify-between border-b border-border px-4 py-3">
                 <div className="flex items-center gap-2 font-medium">
                   <Captions className="size-4 text-primary" />
