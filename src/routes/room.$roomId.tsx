@@ -576,6 +576,9 @@ function Room() {
             defaultLanguage: "ptBR",
             disableDeepLinking: true,
             readOnlyName: true,
+            startWithAudioMuted: false,
+            startAudioMuted: 999,
+            disableInitialGUM: false,
           },
           interfaceConfigOverwrite: {
             MOBILE_APP_PROMO: false,
