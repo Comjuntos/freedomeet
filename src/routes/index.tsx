@@ -196,21 +196,19 @@ function Index() {
 
             {/* live floating feature objects */}
             {FEATURES.map((f, i) => {
-              const angle = (i / FEATURES.length) * 2 * Math.PI - Math.PI / 2;
-              const radius = 168;
-              const x = Math.cos(angle) * radius;
-              const y = Math.sin(angle) * radius;
+              const delay = -(i / FEATURES.length) * 44;
               return (
                 <div
                   key={f.title}
-                  style={{ transform: `translate(${x}px, ${y}px)` }}
-                  className="absolute"
+                  style={{
+                    ["--orbit-r" as string]: "180px",
+                    animation: "orbit 44s linear infinite",
+                    animationDelay: `${delay}s`,
+                  }}
+                  className="absolute left-1/2 top-1/2"
                 >
                   <span
-                    style={{ animationDelay: `${i * 0.6}s` }}
-                    className={`glass flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium shadow-lg transition-transform hover:scale-110 ${
-                      i % 2 === 0 ? "float" : "float-slow"
-                    }`}
+                    className="glass flex -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium shadow-lg transition-transform hover:scale-110"
                   >
                     <f.icon className="size-3.5 shrink-0 text-primary" />
                     {f.title}
