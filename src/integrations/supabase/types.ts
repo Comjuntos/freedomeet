@@ -205,6 +205,7 @@ export type Database = {
           id: string
           member_id: string | null
           owner_id: string
+          status: string
           team_id: string
           title: string
           updated_at: string
@@ -216,6 +217,7 @@ export type Database = {
           id?: string
           member_id?: string | null
           owner_id?: string
+          status?: string
           team_id: string
           title: string
           updated_at?: string
@@ -227,6 +229,7 @@ export type Database = {
           id?: string
           member_id?: string | null
           owner_id?: string
+          status?: string
           team_id?: string
           title?: string
           updated_at?: string
