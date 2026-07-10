@@ -224,7 +224,8 @@ function Index() {
 
       <section id="planos" className="border-t border-border px-6 py-16">
         <div className="mx-auto max-w-6xl">
-          <h2 className="text-2xl font-medium md:text-3xl">Planos e assinaturas</h2>
+          <span className="text-xs font-semibold uppercase tracking-widest text-primary">Planos</span>
+          <h2 className="mt-2 text-2xl font-medium md:text-3xl">Planos e assinaturas</h2>
           <p className="mt-2 max-w-xl text-muted-foreground">
             Preços pensados para o mercado brasileiro, sempre cerca de 20% mais baratos
             que as principais plataformas de videoconferência.
@@ -276,6 +277,18 @@ function Index() {
           </p>
         </div>
       </section>
+
+      <footer className="border-t border-border px-6 py-10">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 text-sm text-muted-foreground sm:flex-row">
+          <div className="flex items-center gap-2">
+            <span className="grid size-7 place-items-center rounded-lg bg-gradient-to-br from-primary to-accent">
+              <Video className="size-4 text-primary-foreground" />
+            </span>
+            <span className="font-display font-semibold text-foreground">FreeduMeet</span>
+          </div>
+          <p>© {new Date().getFullYear()} FreeduMeet — Videoconferência com soberania nacional.</p>
+        </div>
+      </footer>
     </div>
   );
 }
