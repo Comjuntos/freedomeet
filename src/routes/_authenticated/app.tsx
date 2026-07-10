@@ -287,6 +287,14 @@ function Dashboard() {
     toast.success(`Papel alterado para ${role}`);
   };
 
+  const setMemberActivity = async (id: string, activity: string) => {
+    await supabase
+      .from("team_members")
+      .update({ activity: activity.trim() || null })
+      .eq("id", id);
+    qc.invalidateQueries({ queryKey: ["team_members"] });
+  };
+
   const moveMember = async (id: string, teamId: string) => {
     setDragOverTeam(null);
     setDragMember(null);
