@@ -188,6 +188,12 @@ function Room() {
   const [slackChannel, setSlackChannel] = useState("");
   const [slackSending, setSlackSending] = useState(false);
   const [slackStatus, setSlackStatus] = useState<string | null>(null);
+  // Fluxo automático de ata ao encerrar a reunião (somente administrador).
+  const [endMinutes, setEndMinutes] = useState("");
+  const [endLoading, setEndLoading] = useState(false);
+  const [endError, setEndError] = useState<string | null>(null);
+  const [endSlackStatus, setEndSlackStatus] = useState<string | null>(null);
+  const autoRanRef = useRef(false);
 
   const openDashboard = useCallback(async () => {
     const segments = captions.map((c) => c.original).filter(Boolean);
