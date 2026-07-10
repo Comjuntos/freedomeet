@@ -158,6 +158,8 @@ function Dashboard() {
   const [teamName, setTeamName] = useState("");
   const [memberInputs, setMemberInputs] = useState<Record<string, string>>({});
   const [memberSearch, setMemberSearch] = useState("");
+  const [dragMember, setDragMember] = useState<string | null>(null);
+  const [dragOverTeam, setDragOverTeam] = useState<string | null>(null);
   const [roomName, setRoomName] = useState("");
   const [roomTeamSel, setRoomTeamSel] = useState<Record<string, boolean>>({});
   const [histTeam, setHistTeam] = useState("");
@@ -217,6 +219,13 @@ function Dashboard() {
 
   const setMemberRole = async (id: string, role: string) => {
     await supabase.from("team_members").update({ role }).eq("id", id);
+    qc.invalidateQueries({ queryKey: ["team_members"] });
+  };
+
+  const moveMember = async (id: string, teamId: string) => {
+    setDragOverTeam(null);
+    setDragMember(null);
+    await supabase.from("team_members").update({ team_id: teamId }).eq("id", id);
     qc.invalidateQueries({ queryKey: ["team_members"] });
   };
 
@@ -433,7 +442,19 @@ function Dashboard() {
               return (
                 <div
                   key={team.id}
-                  className={`flex w-72 shrink-0 flex-col overflow-hidden rounded-xl ${c.tint} ring-1 ${c.ring}`}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    if (dragOverTeam !== team.id) setDragOverTeam(team.id);
+                  }}
+                  onDragLeave={() => setDragOverTeam((t) => (t === team.id ? null : t))}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const id = dragMember || e.dataTransfer.getData("text/plain");
+                    if (id) moveMember(id, team.id);
+                  }}
+                  className={`flex w-72 shrink-0 flex-col overflow-hidden rounded-xl ${c.tint} ring-1 ${
+                    dragOverTeam === team.id ? "ring-2 ring-primary" : c.ring
+                  }`}
                 >
                   <div className={`h-1.5 w-full ${c.bar}`} />
                   <div className="flex flex-col p-3">
@@ -470,7 +491,16 @@ function Dashboard() {
                     {teamMembers.map((m) => (
                       <div
                         key={m.id}
-                        className="rounded-lg border border-border bg-background p-2.5 shadow-sm transition-shadow hover:shadow-md"
+                        draggable
+                        onDragStart={(e) => {
+                          setDragMember(m.id);
+                          e.dataTransfer.effectAllowed = "move";
+                          e.dataTransfer.setData("text/plain", m.id);
+                        }}
+                        onDragEnd={() => setDragMember(null)}
+                        className={`cursor-grab rounded-lg border border-border bg-background p-2.5 shadow-sm transition-shadow hover:shadow-md active:cursor-grabbing ${
+                          dragMember === m.id ? "opacity-50" : ""
+                        }`}
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex min-w-0 items-center gap-2">
