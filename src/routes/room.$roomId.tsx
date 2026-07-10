@@ -590,6 +590,51 @@ function Room() {
               Duração total: {formatDuration(elapsed)}
             </p>
           </div>
+          {isHost && (endLoading || endMinutes || endError) && (
+            <div className="w-full max-w-2xl text-left">
+              <div className="flex max-h-[50vh] flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+                <div className="flex items-center gap-2 border-b border-border px-5 py-3 font-medium">
+                  <FileText className="size-4 text-primary" />
+                  Ata inteligente da reunião
+                </div>
+                <div className="flex-1 overflow-y-auto px-5 py-4 text-sm">
+                  {endLoading ? (
+                    <p className="flex items-center gap-2 text-muted-foreground">
+                      <Loader2 className="size-4 animate-spin" />
+                      Gerando a ata automaticamente a partir da transcrição…
+                    </p>
+                  ) : endError ? (
+                    <p className="text-muted-foreground">{endError}</p>
+                  ) : (
+                    <pre className="whitespace-pre-wrap font-sans leading-relaxed">
+                      {endMinutes}
+                    </pre>
+                  )}
+                </div>
+                {endMinutes && !endLoading && (
+                  <div className="flex flex-wrap items-center gap-2 border-t border-border px-5 py-3">
+                    <button
+                      onClick={() => navigator.clipboard?.writeText(endMinutes)}
+                      className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
+                    >
+                      <Copy className="size-4" />
+                      Copiar
+                    </button>
+                    <button
+                      onClick={() => downloadAta(endMinutes)}
+                      className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
+                    >
+                      <Download className="size-4" />
+                      Baixar
+                    </button>
+                    {endSlackStatus && (
+                      <span className="text-xs text-muted-foreground">{endSlackStatus}</span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           <div className="flex flex-col gap-3 sm:flex-row">
             <button
               onClick={() => window.location.reload()}
