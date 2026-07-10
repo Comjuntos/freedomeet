@@ -136,10 +136,22 @@ function Dashboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("meeting_records")
-        .select("id, title, team_id, minutes, created_at, started_at, ended_at")
+        .select("id, title, team_id, minutes, created_at, started_at, ended_at, sentiment, dashboard")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as MeetingRecord[];
+    },
+  });
+
+  const schedulesQ = useQuery({
+    queryKey: ["scheduled_meetings"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("scheduled_meetings")
+        .select("id, title, team_id, room_slug, weekday, time_of_day, active")
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return data as Schedule[];
     },
   });
 
@@ -152,6 +164,12 @@ function Dashboard() {
   const [histTo, setHistTo] = useState("");
   const [histSearch, setHistSearch] = useState("");
   const [openRecord, setOpenRecord] = useState<MeetingRecord | null>(null);
+  const [schedTitle, setSchedTitle] = useState("");
+  const [schedRoom, setSchedRoom] = useState("");
+  const [schedTeam, setSchedTeam] = useState("");
+  const [schedWeekday, setSchedWeekday] = useState(1);
+  const [schedTime, setSchedTime] = useState("09:00");
+  const [repTeam, setRepTeam] = useState("");
 
   const signOut = async () => {
     await qc.cancelQueries();
