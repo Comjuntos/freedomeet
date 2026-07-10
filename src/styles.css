@@ -116,6 +116,42 @@
   box-shadow: var(--shadow-glow);
 }
 
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+
+@keyframes float-y-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-22px); }
+}
+
+@keyframes orbit {
+  from { transform: rotate(0deg) translateX(var(--orbit-r, 168px)) rotate(0deg); }
+  to { transform: rotate(360deg) translateX(var(--orbit-r, 168px)) rotate(-360deg); }
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 oklch(0.58 0.17 258 / 25%); }
+  50% { transform: scale(1.04); box-shadow: 0 0 60px 10px oklch(0.58 0.17 258 / 18%); }
+}
+
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes tilt {
+  0%, 100% { transform: perspective(900px) rotateX(0deg) rotateY(0deg); }
+  50% { transform: perspective(900px) rotateX(6deg) rotateY(-6deg); }
+}
+
+@utility float { animation: float-y 5s ease-in-out infinite; }
+@utility float-slow { animation: float-y-slow 7s ease-in-out infinite; }
+@utility breathe { animation: breathe 5s ease-in-out infinite; }
+@utility spin-slow { animation: spin-slow 40s linear infinite; }
+@utility spin-slow-rev { animation: spin-slow 55s linear infinite reverse; }
+@utility tilt-3d { animation: tilt 9s ease-in-out infinite; }
+
 @utility text-gradient {
   background: var(--gradient-aurora);
   background-clip: text;
