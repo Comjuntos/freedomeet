@@ -177,15 +177,22 @@ function Index() {
             <div className="glass relative flex size-52 items-center justify-center rounded-full glow">
               <Video className="size-24 text-primary" />
             </div>
-            <span className="glass absolute -left-2 top-8 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium">
-              <Captions className="size-3.5 text-primary" /> Legendas ao vivo
-            </span>
-            <span className="glass absolute -right-3 top-1/2 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium">
-              <Languages className="size-3.5 text-primary" /> Tradução
-            </span>
-            <span className="glass absolute -bottom-1 left-10 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium">
-              <FileText className="size-3.5 text-primary" /> Ata por IA
-            </span>
+            {FEATURES.map((f, i) => {
+              const angle = (i / FEATURES.length) * 2 * Math.PI - Math.PI / 2;
+              const radius = 168;
+              const x = Math.cos(angle) * radius;
+              const y = Math.sin(angle) * radius;
+              return (
+                <span
+                  key={f.title}
+                  style={{ transform: `translate(${x}px, ${y}px)` }}
+                  className="glass absolute flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium shadow-sm"
+                >
+                  <f.icon className="size-3.5 shrink-0 text-primary" />
+                  {f.title}
+                </span>
+              );
+            })}
           </div>
           <h2 className="mt-10 text-xl font-semibold">Receba um link para compartilhar</h2>
           <p className="mt-2 max-w-sm text-sm text-muted-foreground">
