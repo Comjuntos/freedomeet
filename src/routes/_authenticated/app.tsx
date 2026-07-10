@@ -529,6 +529,7 @@ function Dashboard() {
   const roomTeams = roomTeamsQ.data ?? [];
   const records = recordsQ.data ?? [];
   const schedules = schedulesQ.data ?? [];
+  const competencies = competenciesQ.data ?? [];
 
   const COLUMN_COLORS = [
     { bar: "bg-sky-500", tint: "bg-sky-500/10", ring: "ring-sky-500/30" },
