@@ -1,7 +1,19 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Video, Plus, Trash2, Users, LogOut, DoorOpen, History, Search } from "lucide-react";
+import {
+  Video,
+  Plus,
+  Trash2,
+  Users,
+  LogOut,
+  DoorOpen,
+  History,
+  Search,
+  BarChart3,
+  CalendarClock,
+  Power,
+} from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 
@@ -27,7 +39,39 @@ type MeetingRecord = {
   created_at: string;
   started_at: string | null;
   ended_at: string | null;
+  sentiment: unknown;
+  dashboard: unknown;
 };
+type Schedule = {
+  id: string;
+  title: string;
+  team_id: string | null;
+  room_slug: string;
+  weekday: number;
+  time_of_day: string;
+  active: boolean;
+};
+
+const WEEKDAYS = [
+  "Domingo",
+  "Segunda",
+  "Terça",
+  "Quarta",
+  "Quinta",
+  "Sexta",
+  "Sábado",
+];
+
+function nextOccurrence(weekday: number, time: string): Date {
+  const [h, m] = time.split(":").map((n) => parseInt(n, 10));
+  const now = new Date();
+  const d = new Date(now);
+  d.setHours(h || 0, m || 0, 0, 0);
+  let diff = (weekday - now.getDay() + 7) % 7;
+  if (diff === 0 && d.getTime() <= now.getTime()) diff = 7;
+  d.setDate(d.getDate() + diff);
+  return d;
+}
 
 function slugify(name: string) {
   const base = name
