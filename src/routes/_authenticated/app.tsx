@@ -646,6 +646,7 @@ function Dashboard() {
               );
             })}
           </div>
+          </TooltipProvider>
         </section>
 
         {/* SALAS */}
