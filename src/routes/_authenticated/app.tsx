@@ -626,6 +626,18 @@ function Dashboard() {
                           <option value="membro">Membro</option>
                           <option value="admin">Admin</option>
                         </select>
+                        <input
+                          defaultValue={m.activity ?? ""}
+                          onBlur={(e) => {
+                            if ((e.target.value.trim() || null) !== (m.activity ?? null))
+                              setMemberActivity(m.id, e.target.value);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") e.currentTarget.blur();
+                          }}
+                          placeholder="Atividade atual…"
+                          className="mt-2 w-full rounded-md border border-dashed border-border bg-transparent px-2 py-1 text-xs outline-none focus:border-primary"
+                        />
                       </div>
                     ))}
                   </div>
