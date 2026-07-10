@@ -302,6 +302,22 @@ function Dashboard() {
   const records = recordsQ.data ?? [];
   const schedules = schedulesQ.data ?? [];
 
+  const COLUMN_COLORS = [
+    { bar: "bg-sky-500", tint: "bg-sky-500/10", ring: "ring-sky-500/30" },
+    { bar: "bg-violet-500", tint: "bg-violet-500/10", ring: "ring-violet-500/30" },
+    { bar: "bg-emerald-500", tint: "bg-emerald-500/10", ring: "ring-emerald-500/30" },
+    { bar: "bg-amber-500", tint: "bg-amber-500/10", ring: "ring-amber-500/30" },
+    { bar: "bg-rose-500", tint: "bg-rose-500/10", ring: "ring-rose-500/30" },
+    { bar: "bg-cyan-500", tint: "bg-cyan-500/10", ring: "ring-cyan-500/30" },
+  ];
+  const initials = (n: string) =>
+    n
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((p) => p[0]?.toUpperCase() ?? "")
+      .join("");
+
   const filteredRecords = records.filter((r) => {
     if (histTeam && r.team_id !== histTeam) return false;
     const date = (r.started_at ?? r.created_at).slice(0, 10);
