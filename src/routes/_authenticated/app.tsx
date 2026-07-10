@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { toast } from "sonner";
 import {
   Video,
   Plus,
@@ -190,6 +191,9 @@ function Dashboard() {
     if (!error) {
       setTeamName("");
       qc.invalidateQueries({ queryKey: ["teams"] });
+      toast.success(`Equipe "${name}" criada`);
+    } else {
+      toast.error("Não foi possível criar a equipe");
     }
   };
 
@@ -197,6 +201,7 @@ function Dashboard() {
     await supabase.from("teams").delete().eq("id", id);
     qc.invalidateQueries({ queryKey: ["teams"] });
     qc.invalidateQueries({ queryKey: ["team_members"] });
+    toast.success("Equipe excluída");
   };
 
   const addMember = async (teamId: string) => {
@@ -209,24 +214,32 @@ function Dashboard() {
     if (!error) {
       setMemberInputs((m) => ({ ...m, [teamId]: "" }));
       qc.invalidateQueries({ queryKey: ["team_members"] });
+      toast.success(`${full_name} adicionado`);
+    } else {
+      toast.error("Não foi possível adicionar o membro");
     }
   };
 
   const deleteMember = async (id: string) => {
     await supabase.from("team_members").delete().eq("id", id);
     qc.invalidateQueries({ queryKey: ["team_members"] });
+    toast.success("Membro removido");
   };
 
   const setMemberRole = async (id: string, role: string) => {
     await supabase.from("team_members").update({ role }).eq("id", id);
     qc.invalidateQueries({ queryKey: ["team_members"] });
+    toast.success(`Papel alterado para ${role}`);
   };
 
   const moveMember = async (id: string, teamId: string) => {
     setDragOverTeam(null);
     setDragMember(null);
+    const name = members.find((m) => m.id === id)?.full_name ?? "Membro";
+    const team = teams.find((t) => t.id === teamId)?.name ?? "";
     await supabase.from("team_members").update({ team_id: teamId }).eq("id", id);
     qc.invalidateQueries({ queryKey: ["team_members"] });
+    toast.success(`${name} movido para "${team}"`);
   };
 
   const addRoom = async () => {
