@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { PLAN_LIST } from "@/lib/plans";
 import logoUrl from "@/assets/freedumeet-logo.png.asset.json";
+import logoTransparentUrl from "@/assets/freedumeet-logo-transparent.png.asset.json";
 import {
   Video,
   Keyboard,
@@ -174,7 +175,11 @@ function Index() {
             <div className="absolute size-72 rounded-full border border-primary/15" />
             <div className="absolute size-60 rounded-full border border-primary/10" />
             <div className="glass relative flex size-52 items-center justify-center rounded-full glow">
-              <Video className="size-24 text-primary" />
+              <img
+                src={logoTransparentUrl.url}
+                alt="FreeduMeet"
+                className="size-36 object-contain"
+              />
             </div>
             {FEATURES.map((f, i) => {
               const angle = (i / FEATURES.length) * 2 * Math.PI - Math.PI / 2;
