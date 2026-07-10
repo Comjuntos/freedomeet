@@ -39,6 +39,53 @@ const FEATURES = [
   },
 ];
 
+const PLANS = [
+  {
+    name: "Gratuito",
+    price: "R$ 0",
+    period: "/mês",
+    highlight: false,
+    tagline: "Para começar a se reunir agora mesmo.",
+    features: [
+      "Reuniões de até 40 minutos",
+      "Até 8 participantes por sala",
+      "Vídeo HD, áudio e chat",
+      "Compartilhamento de tela",
+      "Legendas ao vivo com IA",
+    ],
+  },
+  {
+    name: "Negócios",
+    price: "R$ 39",
+    period: "/mês por usuário",
+    highlight: true,
+    tagline: "Para equipes que se reúnem todos os dias.",
+    features: [
+      "Reuniões ilimitadas",
+      "Até 50 participantes por sala",
+      "Tudo do plano Gratuito",
+      "Tradução em tempo real",
+      "Ata gerada por IA ao final",
+      "Integração com Slack",
+    ],
+  },
+  {
+    name: "Empresarial",
+    price: "R$ 99",
+    period: "/mês por usuário",
+    highlight: false,
+    tagline: "Para organizações que precisam de escala e controle.",
+    features: [
+      "Tudo do plano Negócios",
+      "Até 300 participantes por sala",
+      "Análise de engajamento com IA",
+      "Salas persistentes e branding",
+      "Suporte prioritário dedicado",
+      "Opção de auto-hospedagem",
+    ],
+  },
+];
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -103,11 +150,15 @@ function Index() {
 
       <main className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-12 px-6 py-8 md:grid-cols-2">
         <div className="max-w-md">
+          <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+            Planos por assinatura • 20% mais barato que o mercado
+          </span>
           <h1 className="text-4xl font-normal leading-tight tracking-tight md:text-5xl">
             Chamadas de vídeo e reuniões para todos
           </h1>
           <p className="mt-5 text-lg text-muted-foreground">
-            Conecte-se, colabore e comemore de qualquer lugar com o Meet.
+            Conecte-se, colabore e comemore de qualquer lugar. Escolha o plano ideal —
+            do Gratuito ao Empresarial — e pague menos do que nas grandes plataformas.
           </p>
 
           <div className="mt-8 flex flex-col items-stretch gap-4 sm:flex-row sm:items-center">
@@ -181,6 +232,61 @@ function Index() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section id="planos" className="border-t border-border px-6 py-16">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="text-2xl font-medium md:text-3xl">Planos e assinaturas</h2>
+          <p className="mt-2 max-w-xl text-muted-foreground">
+            Preços pensados para o mercado brasileiro, sempre cerca de 20% mais baratos
+            que as principais plataformas de videoconferência.
+          </p>
+          <div className="mt-10 grid gap-6 lg:grid-cols-3">
+            {PLANS.map((plan) => (
+              <div
+                key={plan.name}
+                className={`relative flex flex-col rounded-2xl border p-7 ${
+                  plan.highlight
+                    ? "border-primary bg-primary/5 shadow-sm"
+                    : "border-border bg-background"
+                }`}
+              >
+                {plan.highlight && (
+                  <span className="absolute -top-3 left-7 inline-flex items-center rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
+                    Mais popular
+                  </span>
+                )}
+                <h3 className="text-lg font-medium">{plan.name}</h3>
+                <div className="mt-3 flex items-baseline gap-1">
+                  <span className="text-3xl font-semibold">{plan.price}</span>
+                  <span className="text-sm text-muted-foreground">{plan.period}</span>
+                </div>
+                <p className="mt-2 text-sm text-muted-foreground">{plan.tagline}</p>
+                <ul className="mt-6 flex-1 space-y-3 text-sm">
+                  {plan.features.map((feat) => (
+                    <li key={feat} className="flex items-start gap-2">
+                      <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary" />
+                      <span>{feat}</span>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={createMeeting}
+                  className={`mt-7 inline-flex items-center justify-center rounded-md px-4 py-2.5 text-sm font-medium transition-colors ${
+                    plan.highlight
+                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                      : "border border-border hover:bg-secondary"
+                  }`}
+                >
+                  {plan.price === "R$ 0" ? "Começar grátis" : `Assinar ${plan.name}`}
+                </button>
+              </div>
+            ))}
+          </div>
+          <p className="mt-6 text-xs text-muted-foreground">
+            Valores mensais em reais. Assinaturas anuais têm desconto adicional.
+          </p>
         </div>
       </section>
     </div>
