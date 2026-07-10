@@ -77,6 +77,13 @@ function MemberAvatar({
 }
 
 type Team = { id: string; name: string };
+type Activity = {
+  id: string;
+  team_id: string;
+  title: string;
+  due_date: string | null;
+  done: boolean;
+};
 type Member = {
   id: string;
   team_id: string;
