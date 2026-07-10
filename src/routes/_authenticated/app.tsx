@@ -250,7 +250,7 @@ function Dashboard() {
       const { data, error } = await supabase
         .from("competency_maps")
         .select(
-          "id, team_id, competency, why_critical, current_level, impact, how_evolve, responsible, deadline",
+          "id, team_id, member_id, competency, why_critical, current_level, impact, how_evolve, responsible, deadline",
         )
         .order("created_at", { ascending: true });
       if (error) throw error;
