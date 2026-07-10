@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/slack/api";
 
@@ -27,8 +28,9 @@ async function slackFetch(method: string, body: Record<string, unknown>) {
 
 export type SlackChannel = { id: string; name: string };
 
-export const listSlackChannels = createServerFn({ method: "GET" }).handler(
-  async (): Promise<SlackChannel[]> => {
+export const listSlackChannels = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async (): Promise<SlackChannel[]> => {
     const channels: SlackChannel[] = [];
     let cursor = "";
     do {
@@ -45,12 +47,12 @@ export const listSlackChannels = createServerFn({ method: "GET" }).handler(
       cursor = page.response_metadata?.next_cursor ?? "";
     } while (cursor);
     return channels.sort((a, b) => a.name.localeCompare(b.name));
-  },
-);
+  });
 
 export const sendToSlack = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z.object({ channel: z.string().min(1), text: z.string().min(1) }).parse(input),
+    z.object({ channel: z.string().min(1).max(200), text: z.string().min(1).max(40000) }).parse(input),
   )
   .handler(async ({ data }) => {
     await slackFetch("chat.postMessage", {

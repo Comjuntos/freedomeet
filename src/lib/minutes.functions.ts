@@ -23,7 +23,7 @@ function validate(input: unknown): MinutesInput {
     throw new Error("Transcrição vazia. Ative a transcrição durante a reunião.");
   }
   return {
-    transcript: i.transcript,
+    transcript: i.transcript.slice(0, 200000),
     title: typeof i.title === "string" ? i.title : undefined,
     template: typeof i.template === "string" ? i.template : "formal",
     members: Array.isArray(i.members)
