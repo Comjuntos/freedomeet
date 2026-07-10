@@ -402,9 +402,33 @@ function Dashboard() {
             <p className="mt-4 text-sm text-muted-foreground">Nenhuma equipe ainda.</p>
           )}
 
+          {teams.length > 0 && (
+            <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+              <input
+                value={memberSearch}
+                onChange={(e) => setMemberSearch(e.target.value)}
+                placeholder="Buscar membro por nome ou email…"
+                className="w-64 rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+              />
+              <span>
+                {teams.length} {teams.length === 1 ? "equipe" : "equipes"} ·{" "}
+                {members.length} {members.length === 1 ? "membro" : "membros"}
+              </span>
+            </div>
+          )}
+
           <div className="mt-4 flex gap-4 overflow-x-auto pb-4">
             {teams.map((team, ti) => {
-              const teamMembers = members.filter((m) => m.team_id === team.id);
+              const q = memberSearch.trim().toLowerCase();
+              const teamMembers = members
+                .filter((m) => m.team_id === team.id)
+                .filter(
+                  (m) =>
+                    !q ||
+                    m.full_name.toLowerCase().includes(q) ||
+                    (m.email ?? "").toLowerCase().includes(q),
+                );
+              const adminCount = teamMembers.filter((m) => m.role === "admin").length;
               const c = COLUMN_COLORS[ti % COLUMN_COLORS.length];
               return (
                 <div
@@ -422,6 +446,11 @@ function Dashboard() {
                       <span className="rounded-full bg-background px-2 py-0.5 text-xs font-medium text-muted-foreground">
                         {teamMembers.length}
                       </span>
+                      {adminCount > 0 && (
+                        <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-600">
+                          {adminCount} admin{adminCount > 1 ? "s" : ""}
+                        </span>
+                      )}
                       <button
                         onClick={() => deleteTeam(team.id)}
                         className="rounded p-1 text-muted-foreground hover:text-destructive"
