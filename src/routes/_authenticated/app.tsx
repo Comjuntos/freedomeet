@@ -14,6 +14,7 @@ import {
   BarChart3,
   CalendarClock,
   Power,
+  Target,
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -114,6 +115,17 @@ type Schedule = {
   weekday: number;
   time_of_day: string;
   active: boolean;
+};
+type Competency = {
+  id: string;
+  team_id: string | null;
+  competency: string;
+  why_critical: string | null;
+  current_level: number;
+  impact: string;
+  how_evolve: string | null;
+  responsible: string | null;
+  deadline: string | null;
 };
 
 const WEEKDAYS = [
@@ -231,6 +243,20 @@ function Dashboard() {
     },
   });
 
+  const competenciesQ = useQuery({
+    queryKey: ["competency_maps"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("competency_maps")
+        .select(
+          "id, team_id, competency, why_critical, current_level, impact, how_evolve, responsible, deadline",
+        )
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return data as Competency[];
+    },
+  });
+
   const [teamName, setTeamName] = useState("");
   const [memberInputs, setMemberInputs] = useState<Record<string, string>>({});
   const [memberSearch, setMemberSearch] = useState("");
@@ -255,6 +281,14 @@ function Dashboard() {
   const [schedWeekday, setSchedWeekday] = useState(1);
   const [schedTime, setSchedTime] = useState("09:00");
   const [repTeam, setRepTeam] = useState("");
+  const [compTeam, setCompTeam] = useState("");
+  const [compName, setCompName] = useState("");
+  const [compWhy, setCompWhy] = useState("");
+  const [compLevel, setCompLevel] = useState(1);
+  const [compImpact, setCompImpact] = useState("medio");
+  const [compHow, setCompHow] = useState("");
+  const [compResp, setCompResp] = useState("");
+  const [compDeadline, setCompDeadline] = useState("");
 
   const signOut = async () => {
     await qc.cancelQueries();
@@ -446,6 +480,48 @@ function Dashboard() {
     navigate({ to: "/room/$roomId", params: { roomId: slug } });
   };
 
+  const addCompetency = async () => {
+    const competency = compName.trim();
+    if (!competency) return;
+    const { data: u } = await supabase.auth.getUser();
+    if (!u.user) return;
+    const { error } = await supabase.from("competency_maps").insert({
+      owner_id: u.user.id,
+      team_id: compTeam || null,
+      competency,
+      why_critical: compWhy.trim() || null,
+      current_level: compLevel,
+      impact: compImpact,
+      how_evolve: compHow.trim() || null,
+      responsible: compResp.trim() || null,
+      deadline: compDeadline || null,
+    });
+    if (!error) {
+      setCompName("");
+      setCompWhy("");
+      setCompLevel(1);
+      setCompImpact("medio");
+      setCompHow("");
+      setCompResp("");
+      setCompDeadline("");
+      qc.invalidateQueries({ queryKey: ["competency_maps"] });
+      toast.success("Competência adicionada ao mapa");
+    } else {
+      toast.error("Não foi possível adicionar a competência");
+    }
+  };
+
+  const updateCompetency = async (id: string, patch: Partial<Competency>) => {
+    await supabase.from("competency_maps").update(patch).eq("id", id);
+    qc.invalidateQueries({ queryKey: ["competency_maps"] });
+  };
+
+  const deleteCompetency = async (id: string) => {
+    await supabase.from("competency_maps").delete().eq("id", id);
+    qc.invalidateQueries({ queryKey: ["competency_maps"] });
+    toast.success("Competência removida");
+  };
+
   const teams = teamsQ.data ?? [];
   const members = membersQ.data ?? [];
   const activities = activitiesQ.data ?? [];
@@ -453,6 +529,7 @@ function Dashboard() {
   const roomTeams = roomTeamsQ.data ?? [];
   const records = recordsQ.data ?? [];
   const schedules = schedulesQ.data ?? [];
+  const competencies = competenciesQ.data ?? [];
 
   const COLUMN_COLORS = [
     { bar: "bg-sky-500", tint: "bg-sky-500/10", ring: "ring-sky-500/30" },
@@ -1361,7 +1438,176 @@ function Dashboard() {
             })}
           </div>
         </section>
+
+        <section className="lg:col-span-2">
+          <h2 className="flex items-center gap-2 text-xl font-semibold">
+            <Target className="size-5 text-primary" /> Mapa de Competências
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Mapeie quais competências e atitudes críticas farão sua equipe escalar mais rápido.
+          </p>
+
+          <div className="mt-4 grid gap-2 rounded-xl border border-border bg-card p-4 md:grid-cols-2 lg:grid-cols-4">
+            <select
+              value={compTeam}
+              onChange={(e) => setCompTeam(e.target.value)}
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+            >
+              <option value="">Sem equipe</option>
+              {teams.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+            <input
+              value={compName}
+              onChange={(e) => setCompName(e.target.value)}
+              placeholder="Competência / atitude crítica"
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+            />
+            <input
+              value={compResp}
+              onChange={(e) => setCompResp(e.target.value)}
+              placeholder="Responsável"
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+            />
+            <input
+              type="date"
+              value={compDeadline}
+              onChange={(e) => setCompDeadline(e.target.value)}
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+            />
+            <input
+              value={compWhy}
+              onChange={(e) => setCompWhy(e.target.value)}
+              placeholder="Por que é crítica para a equipe?"
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary md:col-span-2"
+            />
+            <input
+              value={compHow}
+              onChange={(e) => setCompHow(e.target.value)}
+              placeholder="Como vamos evoluir?"
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary md:col-span-2"
+            />
+            <select
+              value={compLevel}
+              onChange={(e) => setCompLevel(Number(e.target.value))}
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+            >
+              {[1, 2, 3, 4, 5].map((n) => (
+                <option key={n} value={n}>
+                  Nível {n}
+                </option>
+              ))}
+            </select>
+            <select
+              value={compImpact}
+              onChange={(e) => setCompImpact(e.target.value)}
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+            >
+              <option value="baixo">Impacto Baixo</option>
+              <option value="medio">Impacto Médio</option>
+              <option value="alto">Impacto Alto</option>
+            </select>
+            <button
+              onClick={addCompetency}
+              className="inline-flex items-center justify-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 md:col-span-2"
+            >
+              <Plus className="size-4" /> Adicionar competência
+            </button>
+          </div>
+
+          {competencies.length === 0 ? (
+            <p className="mt-4 text-sm text-muted-foreground">Nenhuma competência mapeada ainda.</p>
+          ) : (
+            <div className="mt-4 overflow-x-auto rounded-xl border border-border">
+              <table className="w-full min-w-[820px] text-left text-sm">
+                <thead className="bg-secondary/50 text-xs uppercase tracking-wide text-muted-foreground">
+                  <tr>
+                    <th className="px-3 py-2">Competência</th>
+                    <th className="px-3 py-2">Por que é crítica</th>
+                    <th className="px-3 py-2">Nível atual</th>
+                    <th className="px-3 py-2">Impacto</th>
+                    <th className="px-3 py-2">Como evoluir</th>
+                    <th className="px-3 py-2">Responsável</th>
+                    <th className="px-3 py-2">Prazo</th>
+                    <th className="px-3 py-2"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {competencies.map((c) => {
+                    const team = teams.find((t) => t.id === c.team_id);
+                    return (
+                      <tr key={c.id} className="border-t border-border align-top">
+                        <td className="px-3 py-2">
+                          <p className="font-medium">{c.competency}</p>
+                          {team && (
+                            <span className="text-xs text-muted-foreground">{team.name}</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-2 text-muted-foreground">{c.why_critical || "—"}</td>
+                        <td className="px-3 py-2">
+                          <div className="flex gap-1">
+                            {[1, 2, 3, 4, 5].map((n) => (
+                              <button
+                                key={n}
+                                onClick={() => updateCompetency(c.id, { current_level: n })}
+                                aria-label={`Nível ${n}`}
+                                className={`size-6 rounded-full text-xs font-medium ${
+                                  n <= c.current_level
+                                    ? "bg-primary text-primary-foreground"
+                                    : "bg-secondary text-muted-foreground"
+                                }`}
+                              >
+                                {n}
+                              </button>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="px-3 py-2">
+                          <select
+                            value={c.impact}
+                            onChange={(e) => updateCompetency(c.id, { impact: e.target.value })}
+                            className={`rounded-full border-0 px-2 py-1 text-xs font-medium ${
+                              c.impact === "alto"
+                                ? "bg-rose-500/15 text-rose-600"
+                                : c.impact === "medio"
+                                  ? "bg-amber-500/15 text-amber-600"
+                                  : "bg-emerald-500/15 text-emerald-600"
+                            }`}
+                          >
+                            <option value="baixo">Baixo</option>
+                            <option value="medio">Médio</option>
+                            <option value="alto">Alto</option>
+                          </select>
+                        </td>
+                        <td className="px-3 py-2 text-muted-foreground">{c.how_evolve || "—"}</td>
+                        <td className="px-3 py-2 text-muted-foreground">{c.responsible || "—"}</td>
+                        <td className="px-3 py-2 text-muted-foreground">
+                          {c.deadline
+                            ? new Date(c.deadline + "T00:00:00").toLocaleDateString("pt-BR")
+                            : "—"}
+                        </td>
+                        <td className="px-3 py-2">
+                          <button
+                            onClick={() => deleteCompetency(c.id)}
+                            className="rounded p-1 text-muted-foreground hover:text-destructive"
+                            aria-label="Remover competência"
+                          >
+                            <Trash2 className="size-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
       </main>
+
 
       {openRecord && (
         <div
