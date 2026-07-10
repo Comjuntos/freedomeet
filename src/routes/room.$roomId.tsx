@@ -170,6 +170,9 @@ function Room() {
   const runDashboard = useServerFn(analyzeDashboard);
   const loadChannels = useServerFn(listSlackChannels);
   const postToSlack = useServerFn(sendToSlack);
+  const saveRecord = useServerFn(saveMeetingRecord);
+  const [saveStatus, setSaveStatus] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const [showMinutes, setShowMinutes] = useState(false);
   const [minutesTemplate, setMinutesTemplate] = useState("formal");
   const [minutesText, setMinutesText] = useState("");
