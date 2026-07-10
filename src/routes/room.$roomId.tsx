@@ -25,6 +25,7 @@ import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment.function
 import { analyzeDashboard, type DashboardResult } from "@/lib/dashboard.functions";
 import { listSlackChannels, sendToSlack, type SlackChannel } from "@/lib/slack.functions";
 import { getJaasToken } from "@/lib/jaas.functions";
+import { saveMeetingRecord } from "@/lib/history.functions";
 
 const JITSI_DOMAIN = "8x8.vc";
 const SCRIPT_SRC = `https://${JITSI_DOMAIN}/external_api.js`;
@@ -169,6 +170,9 @@ function Room() {
   const runDashboard = useServerFn(analyzeDashboard);
   const loadChannels = useServerFn(listSlackChannels);
   const postToSlack = useServerFn(sendToSlack);
+  const saveRecord = useServerFn(saveMeetingRecord);
+  const [saveStatus, setSaveStatus] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const [showMinutes, setShowMinutes] = useState(false);
   const [minutesTemplate, setMinutesTemplate] = useState("formal");
   const [minutesText, setMinutesText] = useState("");
@@ -366,6 +370,39 @@ function Room() {
       setSlackSending(false);
     }
   }, [slackChannel, minutesText, postToSlack, roomId]);
+
+  const saveToHistory = useCallback(
+    async (minutes: string) => {
+      if (!minutes.trim()) return;
+      setSaving(true);
+      setSaveStatus(null);
+      const transcript = captions.map((c) => c.original).join("\n").trim();
+      try {
+        await saveRecord({
+          data: {
+            title: roomId,
+            transcript,
+            minutes,
+            sentiment: sentiment ?? null,
+            dashboard: dashboard ?? null,
+            startedAt:
+              startTimeRef.current !== null
+                ? new Date(startTimeRef.current).toISOString()
+                : null,
+            endedAt: new Date().toISOString(),
+          },
+        });
+        setSaveStatus("Reunião salva no histórico! ✅");
+      } catch {
+        setSaveStatus(
+          "Não foi possível salvar. Faça login no painel para guardar o histórico.",
+        );
+      } finally {
+        setSaving(false);
+      }
+    },
+    [captions, roomId, sentiment, dashboard, saveRecord],
+  );
 
   useEffect(() => {
     targetRef.current = targetLang;
@@ -627,8 +664,23 @@ function Room() {
                       <Download className="size-4" />
                       Baixar
                     </button>
+                    <button
+                      onClick={() => saveToHistory(endMinutes)}
+                      disabled={saving}
+                      className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary disabled:opacity-60"
+                    >
+                      {saving ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <ClipboardList className="size-4" />
+                      )}
+                      Salvar no histórico
+                    </button>
                     {endSlackStatus && (
                       <span className="text-xs text-muted-foreground">{endSlackStatus}</span>
+                    )}
+                    {saveStatus && (
+                      <span className="text-xs text-muted-foreground">{saveStatus}</span>
                     )}
                   </div>
                 )}
@@ -923,6 +975,18 @@ function Room() {
                         <Download className="size-4" />
                         Baixar
                       </button>
+                      <button
+                        onClick={() => saveToHistory(minutesText)}
+                        disabled={saving}
+                        className="flex items-center gap-2 rounded-md border border-border px-3 py-2 font-medium hover:bg-secondary disabled:opacity-60"
+                      >
+                        {saving ? (
+                          <Loader2 className="size-4 animate-spin" />
+                        ) : (
+                          <ClipboardList className="size-4" />
+                        )}
+                        Salvar no histórico
+                      </button>
                       <select
                         value={slackChannel}
                         onChange={(e) => setSlackChannel(e.target.value)}
@@ -955,6 +1019,9 @@ function Room() {
                 </div>
                 {slackStatus && (
                   <p className="px-5 pt-1 text-xs text-muted-foreground">{slackStatus}</p>
+                )}
+                {saveStatus && (
+                  <p className="px-5 pt-1 text-xs text-muted-foreground">{saveStatus}</p>
                 )}
 
                 <div className="flex-1 overflow-y-auto px-5 py-4 text-sm">
