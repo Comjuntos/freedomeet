@@ -150,11 +150,15 @@ function Index() {
 
       <main className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-12 px-6 py-8 md:grid-cols-2">
         <div className="max-w-md">
+          <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+            Planos por assinatura • 20% mais barato que o mercado
+          </span>
           <h1 className="text-4xl font-normal leading-tight tracking-tight md:text-5xl">
             Chamadas de vídeo e reuniões para todos
           </h1>
           <p className="mt-5 text-lg text-muted-foreground">
-            Conecte-se, colabore e comemore de qualquer lugar com o Meet.
+            Conecte-se, colabore e comemore de qualquer lugar. Escolha o plano ideal —
+            do Gratuito ao Empresarial — e pague menos do que nas grandes plataformas.
           </p>
 
           <div className="mt-8 flex flex-col items-stretch gap-4 sm:flex-row sm:items-center">
