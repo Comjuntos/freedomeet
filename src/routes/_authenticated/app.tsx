@@ -1438,6 +1438,174 @@ function Dashboard() {
             })}
           </div>
         </section>
+
+        <section className="lg:col-span-2">
+          <h2 className="flex items-center gap-2 text-xl font-semibold">
+            <Target className="size-5 text-primary" /> Mapa de Competências
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Mapeie quais competências e atitudes críticas farão sua equipe escalar mais rápido.
+          </p>
+
+          <div className="mt-4 grid gap-2 rounded-xl border border-border bg-card p-4 md:grid-cols-2 lg:grid-cols-4">
+            <select
+              value={compTeam}
+              onChange={(e) => setCompTeam(e.target.value)}
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+            >
+              <option value="">Sem equipe</option>
+              {teams.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+            <input
+              value={compName}
+              onChange={(e) => setCompName(e.target.value)}
+              placeholder="Competência / atitude crítica"
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+            />
+            <input
+              value={compResp}
+              onChange={(e) => setCompResp(e.target.value)}
+              placeholder="Responsável"
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+            />
+            <input
+              type="date"
+              value={compDeadline}
+              onChange={(e) => setCompDeadline(e.target.value)}
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+            />
+            <input
+              value={compWhy}
+              onChange={(e) => setCompWhy(e.target.value)}
+              placeholder="Por que é crítica para a equipe?"
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary md:col-span-2"
+            />
+            <input
+              value={compHow}
+              onChange={(e) => setCompHow(e.target.value)}
+              placeholder="Como vamos evoluir?"
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary md:col-span-2"
+            />
+            <select
+              value={compLevel}
+              onChange={(e) => setCompLevel(Number(e.target.value))}
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+            >
+              {[1, 2, 3, 4, 5].map((n) => (
+                <option key={n} value={n}>
+                  Nível {n}
+                </option>
+              ))}
+            </select>
+            <select
+              value={compImpact}
+              onChange={(e) => setCompImpact(e.target.value)}
+              className="rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+            >
+              <option value="baixo">Impacto Baixo</option>
+              <option value="medio">Impacto Médio</option>
+              <option value="alto">Impacto Alto</option>
+            </select>
+            <button
+              onClick={addCompetency}
+              className="inline-flex items-center justify-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 md:col-span-2"
+            >
+              <Plus className="size-4" /> Adicionar competência
+            </button>
+          </div>
+
+          {competencies.length === 0 ? (
+            <p className="mt-4 text-sm text-muted-foreground">Nenhuma competência mapeada ainda.</p>
+          ) : (
+            <div className="mt-4 overflow-x-auto rounded-xl border border-border">
+              <table className="w-full min-w-[820px] text-left text-sm">
+                <thead className="bg-secondary/50 text-xs uppercase tracking-wide text-muted-foreground">
+                  <tr>
+                    <th className="px-3 py-2">Competência</th>
+                    <th className="px-3 py-2">Por que é crítica</th>
+                    <th className="px-3 py-2">Nível atual</th>
+                    <th className="px-3 py-2">Impacto</th>
+                    <th className="px-3 py-2">Como evoluir</th>
+                    <th className="px-3 py-2">Responsável</th>
+                    <th className="px-3 py-2">Prazo</th>
+                    <th className="px-3 py-2"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {competencies.map((c) => {
+                    const team = teams.find((t) => t.id === c.team_id);
+                    return (
+                      <tr key={c.id} className="border-t border-border align-top">
+                        <td className="px-3 py-2">
+                          <p className="font-medium">{c.competency}</p>
+                          {team && (
+                            <span className="text-xs text-muted-foreground">{team.name}</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-2 text-muted-foreground">{c.why_critical || "—"}</td>
+                        <td className="px-3 py-2">
+                          <div className="flex gap-1">
+                            {[1, 2, 3, 4, 5].map((n) => (
+                              <button
+                                key={n}
+                                onClick={() => updateCompetency(c.id, { current_level: n })}
+                                aria-label={`Nível ${n}`}
+                                className={`size-6 rounded-full text-xs font-medium ${
+                                  n <= c.current_level
+                                    ? "bg-primary text-primary-foreground"
+                                    : "bg-secondary text-muted-foreground"
+                                }`}
+                              >
+                                {n}
+                              </button>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="px-3 py-2">
+                          <select
+                            value={c.impact}
+                            onChange={(e) => updateCompetency(c.id, { impact: e.target.value })}
+                            className={`rounded-full border-0 px-2 py-1 text-xs font-medium ${
+                              c.impact === "alto"
+                                ? "bg-rose-500/15 text-rose-600"
+                                : c.impact === "medio"
+                                  ? "bg-amber-500/15 text-amber-600"
+                                  : "bg-emerald-500/15 text-emerald-600"
+                            }`}
+                          >
+                            <option value="baixo">Baixo</option>
+                            <option value="medio">Médio</option>
+                            <option value="alto">Alto</option>
+                          </select>
+                        </td>
+                        <td className="px-3 py-2 text-muted-foreground">{c.how_evolve || "—"}</td>
+                        <td className="px-3 py-2 text-muted-foreground">{c.responsible || "—"}</td>
+                        <td className="px-3 py-2 text-muted-foreground">
+                          {c.deadline
+                            ? new Date(c.deadline + "T00:00:00").toLocaleDateString("pt-BR")
+                            : "—"}
+                        </td>
+                        <td className="px-3 py-2">
+                          <button
+                            onClick={() => deleteCompetency(c.id)}
+                            className="rounded p-1 text-muted-foreground hover:text-destructive"
+                            aria-label="Remover competência"
+                          >
+                            <Trash2 className="size-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
       </main>
 
 
