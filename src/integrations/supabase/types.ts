@@ -199,6 +199,7 @@ export type Database = {
       }
       team_members: {
         Row: {
+          activity: string | null
           created_at: string
           email: string | null
           full_name: string
@@ -208,6 +209,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          activity?: string | null
           created_at?: string
           email?: string | null
           full_name: string
@@ -217,6 +219,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          activity?: string | null
           created_at?: string
           email?: string | null
           full_name?: string

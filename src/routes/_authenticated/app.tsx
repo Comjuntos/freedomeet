@@ -83,6 +83,7 @@ type Member = {
   full_name: string;
   email: string | null;
   role: string;
+  activity: string | null;
 };
 type Room = { id: string; name: string; room_slug: string };
 type MeetingRecord = {
@@ -158,7 +159,7 @@ function Dashboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("team_members")
-        .select("id, team_id, full_name, email, role");
+        .select("id, team_id, full_name, email, role, activity");
       if (error) throw error;
       return data as Member[];
     },
@@ -284,6 +285,14 @@ function Dashboard() {
     await supabase.from("team_members").update({ role }).eq("id", id);
     qc.invalidateQueries({ queryKey: ["team_members"] });
     toast.success(`Papel alterado para ${role}`);
+  };
+
+  const setMemberActivity = async (id: string, activity: string) => {
+    await supabase
+      .from("team_members")
+      .update({ activity: activity.trim() || null })
+      .eq("id", id);
+    qc.invalidateQueries({ queryKey: ["team_members"] });
   };
 
   const moveMember = async (id: string, teamId: string) => {
@@ -617,6 +626,18 @@ function Dashboard() {
                           <option value="membro">Membro</option>
                           <option value="admin">Admin</option>
                         </select>
+                        <input
+                          defaultValue={m.activity ?? ""}
+                          onBlur={(e) => {
+                            if ((e.target.value.trim() || null) !== (m.activity ?? null))
+                              setMemberActivity(m.id, e.target.value);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") e.currentTarget.blur();
+                          }}
+                          placeholder="Atividade atual…"
+                          className="mt-2 w-full rounded-md border border-dashed border-border bg-transparent px-2 py-1 text-xs outline-none focus:border-primary"
+                        />
                       </div>
                     ))}
                   </div>
