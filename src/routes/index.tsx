@@ -12,7 +12,7 @@ import {
   Languages,
   FileText,
   ShieldCheck,
-  Link2,
+  KanbanSquare,
 } from "lucide-react";
 const FEATURES = [
   {
