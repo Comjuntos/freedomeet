@@ -316,6 +316,35 @@ function Dashboard() {
     qc.invalidateQueries({ queryKey: ["team_members"] });
   };
 
+  const addActivity = async (teamId: string) => {
+    const title = (actTitle[teamId] || "").trim();
+    if (!title) return;
+    const { error } = await supabase.from("team_activities").insert({
+      team_id: teamId,
+      title,
+      due_date: actDate[teamId] || null,
+    });
+    if (!error) {
+      setActTitle((s) => ({ ...s, [teamId]: "" }));
+      setActDate((s) => ({ ...s, [teamId]: "" }));
+      qc.invalidateQueries({ queryKey: ["team_activities"] });
+      toast.success("Atividade criada");
+    } else {
+      toast.error("Não foi possível criar a atividade");
+    }
+  };
+
+  const toggleActivity = async (id: string, done: boolean) => {
+    await supabase.from("team_activities").update({ done }).eq("id", id);
+    qc.invalidateQueries({ queryKey: ["team_activities"] });
+  };
+
+  const deleteActivity = async (id: string) => {
+    await supabase.from("team_activities").delete().eq("id", id);
+    qc.invalidateQueries({ queryKey: ["team_activities"] });
+    toast.success("Atividade removida");
+  };
+
   const moveMember = async (id: string, teamId: string) => {
     setDragOverTeam(null);
     setDragMember(null);
