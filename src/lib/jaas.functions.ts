@@ -64,7 +64,7 @@ export const getJaasToken = createServerFn({ method: "POST" })
       .setProtectedHeader({ alg: "RS256", kid, typ: "JWT" })
       .setIssuedAt(now - 10)
       .setNotBefore(now - 10)
-      .setExpirationTime(now + 60 * 60 * 3)
+      .setExpirationTime(now + 60 * 60 * 6)
       .sign(privateKey);
 
     return { token, appId };
