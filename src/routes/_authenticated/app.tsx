@@ -491,7 +491,16 @@ function Dashboard() {
                     {teamMembers.map((m) => (
                       <div
                         key={m.id}
-                        className="rounded-lg border border-border bg-background p-2.5 shadow-sm transition-shadow hover:shadow-md"
+                        draggable
+                        onDragStart={(e) => {
+                          setDragMember(m.id);
+                          e.dataTransfer.effectAllowed = "move";
+                          e.dataTransfer.setData("text/plain", m.id);
+                        }}
+                        onDragEnd={() => setDragMember(null)}
+                        className={`cursor-grab rounded-lg border border-border bg-background p-2.5 shadow-sm transition-shadow hover:shadow-md active:cursor-grabbing ${
+                          dragMember === m.id ? "opacity-50" : ""
+                        }`}
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex min-w-0 items-center gap-2">
