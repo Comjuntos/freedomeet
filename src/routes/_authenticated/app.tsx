@@ -433,6 +433,7 @@ function Dashboard() {
 
   const teams = teamsQ.data ?? [];
   const members = membersQ.data ?? [];
+  const activities = activitiesQ.data ?? [];
   const rooms = roomsQ.data ?? [];
   const roomTeams = roomTeamsQ.data ?? [];
   const records = recordsQ.data ?? [];
