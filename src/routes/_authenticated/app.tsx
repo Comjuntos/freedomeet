@@ -83,6 +83,7 @@ type Activity = {
   title: string;
   due_date: string | null;
   done: boolean;
+  member_id: string | null;
 };
 type Member = {
   id: string;
@@ -177,7 +178,7 @@ function Dashboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("team_activities")
-        .select("id, team_id, title, due_date, done")
+        .select("id, team_id, title, due_date, done, member_id")
         .order("due_date", { ascending: true, nullsFirst: false });
       if (error) throw error;
       return data as Activity[];
@@ -237,6 +238,7 @@ function Dashboard() {
   const [profileMember, setProfileMember] = useState<Member | null>(null);
   const [actTitle, setActTitle] = useState<Record<string, string>>({});
   const [actDate, setActDate] = useState<Record<string, string>>({});
+  const [actMember, setActMember] = useState<Record<string, string>>({});
   const [roomName, setRoomName] = useState("");
   const [roomTeamSel, setRoomTeamSel] = useState<Record<string, boolean>>({});
   const [histTeam, setHistTeam] = useState("");
@@ -323,10 +325,12 @@ function Dashboard() {
       team_id: teamId,
       title,
       due_date: actDate[teamId] || null,
+      member_id: actMember[teamId] || null,
     });
     if (!error) {
       setActTitle((s) => ({ ...s, [teamId]: "" }));
       setActDate((s) => ({ ...s, [teamId]: "" }));
+      setActMember((s) => ({ ...s, [teamId]: "" }));
       qc.invalidateQueries({ queryKey: ["team_activities"] });
       toast.success("Atividade criada");
     } else {
@@ -755,6 +759,11 @@ function Dashboard() {
                                     {overdue ? " · atrasada" : ""}
                                   </p>
                                 )}
+                                {a.member_id && (
+                                  <p className="truncate text-[10px] text-primary">
+                                    @{members.find((m) => m.id === a.member_id)?.full_name ?? "?"}
+                                  </p>
+                                )}
                               </div>
                               <button
                                 onClick={() => deleteActivity(a.id)}
@@ -779,6 +788,21 @@ function Dashboard() {
                         placeholder="Nova atividade…"
                         className="w-full rounded-md border border-border bg-background px-2 py-1.5 text-xs outline-none focus:border-primary"
                       />
+                      <select
+                        value={actMember[team.id] || ""}
+                        onChange={(e) =>
+                          setActMember((s) => ({ ...s, [team.id]: e.target.value }))
+                        }
+                        className="w-full rounded-md border border-border bg-background px-2 py-1.5 text-xs outline-none focus:border-primary"
+                        aria-label="Responsável pela atividade"
+                      >
+                        <option value="">Sem responsável</option>
+                        {teamMembers.map((tm) => (
+                          <option key={tm.id} value={tm.id}>
+                            {tm.full_name}
+                          </option>
+                        ))}
+                      </select>
                       <div className="flex gap-2">
                         <input
                           type="date"
