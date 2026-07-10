@@ -24,7 +24,7 @@ function validate(input: unknown): SaveInput {
     teamId: typeof i.teamId === "string" && i.teamId ? i.teamId : null,
     transcript: typeof i.transcript === "string" ? i.transcript : undefined,
     minutes: typeof i.minutes === "string" ? i.minutes : undefined,
-    sentiment: i.sentiment ?? null,
+    sentiment: (i.sentiment ?? null) as SaveInput["sentiment"],
     dashboard: i.dashboard ?? null,
     startedAt: typeof i.startedAt === "string" ? i.startedAt : null,
     endedAt: typeof i.endedAt === "string" ? i.endedAt : null,
