@@ -371,6 +371,57 @@ function Room() {
     targetRef.current = targetLang;
   }, [targetLang]);
 
+  // Ao encerrar a reunião, o administrador recebe automaticamente a ata
+  // gerada a partir da transcrição e enviada para o Slack — sem cliques.
+  useEffect(() => {
+    if (!ended || !isHost || autoRanRef.current) return;
+    autoRanRef.current = true;
+    const transcript = captions
+      .map((c) => c.original)
+      .join("\n")
+      .trim();
+    if (!transcript) {
+      setEndError(
+        "Nenhuma transcrição foi capturada nesta reunião, então não há ata para gerar.",
+      );
+      return;
+    }
+    setEndLoading(true);
+    (async () => {
+      try {
+        const startedAt =
+          startTimeRef.current !== null
+            ? new Date(startTimeRef.current).toLocaleString("pt-BR")
+            : undefined;
+        const res = await makeMinutes({
+          data: { transcript, template: "executiva", title: roomId, startedAt },
+        });
+        setEndMinutes(res.minutes);
+        try {
+          const chs = await loadChannels();
+          const ch = chs[0];
+          if (ch) {
+            await postToSlack({
+              data: {
+                channel: ch.id,
+                text: `*Ata automática — reunião ${roomId}*\n\n${res.minutes}`,
+              },
+            });
+            setEndSlackStatus(`Ata enviada automaticamente para #${ch.name} no Slack ✅`);
+          }
+        } catch {
+          setEndSlackStatus(
+            "Ata gerada, mas não foi possível enviá-la ao Slack automaticamente.",
+          );
+        }
+      } catch {
+        setEndError("Não foi possível gerar a ata automática. Tente gerar manualmente.");
+      } finally {
+        setEndLoading(false);
+      }
+    })();
+  }, [ended, isHost, captions, makeMinutes, roomId, loadChannels, postToSlack]);
+
   // Meeting duration timer: starts once the room mounts, stops when it ends.
   useEffect(() => {
     if (startTimeRef.current === null) startTimeRef.current = Date.now();
