@@ -52,6 +52,8 @@ const PLANS = [
       "Vídeo HD, áudio e chat",
       "Compartilhamento de tela",
       "Legendas ao vivo com IA",
+      "Ata gerada por IA",
+      "Análise de sentimentos",
     ],
   },
   {
