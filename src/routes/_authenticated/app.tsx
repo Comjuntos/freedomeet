@@ -568,12 +568,24 @@ function Dashboard() {
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex min-w-0 items-center gap-2">
-                            <img
-                              src={avatarUrlFor(m.email || m.full_name)}
-                              alt={`Avatar de ${m.full_name}`}
-                              loading="lazy"
-                              className={`size-8 shrink-0 rounded-full ring-2 ${c.ring} bg-background`}
-                            />
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  onClick={() => setProfileMember(m)}
+                                  aria-label={`Ver perfil de ${m.full_name}`}
+                                  className="rounded-full"
+                                >
+                                  <MemberAvatar
+                                    member={m}
+                                    url={avatarUrlFor(m.email || m.full_name)}
+                                    className="size-8"
+                                    ringClass={`ring-2 ${c.ring}`}
+                                  />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent>Ver perfil de {m.full_name}</TooltipContent>
+                            </Tooltip>
                             <div className="min-w-0">
                               <p className="truncate text-sm font-medium">{m.full_name}</p>
                               {m.email && (
