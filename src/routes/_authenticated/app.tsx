@@ -84,6 +84,7 @@ type Activity = {
   due_date: string | null;
   done: boolean;
   member_id: string | null;
+  status: string;
 };
 type Member = {
   id: string;
@@ -178,7 +179,7 @@ function Dashboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("team_activities")
-        .select("id, team_id, title, due_date, done, member_id")
+        .select("id, team_id, title, due_date, done, member_id, status")
         .order("due_date", { ascending: true, nullsFirst: false });
       if (error) throw error;
       return data as Activity[];
