@@ -442,7 +442,19 @@ function Dashboard() {
               return (
                 <div
                   key={team.id}
-                  className={`flex w-72 shrink-0 flex-col overflow-hidden rounded-xl ${c.tint} ring-1 ${c.ring}`}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    if (dragOverTeam !== team.id) setDragOverTeam(team.id);
+                  }}
+                  onDragLeave={() => setDragOverTeam((t) => (t === team.id ? null : t))}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const id = dragMember || e.dataTransfer.getData("text/plain");
+                    if (id) moveMember(id, team.id);
+                  }}
+                  className={`flex w-72 shrink-0 flex-col overflow-hidden rounded-xl ${c.tint} ring-1 ${
+                    dragOverTeam === team.id ? "ring-2 ring-primary" : c.ring
+                  }`}
                 >
                   <div className={`h-1.5 w-full ${c.bar}`} />
                   <div className="flex flex-col p-3">
