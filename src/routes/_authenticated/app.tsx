@@ -116,6 +116,17 @@ type Schedule = {
   time_of_day: string;
   active: boolean;
 };
+type Competency = {
+  id: string;
+  team_id: string | null;
+  competency: string;
+  why_critical: string | null;
+  current_level: number;
+  impact: string;
+  how_evolve: string | null;
+  responsible: string | null;
+  deadline: string | null;
+};
 
 const WEEKDAYS = [
   "Domingo",
