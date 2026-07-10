@@ -975,6 +975,18 @@ function Room() {
                         <Download className="size-4" />
                         Baixar
                       </button>
+                      <button
+                        onClick={() => saveToHistory(minutesText)}
+                        disabled={saving}
+                        className="flex items-center gap-2 rounded-md border border-border px-3 py-2 font-medium hover:bg-secondary disabled:opacity-60"
+                      >
+                        {saving ? (
+                          <Loader2 className="size-4 animate-spin" />
+                        ) : (
+                          <ClipboardList className="size-4" />
+                        )}
+                        Salvar no histórico
+                      </button>
                       <select
                         value={slackChannel}
                         onChange={(e) => setSlackChannel(e.target.value)}
