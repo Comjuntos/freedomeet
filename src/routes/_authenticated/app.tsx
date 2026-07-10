@@ -891,6 +891,40 @@ function Dashboard() {
                       </span>
                     </p>
                   </div>
+                  <div className="mt-2">
+                    <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      <CalendarClock className="size-3.5" /> Atividades atribuídas
+                    </p>
+                    <div className="space-y-1.5">
+                      {activities.filter((a) => a.member_id === profileMember.id).length === 0 && (
+                        <p className="text-xs text-muted-foreground">Nenhuma atividade atribuída.</p>
+                      )}
+                      {activities
+                        .filter((a) => a.member_id === profileMember.id)
+                        .map((a) => {
+                          const overdue =
+                            !a.done &&
+                            a.due_date &&
+                            a.due_date < new Date().toISOString().slice(0, 10);
+                          return (
+                            <div
+                              key={a.id}
+                              className="flex items-center justify-between gap-2 rounded-md border border-border px-2 py-1.5"
+                            >
+                              <span className={`text-xs ${a.done ? "text-muted-foreground line-through" : ""}`}>
+                                {a.title}
+                              </span>
+                              {a.due_date && (
+                                <span className={`text-[10px] ${overdue ? "font-medium text-destructive" : "text-muted-foreground"}`}>
+                                  {new Date(a.due_date + "T00:00:00").toLocaleDateString("pt-BR")}
+                                  {overdue ? " · atrasada" : ""}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </div>
                 </>
               )}
             </DialogContent>
