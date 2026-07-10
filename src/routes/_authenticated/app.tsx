@@ -83,6 +83,7 @@ type Activity = {
   title: string;
   due_date: string | null;
   done: boolean;
+  member_id: string | null;
 };
 type Member = {
   id: string;
