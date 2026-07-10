@@ -626,18 +626,22 @@ function Dashboard() {
                           <option value="membro">Membro</option>
                           <option value="admin">Admin</option>
                         </select>
-                        <input
-                          defaultValue={m.activity ?? ""}
-                          onBlur={(e) => {
-                            if ((e.target.value.trim() || null) !== (m.activity ?? null))
-                              setMemberActivity(m.id, e.target.value);
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") e.currentTarget.blur();
-                          }}
-                          placeholder="Atividade atual…"
-                          className="mt-2 w-full rounded-md border border-dashed border-border bg-transparent px-2 py-1 text-xs outline-none focus:border-primary"
-                        />
+                        <div className="mt-2">
+                          <label className="mb-1 block text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                            Atividades
+                          </label>
+                          <textarea
+                            key={m.activity ?? ""}
+                            defaultValue={m.activity ?? ""}
+                            rows={3}
+                            onBlur={(e) => {
+                              if ((e.target.value.trim() || null) !== (m.activity ?? null))
+                                setMemberActivity(m.id, e.target.value);
+                            }}
+                            placeholder="Descreva o que está sendo realizado…"
+                            className="min-h-[64px] w-full resize-y rounded-md border border-dashed border-border bg-secondary/40 px-2.5 py-2 text-xs leading-relaxed outline-none transition-colors focus:border-primary focus:bg-background"
+                          />
+                        </div>
                       </div>
                     ))}
                   </div>
