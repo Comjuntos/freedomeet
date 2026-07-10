@@ -644,7 +644,7 @@ function Dashboard() {
             </div>
           )}
 
-          <div className="mt-4 flex gap-4 overflow-x-auto pb-4">
+          <div className="mt-4 flex gap-4 overflow-x-auto pb-4 [scrollbar-width:thin]">
             {teams.map((team, ti) => {
               const q = memberSearch.trim().toLowerCase();
               const teamMembers = members
