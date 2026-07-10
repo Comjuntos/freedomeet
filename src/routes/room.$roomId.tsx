@@ -1020,6 +1020,9 @@ function Room() {
                 {slackStatus && (
                   <p className="px-5 pt-1 text-xs text-muted-foreground">{slackStatus}</p>
                 )}
+                {saveStatus && (
+                  <p className="px-5 pt-1 text-xs text-muted-foreground">{saveStatus}</p>
+                )}
 
                 <div className="flex-1 overflow-y-auto px-5 py-4 text-sm">
                   {minutesError ? (
