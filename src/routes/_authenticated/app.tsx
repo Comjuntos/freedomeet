@@ -1,7 +1,19 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Video, Plus, Trash2, Users, LogOut, DoorOpen, History, Search } from "lucide-react";
+import {
+  Video,
+  Plus,
+  Trash2,
+  Users,
+  LogOut,
+  DoorOpen,
+  History,
+  Search,
+  BarChart3,
+  CalendarClock,
+  Power,
+} from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 
@@ -27,7 +39,39 @@ type MeetingRecord = {
   created_at: string;
   started_at: string | null;
   ended_at: string | null;
+  sentiment: unknown;
+  dashboard: unknown;
 };
+type Schedule = {
+  id: string;
+  title: string;
+  team_id: string | null;
+  room_slug: string;
+  weekday: number;
+  time_of_day: string;
+  active: boolean;
+};
+
+const WEEKDAYS = [
+  "Domingo",
+  "Segunda",
+  "Terça",
+  "Quarta",
+  "Quinta",
+  "Sexta",
+  "Sábado",
+];
+
+function nextOccurrence(weekday: number, time: string): Date {
+  const [h, m] = time.split(":").map((n) => parseInt(n, 10));
+  const now = new Date();
+  const d = new Date(now);
+  d.setHours(h || 0, m || 0, 0, 0);
+  let diff = (weekday - now.getDay() + 7) % 7;
+  if (diff === 0 && d.getTime() <= now.getTime()) diff = 7;
+  d.setDate(d.getDate() + diff);
+  return d;
+}
 
 function slugify(name: string) {
   const base = name
@@ -92,10 +136,22 @@ function Dashboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("meeting_records")
-        .select("id, title, team_id, minutes, created_at, started_at, ended_at")
+        .select("id, title, team_id, minutes, created_at, started_at, ended_at, sentiment, dashboard")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as MeetingRecord[];
+    },
+  });
+
+  const schedulesQ = useQuery({
+    queryKey: ["scheduled_meetings"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("scheduled_meetings")
+        .select("id, title, team_id, room_slug, weekday, time_of_day, active")
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return data as Schedule[];
     },
   });
 
@@ -108,6 +164,12 @@ function Dashboard() {
   const [histTo, setHistTo] = useState("");
   const [histSearch, setHistSearch] = useState("");
   const [openRecord, setOpenRecord] = useState<MeetingRecord | null>(null);
+  const [schedTitle, setSchedTitle] = useState("");
+  const [schedRoom, setSchedRoom] = useState("");
+  const [schedTeam, setSchedTeam] = useState("");
+  const [schedWeekday, setSchedWeekday] = useState(1);
+  const [schedTime, setSchedTime] = useState("09:00");
+  const [repTeam, setRepTeam] = useState("");
 
   const signOut = async () => {
     await qc.cancelQueries();
@@ -192,6 +254,42 @@ function Dashboard() {
     qc.invalidateQueries({ queryKey: ["meeting_records"] });
   };
 
+  const addSchedule = async () => {
+    const title = schedTitle.trim();
+    if (!title || !schedRoom) return;
+    const { data: u } = await supabase.auth.getUser();
+    if (!u.user) return;
+    const room = rooms.find((r) => r.id === schedRoom);
+    if (!room) return;
+    const next_at = nextOccurrence(schedWeekday, schedTime).toISOString();
+    const { error } = await supabase.from("scheduled_meetings").insert({
+      owner_id: u.user.id,
+      title,
+      room_id: room.id,
+      room_slug: room.room_slug,
+      team_id: schedTeam || null,
+      weekday: schedWeekday,
+      time_of_day: schedTime,
+      next_at,
+    });
+    if (!error) {
+      setSchedTitle("");
+      setSchedRoom("");
+      setSchedTeam("");
+      qc.invalidateQueries({ queryKey: ["scheduled_meetings"] });
+    }
+  };
+
+  const toggleSchedule = async (id: string, active: boolean) => {
+    await supabase.from("scheduled_meetings").update({ active: !active }).eq("id", id);
+    qc.invalidateQueries({ queryKey: ["scheduled_meetings"] });
+  };
+
+  const deleteSchedule = async (id: string) => {
+    await supabase.from("scheduled_meetings").delete().eq("id", id);
+    qc.invalidateQueries({ queryKey: ["scheduled_meetings"] });
+  };
+
   const openRoom = (slug: string) => {
     sessionStorage.setItem(`freedomeet-host-${slug}`, "1");
     navigate({ to: "/room/$roomId", params: { roomId: slug } });
@@ -202,6 +300,7 @@ function Dashboard() {
   const rooms = roomsQ.data ?? [];
   const roomTeams = roomTeamsQ.data ?? [];
   const records = recordsQ.data ?? [];
+  const schedules = schedulesQ.data ?? [];
 
   const filteredRecords = records.filter((r) => {
     if (histTeam && r.team_id !== histTeam) return false;
@@ -215,6 +314,32 @@ function Dashboard() {
     }
     return true;
   });
+
+  const reportRecords = records.filter((r) => !repTeam || r.team_id === repTeam);
+  const totalMeetings = reportRecords.length;
+  const totalMinutes = reportRecords.reduce((acc, r) => {
+    if (r.started_at && r.ended_at) {
+      return acc + Math.max(0, (new Date(r.ended_at).getTime() - new Date(r.started_at).getTime()) / 60000);
+    }
+    return acc;
+  }, 0);
+  const sentScores = reportRecords
+    .map((r) => (r.sentiment as { score?: number } | null)?.score)
+    .filter((s): s is number => typeof s === "number");
+  const avgSentiment = sentScores.length
+    ? Math.round(sentScores.reduce((a, b) => a + b, 0) / sentScores.length)
+    : null;
+  const topicCounts = new Map<string, number>();
+  for (const r of reportRecords) {
+    const topics = (r.dashboard as { topics?: { topic: string; mentions: number }[] } | null)?.topics;
+    if (Array.isArray(topics)) {
+      for (const t of topics) {
+        if (t?.topic) topicCounts.set(t.topic, (topicCounts.get(t.topic) ?? 0) + (t.mentions || 1));
+      }
+    }
+  }
+  const topTopics = [...topicCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
+  const maxTopic = topTopics[0]?.[1] ?? 1;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -492,6 +617,187 @@ function Dashboard() {
                       onClick={() => deleteRecord(r.id)}
                       className="rounded p-1 text-muted-foreground hover:text-destructive"
                       aria-label="Excluir registro"
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* RELATÓRIOS DE ENGAJAMENTO */}
+        <section className="lg:col-span-2">
+          <h2 className="flex items-center gap-2 text-xl font-semibold">
+            <BarChart3 className="size-5 text-primary" /> Relatórios de engajamento
+          </h2>
+          <div className="mt-4 rounded-lg border border-border p-4">
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-xs text-muted-foreground">Equipe</span>
+              <select
+                value={repTeam}
+                onChange={(e) => setRepTeam(e.target.value)}
+                className="w-56 rounded-md border border-border bg-background px-2 py-1.5 text-sm"
+              >
+                <option value="">Todas</option>
+                {teams.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-lg border border-border p-4">
+                <p className="text-xs text-muted-foreground">Reuniões</p>
+                <p className="text-2xl font-semibold">{totalMeetings}</p>
+              </div>
+              <div className="rounded-lg border border-border p-4">
+                <p className="text-xs text-muted-foreground">Tempo total</p>
+                <p className="text-2xl font-semibold">
+                  {Math.round(totalMinutes)} <span className="text-sm font-normal">min</span>
+                </p>
+              </div>
+              <div className="rounded-lg border border-border p-4">
+                <p className="text-xs text-muted-foreground">Sentimento médio</p>
+                <p className="text-2xl font-semibold">
+                  {avgSentiment === null ? "—" : `${avgSentiment}/100`}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <p className="mb-2 text-sm font-medium">Tópicos recorrentes</p>
+              {topTopics.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Sem dados. Salve reuniões com análise para gerar relatórios.
+                </p>
+              ) : (
+                <ul className="space-y-1.5">
+                  {topTopics.map(([topic, count]) => (
+                    <li key={topic} className="flex items-center gap-2 text-sm">
+                      <span className="w-40 shrink-0 truncate">{topic}</span>
+                      <div className="h-2 flex-1 overflow-hidden rounded-full bg-secondary">
+                        <div
+                          className="h-full rounded-full bg-primary"
+                          style={{ width: `${(count / maxTopic) * 100}%` }}
+                        />
+                      </div>
+                      <span className="w-8 shrink-0 text-right text-xs text-muted-foreground">
+                        {count}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* AGENDA DE REUNIÕES RECORRENTES */}
+        <section className="lg:col-span-2">
+          <h2 className="flex items-center gap-2 text-xl font-semibold">
+            <CalendarClock className="size-5 text-primary" /> Agenda recorrente
+          </h2>
+          <div className="mt-4 flex flex-wrap items-end gap-3 rounded-lg border border-border p-4">
+            <input
+              value={schedTitle}
+              onChange={(e) => setSchedTitle(e.target.value)}
+              placeholder="Título da reunião"
+              className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+            />
+            <select
+              value={schedRoom}
+              onChange={(e) => setSchedRoom(e.target.value)}
+              className="rounded-md border border-border bg-background px-2 py-2 text-sm"
+            >
+              <option value="">Sala…</option>
+              {rooms.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.name}
+                </option>
+              ))}
+            </select>
+            <select
+              value={schedTeam}
+              onChange={(e) => setSchedTeam(e.target.value)}
+              className="rounded-md border border-border bg-background px-2 py-2 text-sm"
+            >
+              <option value="">Equipe (opcional)</option>
+              {teams.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+            <select
+              value={schedWeekday}
+              onChange={(e) => setSchedWeekday(Number(e.target.value))}
+              className="rounded-md border border-border bg-background px-2 py-2 text-sm"
+            >
+              {WEEKDAYS.map((d, i) => (
+                <option key={d} value={i}>
+                  {d}
+                </option>
+              ))}
+            </select>
+            <input
+              type="time"
+              value={schedTime}
+              onChange={(e) => setSchedTime(e.target.value)}
+              className="rounded-md border border-border bg-background px-2 py-2 text-sm"
+            />
+            <button
+              onClick={addSchedule}
+              className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              <Plus className="size-4" /> Agendar
+            </button>
+          </div>
+
+          <div className="mt-4 space-y-3">
+            {schedules.length === 0 && (
+              <p className="text-sm text-muted-foreground">Nenhuma reunião recorrente ainda.</p>
+            )}
+            {schedules.map((s) => {
+              const teamName = teams.find((t) => t.id === s.team_id)?.name;
+              return (
+                <div
+                  key={s.id}
+                  className="flex items-center justify-between rounded-lg border border-border p-4"
+                >
+                  <div>
+                    <p className="font-medium">
+                      {s.title}
+                      {!s.active && (
+                        <span className="ml-2 text-xs text-muted-foreground">(pausada)</span>
+                      )}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Toda {WEEKDAYS[s.weekday]} às {s.time_of_day}
+                      {teamName ? ` · ${teamName}` : ""}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => openRoom(s.room_slug)}
+                      className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                    >
+                      <Video className="size-4" /> Abrir
+                    </button>
+                    <button
+                      onClick={() => toggleSchedule(s.id, s.active)}
+                      className="rounded p-1 text-muted-foreground hover:text-foreground"
+                      aria-label="Pausar/retomar"
+                    >
+                      <Power className="size-4" />
+                    </button>
+                    <button
+                      onClick={() => deleteSchedule(s.id)}
+                      className="rounded p-1 text-muted-foreground hover:text-destructive"
+                      aria-label="Excluir agendamento"
                     >
                       <Trash2 className="size-4" />
                     </button>

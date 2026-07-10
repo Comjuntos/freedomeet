@@ -152,6 +152,51 @@ export type Database = {
           },
         ]
       }
+      scheduled_meetings: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          next_at: string | null
+          owner_id: string
+          room_id: string | null
+          room_slug: string
+          team_id: string | null
+          time_of_day: string
+          title: string
+          updated_at: string
+          weekday: number
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          next_at?: string | null
+          owner_id: string
+          room_id?: string | null
+          room_slug: string
+          team_id?: string | null
+          time_of_day?: string
+          title: string
+          updated_at?: string
+          weekday?: number
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          next_at?: string | null
+          owner_id?: string
+          room_id?: string | null
+          room_slug?: string
+          team_id?: string | null
+          time_of_day?: string
+          title?: string
+          updated_at?: string
+          weekday?: number
+        }
+        Relationships: []
+      }
       team_members: {
         Row: {
           created_at: string
