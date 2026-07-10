@@ -14,6 +14,7 @@ import {
   BarChart3,
   CalendarClock,
   Power,
+  Target,
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
