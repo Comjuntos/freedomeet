@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { PLAN_LIST } from "@/lib/plans";
 import logoUrl from "@/assets/freedumeet-logo.png.asset.json";
+import logoTransparentUrl from "@/assets/freedumeet-logo-transparent.png.asset.json";
 import {
   Video,
   Keyboard,
