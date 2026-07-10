@@ -17,11 +17,64 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({ meta: [{ title: "Painel — FreeduMeet" }] }),
   component: Dashboard,
 });
+
+const initials = (n: string) =>
+  n
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? "")
+    .join("");
+
+function MemberAvatar({
+  member,
+  url,
+  className = "size-8",
+  ringClass,
+}: {
+  member: { full_name: string };
+  url: string;
+  className?: string;
+  ringClass?: string;
+}) {
+  const [failed, setFailed] = useState(false);
+  if (failed) {
+    return (
+      <span
+        className={`grid shrink-0 place-items-center rounded-full bg-primary text-xs font-semibold text-primary-foreground ${className} ${ringClass ?? ""}`}
+      >
+        {initials(member.full_name)}
+      </span>
+    );
+  }
+  return (
+    <img
+      src={url}
+      alt={`Avatar de ${member.full_name}`}
+      loading="lazy"
+      onError={() => setFailed(true)}
+      className={`shrink-0 rounded-full bg-background ${className} ${ringClass ?? ""}`}
+    />
+  );
+}
 
 type Team = { id: string; name: string };
 type Member = {
