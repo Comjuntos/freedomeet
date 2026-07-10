@@ -345,6 +345,14 @@ function Dashboard() {
     qc.invalidateQueries({ queryKey: ["team_activities"] });
   };
 
+  const setActivityStatus = async (id: string, status: string) => {
+    await supabase
+      .from("team_activities")
+      .update({ status, done: status === "done" })
+      .eq("id", id);
+    qc.invalidateQueries({ queryKey: ["team_activities"] });
+  };
+
   const deleteActivity = async (id: string) => {
     await supabase.from("team_activities").delete().eq("id", id);
     qc.invalidateQueries({ queryKey: ["team_activities"] });
