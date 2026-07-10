@@ -779,59 +779,77 @@ function Dashboard() {
                         </div>
                       );
                     })()}
-                    <div className="space-y-1.5">
-                      {activities
-                        .filter(
+                    <div className="space-y-2">
+                      {(
+                        [
+                          { key: "todo", label: "A Fazer", next: "doing" },
+                          { key: "doing", label: "Fazendo", next: "done" },
+                          { key: "done", label: "Feito", next: "todo" },
+                        ] as const
+                      ).map((lane) => {
+                        const laneActs = activities.filter(
                           (a) =>
                             a.team_id === team.id &&
+                            (a.status || "todo") === lane.key &&
                             (!filterMember[team.id] || a.member_id === filterMember[team.id]),
-                        )
-                        .map((a) => {
-                          const overdue =
-                            !a.done &&
-                            a.due_date &&
-                            a.due_date < new Date().toISOString().slice(0, 10);
-                          return (
-                            <div
-                              key={a.id}
-                              className="flex items-center gap-2 rounded-md border border-border bg-background px-2 py-1.5"
-                            >
-                              <input
-                                type="checkbox"
-                                checked={a.done}
-                                onChange={(e) => toggleActivity(a.id, e.target.checked)}
-                                className="size-3.5 shrink-0 accent-primary"
-                              />
-                              <div className="min-w-0 flex-1">
-                                <p
-                                  className={`truncate text-xs ${a.done ? "text-muted-foreground line-through" : ""}`}
-                                >
-                                  {a.title}
-                                </p>
-                                {a.due_date && (
-                                  <p
-                                    className={`text-[10px] ${overdue ? "font-medium text-destructive" : "text-muted-foreground"}`}
+                        );
+                        return (
+                          <div key={lane.key}>
+                            <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                              {lane.label} · {laneActs.length}
+                            </p>
+                            <div className="space-y-1.5">
+                              {laneActs.map((a) => {
+                                const overdue =
+                                  a.status !== "done" &&
+                                  a.due_date &&
+                                  a.due_date < new Date().toISOString().slice(0, 10);
+                                return (
+                                  <div
+                                    key={a.id}
+                                    className="flex items-center gap-2 rounded-md border border-border bg-background px-2 py-1.5"
                                   >
-                                    {new Date(a.due_date + "T00:00:00").toLocaleDateString("pt-BR")}
-                                    {overdue ? " · atrasada" : ""}
-                                  </p>
-                                )}
-                                {a.member_id && (
-                                  <p className="truncate text-[10px] text-primary">
-                                    @{members.find((m) => m.id === a.member_id)?.full_name ?? "?"}
-                                  </p>
-                                )}
-                              </div>
-                              <button
-                                onClick={() => deleteActivity(a.id)}
-                                className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-destructive"
-                                aria-label="Remover atividade"
-                              >
-                                <Trash2 className="size-3.5" />
-                              </button>
+                                    <button
+                                      onClick={() => setActivityStatus(a.id, lane.next)}
+                                      className="shrink-0 rounded px-1 text-[10px] text-muted-foreground hover:text-primary"
+                                      aria-label="Mover atividade"
+                                    >
+                                      →
+                                    </button>
+                                    <div className="min-w-0 flex-1">
+                                      <p
+                                        className={`truncate text-xs ${a.status === "done" ? "text-muted-foreground line-through" : ""}`}
+                                      >
+                                        {a.title}
+                                      </p>
+                                      {a.due_date && (
+                                        <p
+                                          className={`text-[10px] ${overdue ? "font-medium text-destructive" : "text-muted-foreground"}`}
+                                        >
+                                          {new Date(a.due_date + "T00:00:00").toLocaleDateString("pt-BR")}
+                                          {overdue ? " · atrasada" : ""}
+                                        </p>
+                                      )}
+                                      {a.member_id && (
+                                        <p className="truncate text-[10px] text-primary">
+                                          @{members.find((m) => m.id === a.member_id)?.full_name ?? "?"}
+                                        </p>
+                                      )}
+                                    </div>
+                                    <button
+                                      onClick={() => deleteActivity(a.id)}
+                                      className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-destructive"
+                                      aria-label="Remover atividade"
+                                    >
+                                      <Trash2 className="size-3.5" />
+                                    </button>
+                                  </div>
+                                );
+                              })}
                             </div>
-                          );
-                        })}
+                          </div>
+                        );
+                      })}
                     </div>
                     <div className="mt-2 space-y-1.5">
                       <input
