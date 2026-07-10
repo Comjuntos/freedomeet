@@ -77,6 +77,13 @@ function MemberAvatar({
 }
 
 type Team = { id: string; name: string };
+type Activity = {
+  id: string;
+  team_id: string;
+  title: string;
+  due_date: string | null;
+  done: boolean;
+};
 type Member = {
   id: string;
   team_id: string;
@@ -165,6 +172,18 @@ function Dashboard() {
     },
   });
 
+  const activitiesQ = useQuery({
+    queryKey: ["team_activities"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("team_activities")
+        .select("id, team_id, title, due_date, done")
+        .order("due_date", { ascending: true, nullsFirst: false });
+      if (error) throw error;
+      return data as Activity[];
+    },
+  });
+
   const roomsQ = useQuery({
     queryKey: ["project_rooms"],
     queryFn: async () => {
@@ -216,6 +235,8 @@ function Dashboard() {
   const [dragMember, setDragMember] = useState<string | null>(null);
   const [dragOverTeam, setDragOverTeam] = useState<string | null>(null);
   const [profileMember, setProfileMember] = useState<Member | null>(null);
+  const [actTitle, setActTitle] = useState<Record<string, string>>({});
+  const [actDate, setActDate] = useState<Record<string, string>>({});
   const [roomName, setRoomName] = useState("");
   const [roomTeamSel, setRoomTeamSel] = useState<Record<string, boolean>>({});
   const [histTeam, setHistTeam] = useState("");
@@ -293,6 +314,35 @@ function Dashboard() {
       .update({ activity: activity.trim() || null })
       .eq("id", id);
     qc.invalidateQueries({ queryKey: ["team_members"] });
+  };
+
+  const addActivity = async (teamId: string) => {
+    const title = (actTitle[teamId] || "").trim();
+    if (!title) return;
+    const { error } = await supabase.from("team_activities").insert({
+      team_id: teamId,
+      title,
+      due_date: actDate[teamId] || null,
+    });
+    if (!error) {
+      setActTitle((s) => ({ ...s, [teamId]: "" }));
+      setActDate((s) => ({ ...s, [teamId]: "" }));
+      qc.invalidateQueries({ queryKey: ["team_activities"] });
+      toast.success("Atividade criada");
+    } else {
+      toast.error("Não foi possível criar a atividade");
+    }
+  };
+
+  const toggleActivity = async (id: string, done: boolean) => {
+    await supabase.from("team_activities").update({ done }).eq("id", id);
+    qc.invalidateQueries({ queryKey: ["team_activities"] });
+  };
+
+  const deleteActivity = async (id: string) => {
+    await supabase.from("team_activities").delete().eq("id", id);
+    qc.invalidateQueries({ queryKey: ["team_activities"] });
+    toast.success("Atividade removida");
   };
 
   const moveMember = async (id: string, teamId: string) => {
@@ -383,6 +433,7 @@ function Dashboard() {
 
   const teams = teamsQ.data ?? [];
   const members = membersQ.data ?? [];
+  const activities = activitiesQ.data ?? [];
   const rooms = roomsQ.data ?? [];
   const roomTeams = roomTeamsQ.data ?? [];
   const records = recordsQ.data ?? [];
@@ -665,6 +716,86 @@ function Dashboard() {
                     >
                       <Plus className="size-4" />
                     </button>
+                  </div>
+
+                  <div className="mt-4 border-t border-border/60 pt-3">
+                    <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      <CalendarClock className="size-3.5" /> Atividades & prazos
+                    </p>
+                    <div className="space-y-1.5">
+                      {activities
+                        .filter((a) => a.team_id === team.id)
+                        .map((a) => {
+                          const overdue =
+                            !a.done &&
+                            a.due_date &&
+                            a.due_date < new Date().toISOString().slice(0, 10);
+                          return (
+                            <div
+                              key={a.id}
+                              className="flex items-center gap-2 rounded-md border border-border bg-background px-2 py-1.5"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={a.done}
+                                onChange={(e) => toggleActivity(a.id, e.target.checked)}
+                                className="size-3.5 shrink-0 accent-primary"
+                              />
+                              <div className="min-w-0 flex-1">
+                                <p
+                                  className={`truncate text-xs ${a.done ? "text-muted-foreground line-through" : ""}`}
+                                >
+                                  {a.title}
+                                </p>
+                                {a.due_date && (
+                                  <p
+                                    className={`text-[10px] ${overdue ? "font-medium text-destructive" : "text-muted-foreground"}`}
+                                  >
+                                    {new Date(a.due_date + "T00:00:00").toLocaleDateString("pt-BR")}
+                                    {overdue ? " · atrasada" : ""}
+                                  </p>
+                                )}
+                              </div>
+                              <button
+                                onClick={() => deleteActivity(a.id)}
+                                className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-destructive"
+                                aria-label="Remover atividade"
+                              >
+                                <Trash2 className="size-3.5" />
+                              </button>
+                            </div>
+                          );
+                        })}
+                    </div>
+                    <div className="mt-2 space-y-1.5">
+                      <input
+                        value={actTitle[team.id] || ""}
+                        onChange={(e) =>
+                          setActTitle((s) => ({ ...s, [team.id]: e.target.value }))
+                        }
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") addActivity(team.id);
+                        }}
+                        placeholder="Nova atividade…"
+                        className="w-full rounded-md border border-border bg-background px-2 py-1.5 text-xs outline-none focus:border-primary"
+                      />
+                      <div className="flex gap-2">
+                        <input
+                          type="date"
+                          value={actDate[team.id] || ""}
+                          onChange={(e) =>
+                            setActDate((s) => ({ ...s, [team.id]: e.target.value }))
+                          }
+                          className="flex-1 rounded-md border border-border bg-background px-2 py-1.5 text-xs outline-none focus:border-primary"
+                        />
+                        <button
+                          onClick={() => addActivity(team.id)}
+                          className="inline-flex items-center gap-1 rounded-md bg-primary px-2 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
+                        >
+                          <Plus className="size-3.5" /> Add
+                        </button>
+                      </div>
+                    </div>
                   </div>
                   </div>
                 </div>
