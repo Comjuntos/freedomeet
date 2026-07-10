@@ -806,6 +806,8 @@ function Dashboard() {
                           { key: "done", label: "Feito", next: "todo" },
                         ] as const
                       ).map((lane) => {
+                        if (filterStatus[team.id] && filterStatus[team.id] !== lane.key)
+                          return null;
                         const laneActs = activities.filter(
                           (a) =>
                             a.team_id === team.id &&
