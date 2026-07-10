@@ -517,11 +517,12 @@ function Dashboard() {
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex min-w-0 items-center gap-2">
-                            <span
-                              className={`grid size-8 shrink-0 place-items-center rounded-full text-xs font-semibold text-white ${c.bar}`}
-                            >
-                              {initials(m.full_name)}
-                            </span>
+                            <img
+                              src={avatarUrlFor(m.email || m.full_name)}
+                              alt={`Avatar de ${m.full_name}`}
+                              loading="lazy"
+                              className={`size-8 shrink-0 rounded-full ring-2 ${c.ring} bg-background`}
+                            />
                             <div className="min-w-0">
                               <p className="truncate text-sm font-medium">{m.full_name}</p>
                               {m.email && (
