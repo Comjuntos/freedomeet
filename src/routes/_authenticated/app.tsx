@@ -812,7 +812,7 @@ function Dashboard() {
                           e.dataTransfer.setData("text/plain", m.id);
                         }}
                         onDragEnd={() => setDragMember(null)}
-                        className={`group cursor-grab rounded-xl border border-border/70 bg-background/80 p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md active:cursor-grabbing ${
+                        className={`group cursor-grab rounded-2xl border border-border/50 bg-background/70 p-3.5 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-md active:cursor-grabbing ${
                           dragMember === m.id ? "opacity-50" : ""
                         }`}
                       >
