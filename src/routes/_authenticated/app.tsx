@@ -674,8 +674,8 @@ function Dashboard() {
           <TooltipProvider>
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h2 className="text-3xl font-extrabold tracking-tight">Quadro de equipes</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <h2 className="text-[2rem] font-semibold tracking-[-0.02em] text-foreground">Quadro de equipes</h2>
+              <p className="mt-1.5 text-sm text-muted-foreground">
                 Gerencie membros e atividades dos times internos.
               </p>
             </div>
@@ -684,11 +684,11 @@ function Dashboard() {
                 value={teamName}
                 onChange={(e) => setTeamName(e.target.value)}
                 placeholder="Nome da equipe"
-                className="w-48 rounded-xl border border-border bg-background/70 px-3 py-2.5 text-sm outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="w-48 rounded-full border border-border/70 bg-background/60 px-4 py-2.5 text-sm outline-none transition-all focus:border-primary/60 focus:ring-4 focus:ring-primary/10"
               />
               <button
                 onClick={addTeam}
-                className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 active:scale-95"
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.97]"
               >
                 <Plus className="size-4" /> Nova lista
               </button>
@@ -707,10 +707,10 @@ function Dashboard() {
                   value={memberSearch}
                   onChange={(e) => setMemberSearch(e.target.value)}
                   placeholder="Buscar membro por nome ou email…"
-                  className="w-72 rounded-xl border border-border bg-background/70 py-2.5 pl-10 pr-4 text-sm outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  className="w-72 rounded-full border border-border/70 bg-background/60 py-2.5 pl-10 pr-4 text-sm outline-none transition-all focus:border-primary/60 focus:ring-4 focus:ring-primary/10"
                 />
               </div>
-              <span className="rounded-full bg-secondary/60 px-3 py-1 text-xs font-medium">
+              <span className="rounded-full bg-secondary/50 px-3 py-1 text-xs font-medium">
                 {teams.length} {teams.length === 1 ? "equipe" : "equipes"} ·{" "}
                 {members.length} {members.length === 1 ? "membro" : "membros"}
               </span>
@@ -743,14 +743,14 @@ function Dashboard() {
                     const id = dragMember || e.dataTransfer.getData("text/plain");
                     if (id) moveMember(id, team.id);
                   }}
-                  className={`glass flex w-80 shrink-0 flex-col overflow-hidden rounded-2xl border transition-all ${
+                  className={`glass flex w-80 shrink-0 flex-col overflow-hidden rounded-3xl border shadow-sm transition-all duration-300 hover:shadow-md ${
                     dragOverTeam === team.id
-                      ? "border-primary ring-2 ring-primary/40"
-                      : "border-border/60"
+                      ? "border-primary/50 ring-4 ring-primary/15"
+                      : "border-border/50"
                   }`}
                 >
                   <div className={`h-1 w-full ${c.bar}`} />
-                  <div className="flex flex-col p-4">
+                  <div className="flex flex-col p-5">
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground/80">
                       <span className={`inline-block size-2 rounded-full ${c.bar}`} />
@@ -779,16 +779,16 @@ function Dashboard() {
                     const tab = teamTab[team.id] ?? "membros";
                     const actCount = activities.filter((a) => a.team_id === team.id).length;
                     return (
-                      <div className="mt-4 grid grid-cols-2 gap-1 rounded-xl border border-border/40 bg-background/50 p-1 text-xs font-semibold">
+                      <div className="mt-4 grid grid-cols-2 gap-1 rounded-full border border-border/30 bg-secondary/40 p-1 text-xs font-medium">
                         <button
                           onClick={() => setTeamTab((s) => ({ ...s, [team.id]: "membros" }))}
-                          className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 transition-all ${tab === "membros" ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                          className={`inline-flex items-center justify-center gap-1.5 rounded-full px-2 py-1.5 transition-all ${tab === "membros" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                         >
                           <Users className="size-3.5" /> Membros · {teamMembers.length}
                         </button>
                         <button
                           onClick={() => setTeamTab((s) => ({ ...s, [team.id]: "atividades" }))}
-                          className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 transition-all ${tab === "atividades" ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                          className={`inline-flex items-center justify-center gap-1.5 rounded-full px-2 py-1.5 transition-all ${tab === "atividades" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                         >
                           <CalendarClock className="size-3.5" /> Atividades · {actCount}
                         </button>
@@ -812,7 +812,7 @@ function Dashboard() {
                           e.dataTransfer.setData("text/plain", m.id);
                         }}
                         onDragEnd={() => setDragMember(null)}
-                        className={`group cursor-grab rounded-xl border border-border/70 bg-background/80 p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md active:cursor-grabbing ${
+                        className={`group cursor-grab rounded-2xl border border-border/50 bg-background/70 p-3.5 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-md active:cursor-grabbing ${
                           dragMember === m.id ? "opacity-50" : ""
                         }`}
                       >
