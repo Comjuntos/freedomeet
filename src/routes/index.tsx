@@ -208,7 +208,7 @@ function Index() {
                   className="absolute left-1/2 top-1/2"
                 >
                   <span
-                    className="glass flex -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium shadow-lg transition-transform hover:scale-110"
+                    className="flex -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 whitespace-nowrap text-xs font-medium text-foreground/90 transition-transform hover:scale-110"
                   >
                     <f.icon className="size-3.5 shrink-0 text-primary" />
                     {f.title}
