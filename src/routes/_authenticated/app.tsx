@@ -876,7 +876,7 @@ function Dashboard() {
                     ))}
                   </div>
 
-                  <div className="mt-3 flex gap-2">
+                  <div className={`mt-3 flex gap-2 ${(teamTab[team.id] ?? "membros") === "membros" ? "" : "hidden"}`}>
                     <input
                       value={memberInputs[team.id] || ""}
                       onChange={(e) =>
@@ -897,7 +897,7 @@ function Dashboard() {
                     </button>
                   </div>
 
-                  <div className="mt-4 border-t border-border/60 pt-3">
+                  <div className={`mt-4 pt-1 ${(teamTab[team.id] ?? "membros") === "atividades" ? "" : "hidden"}`}>
                     <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                       <CalendarClock className="size-3.5" /> Atividades & prazos
                     </p>
