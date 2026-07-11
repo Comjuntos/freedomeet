@@ -922,16 +922,98 @@ function Dashboard() {
                             <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                               {lane.label} · {laneActs.length}
                             </p>
-                            <div className="space-y-1.5">
+                            <div
+                              onDragOver={(e) => {
+                                if (!dragAct) return;
+                                e.preventDefault();
+                                setDragLane(`${team.id}:${lane.key}`);
+                              }}
+                              onDragLeave={() => setDragLane(null)}
+                              onDrop={(e) => {
+                                e.preventDefault();
+                                if (dragAct) setActivityStatus(dragAct, lane.key);
+                                setDragAct(null);
+                                setDragLane(null);
+                              }}
+                              className={`min-h-8 space-y-1.5 rounded-md p-1 transition-colors ${
+                                dragLane === `${team.id}:${lane.key}`
+                                  ? "bg-primary/10 ring-1 ring-primary/40"
+                                  : ""
+                              }`}
+                            >
                               {laneActs.map((a) => {
                                 const overdue =
                                   a.status !== "done" &&
                                   a.due_date &&
                                   a.due_date < new Date().toISOString().slice(0, 10);
+                                if (editAct === a.id) {
+                                  return (
+                                    <div
+                                      key={a.id}
+                                      className="space-y-1.5 rounded-md border border-primary/50 bg-background px-2 py-1.5"
+                                    >
+                                      <input
+                                        value={editTitle}
+                                        onChange={(e) => setEditTitle(e.target.value)}
+                                        onKeyDown={(e) => {
+                                          if (e.key === "Enter") saveActivityEdit(a.id);
+                                          if (e.key === "Escape") setEditAct(null);
+                                        }}
+                                        className="w-full rounded border border-border bg-background px-1.5 py-1 text-xs outline-none focus:border-primary"
+                                        autoFocus
+                                      />
+                                      <select
+                                        value={editMember}
+                                        onChange={(e) => setEditMember(e.target.value)}
+                                        className="w-full rounded border border-border bg-background px-1.5 py-1 text-xs outline-none focus:border-primary"
+                                        aria-label="Responsável"
+                                      >
+                                        <option value="">Sem responsável</option>
+                                        {members
+                                          .filter((m) => m.team_id === team.id)
+                                          .map((m) => (
+                                            <option key={m.id} value={m.id}>
+                                              {m.full_name}
+                                            </option>
+                                          ))}
+                                      </select>
+                                      <div className="flex items-center gap-1.5">
+                                        <input
+                                          type="date"
+                                          value={editDate}
+                                          onChange={(e) => setEditDate(e.target.value)}
+                                          className="flex-1 rounded border border-border bg-background px-1.5 py-1 text-xs outline-none focus:border-primary"
+                                        />
+                                        <button
+                                          onClick={() => saveActivityEdit(a.id)}
+                                          className="rounded bg-primary p-1 text-primary-foreground hover:bg-primary/90"
+                                          aria-label="Salvar"
+                                        >
+                                          <Check className="size-3.5" />
+                                        </button>
+                                        <button
+                                          onClick={() => setEditAct(null)}
+                                          className="rounded border border-border p-1 hover:bg-secondary"
+                                          aria-label="Cancelar"
+                                        >
+                                          <XIcon className="size-3.5" />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  );
+                                }
                                 return (
                                   <div
                                     key={a.id}
-                                    className="flex items-center gap-2 rounded-md border border-border bg-background px-2 py-1.5"
+                                    draggable
+                                    onDragStart={() => setDragAct(a.id)}
+                                    onDragEnd={() => {
+                                      setDragAct(null);
+                                      setDragLane(null);
+                                    }}
+                                    className={`flex cursor-grab items-center gap-2 rounded-md border bg-background px-2 py-1.5 active:cursor-grabbing ${
+                                      overdue ? "border-destructive/50" : "border-border"
+                                    } ${dragAct === a.id ? "opacity-50" : ""}`}
                                   >
                                     <button
                                       onClick={() => setActivityStatus(a.id, lane.next)}
@@ -960,6 +1042,18 @@ function Dashboard() {
                                         </p>
                                       )}
                                     </div>
+                                    <button
+                                      onClick={() => {
+                                        setEditAct(a.id);
+                                        setEditTitle(a.title);
+                                        setEditDate(a.due_date || "");
+                                        setEditMember(a.member_id || "");
+                                      }}
+                                      className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-primary"
+                                      aria-label="Editar atividade"
+                                    >
+                                      <Pencil className="size-3.5" />
+                                    </button>
                                     <button
                                       onClick={() => deleteActivity(a.id)}
                                       className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-destructive"
