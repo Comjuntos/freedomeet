@@ -302,6 +302,7 @@ function Dashboard() {
   const [compHow, setCompHow] = useState("");
   const [compResp, setCompResp] = useState("");
   const [compDeadline, setCompDeadline] = useState("");
+  const [teamTab, setTeamTab] = useState<Record<string, "membros" | "atividades">>({});
 
   const signOut = async () => {
     await qc.cancelQueries();
