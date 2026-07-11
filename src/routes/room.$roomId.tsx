@@ -1110,11 +1110,42 @@ function Room() {
                         )}
                         Enviar ao Slack
                       </button>
+                      {kanbanTeams.length > 0 && (
+                        <>
+                          <select
+                            value={kanbanTeam}
+                            onChange={(e) => setKanbanTeam(e.target.value)}
+                            aria-label="Equipe para o Kanban"
+                            className="rounded-md border border-border bg-background px-2 py-2 text-sm"
+                          >
+                            {kanbanTeams.map((t) => (
+                              <option key={t.id} value={t.id}>
+                                {t.name}
+                              </option>
+                            ))}
+                          </select>
+                          <button
+                            onClick={sendActionsToKanban}
+                            disabled={kanbanSending}
+                            className="flex items-center gap-2 rounded-md border border-border px-3 py-2 font-medium hover:bg-secondary disabled:opacity-60"
+                          >
+                            {kanbanSending ? (
+                              <Loader2 className="size-4 animate-spin" />
+                            ) : (
+                              <KanbanSquare className="size-4" />
+                            )}
+                            Enviar ações ao Kanban
+                          </button>
+                        </>
+                      )}
                     </>
                   )}
                 </div>
                 {slackStatus && (
                   <p className="px-5 pt-1 text-xs text-muted-foreground">{slackStatus}</p>
+                )}
+                {kanbanStatus && (
+                  <p className="px-5 pt-1 text-xs text-muted-foreground">{kanbanStatus}</p>
                 )}
                 {saveStatus && (
                   <p className="px-5 pt-1 text-xs text-muted-foreground">{saveStatus}</p>
