@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { PLAN_LIST } from "@/lib/plans";
 import logoUrl from "@/assets/freedumeet-logo.png.asset.json";
 import logoTransparentUrl from "@/assets/freedumeet-logo-transparent.png.asset.json";
@@ -67,6 +68,13 @@ function randomRoom() {
 function Index() {
   const navigate = useNavigate();
   const [code, setCode] = useState("");
+
+  // Se o usuário já estiver logado, carrega o painel automaticamente.
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) navigate({ to: "/app" });
+    });
+  }, [navigate]);
 
   const createMeeting = () => {
     const roomId = randomRoom();
