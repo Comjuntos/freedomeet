@@ -291,6 +291,7 @@ function Dashboard() {
   const [schedWeekday, setSchedWeekday] = useState(1);
   const [schedTime, setSchedTime] = useState("09:00");
   const [repTeam, setRepTeam] = useState("");
+  const [mgrTeam, setMgrTeam] = useState("");
   const [compTeam, setCompTeam] = useState("");
   const [compName, setCompName] = useState("");
   const [compWhy, setCompWhy] = useState("");
