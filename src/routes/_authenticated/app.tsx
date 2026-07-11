@@ -743,29 +743,31 @@ function Dashboard() {
                     const id = dragMember || e.dataTransfer.getData("text/plain");
                     if (id) moveMember(id, team.id);
                   }}
-                  className={`flex w-72 shrink-0 flex-col overflow-hidden rounded-xl ${c.tint} ring-1 ${
-                    dragOverTeam === team.id ? "ring-2 ring-primary" : c.ring
+                  className={`glass flex w-80 shrink-0 flex-col overflow-hidden rounded-2xl border transition-all ${
+                    dragOverTeam === team.id
+                      ? "border-primary ring-2 ring-primary/40"
+                      : "border-border/60"
                   }`}
                 >
-                  <div className={`h-1.5 w-full ${c.bar}`} />
-                  <div className="flex flex-col p-3">
-                  <div className="flex items-center justify-between px-1">
-                    <span className="flex items-center gap-2 font-semibold">
-                      <span className={`inline-block size-2.5 rounded-full ${c.bar}`} />
+                  <div className={`h-1 w-full ${c.bar}`} />
+                  <div className="flex flex-col p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground/80">
+                      <span className={`inline-block size-2 rounded-full ${c.bar}`} />
                       {team.name}
                     </span>
-                    <span className="flex items-center gap-2">
-                      <span className="rounded-full bg-background px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                    <span className="flex items-center gap-1.5">
+                      <span className="rounded-full bg-secondary/70 px-2 py-0.5 text-[10px] font-bold uppercase text-muted-foreground">
                         {teamMembers.length}
                       </span>
                       {adminCount > 0 && (
-                        <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-600">
+                        <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-600">
                           {adminCount} admin{adminCount > 1 ? "s" : ""}
                         </span>
                       )}
                       <button
                         onClick={() => deleteTeam(team.id)}
-                        className="rounded p-1 text-muted-foreground hover:text-destructive"
+                        className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
                         aria-label="Excluir equipe"
                       >
                         <Trash2 className="size-4" />
@@ -777,18 +779,18 @@ function Dashboard() {
                     const tab = teamTab[team.id] ?? "membros";
                     const actCount = activities.filter((a) => a.team_id === team.id).length;
                     return (
-                      <div className="mt-3 grid grid-cols-2 gap-1 rounded-lg bg-background/60 p-1 text-xs font-medium">
+                      <div className="mt-4 grid grid-cols-2 gap-1 rounded-xl border border-border/40 bg-background/50 p-1 text-xs font-semibold">
                         <button
                           onClick={() => setTeamTab((s) => ({ ...s, [team.id]: "membros" }))}
-                          className={`rounded-md px-2 py-1.5 transition-colors ${tab === "membros" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                          className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 transition-all ${tab === "membros" ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                         >
-                          Membros · {teamMembers.length}
+                          <Users className="size-3.5" /> Membros · {teamMembers.length}
                         </button>
                         <button
                           onClick={() => setTeamTab((s) => ({ ...s, [team.id]: "atividades" }))}
-                          className={`rounded-md px-2 py-1.5 transition-colors ${tab === "atividades" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                          className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 transition-all ${tab === "atividades" ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                         >
-                          Atividades · {actCount}
+                          <CalendarClock className="size-3.5" /> Atividades · {actCount}
                         </button>
                       </div>
                     );
