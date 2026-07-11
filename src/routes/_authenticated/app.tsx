@@ -18,6 +18,8 @@ import {
   Pencil,
   Check,
   X as XIcon,
+  Download,
+  UserCheck,
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -291,6 +293,7 @@ function Dashboard() {
   const [schedWeekday, setSchedWeekday] = useState(1);
   const [schedTime, setSchedTime] = useState("09:00");
   const [repTeam, setRepTeam] = useState("");
+  const [mgrTeam, setMgrTeam] = useState("");
   const [compTeam, setCompTeam] = useState("");
   const [compName, setCompName] = useState("");
   const [compWhy, setCompWhy] = useState("");
@@ -608,6 +611,42 @@ function Dashboard() {
   }
   const topTopics = [...topicCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
   const maxTopic = topTopics[0]?.[1] ?? 1;
+
+  // Visão do gestor: resumo de tarefas por pessoa.
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const mgrActivities = activities.filter((a) => !mgrTeam || a.team_id === mgrTeam);
+  const mgrMembers = members.filter((m) => !mgrTeam || m.team_id === mgrTeam);
+  const mgrRows = mgrMembers
+    .map((m) => {
+      const acts = mgrActivities.filter((a) => a.member_id === m.id);
+      const done = acts.filter((a) => a.status === "done").length;
+      const open = acts.filter((a) => a.status !== "done").length;
+      const late = acts.filter(
+        (a) => a.status !== "done" && a.due_date && a.due_date < todayStr,
+      ).length;
+      return { id: m.id, name: m.full_name, total: acts.length, open, done, late };
+    })
+    .filter((r) => r.total > 0)
+    .sort((a, b) => b.open - a.open);
+  const mgrUnassigned = mgrActivities.filter((a) => !a.member_id).length;
+
+  const exportManagerCSV = () => {
+    const header = ["Responsável", "Total", "Abertas", "Concluídas", "Atrasadas"];
+    const lines = mgrRows.map((r) =>
+      [r.name, r.total, r.open, r.done, r.late].join(","),
+    );
+    if (mgrUnassigned > 0) {
+      lines.push(["Sem responsável", mgrUnassigned, mgrUnassigned, 0, 0].join(","));
+    }
+    const csv = [header.join(","), ...lines].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "tarefas-por-pessoa.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="aurora-bg min-h-screen bg-background text-foreground">
@@ -1444,6 +1483,101 @@ function Dashboard() {
                 </ul>
               )}
             </div>
+          </div>
+        </section>
+
+        {/* VISÃO DO GESTOR — TAREFAS POR PESSOA */}
+        <section className="lg:col-span-2">
+          <h2 className="flex items-center gap-2 text-xl font-semibold">
+            <UserCheck className="size-5 text-primary" /> Visão do gestor
+          </h2>
+          <div className="mt-4 flex flex-wrap items-end justify-between gap-3 rounded-lg border border-border p-4">
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-xs text-muted-foreground">Equipe</span>
+              <select
+                value={mgrTeam}
+                onChange={(e) => setMgrTeam(e.target.value)}
+                className="w-56 rounded-md border border-border bg-background px-2 py-1.5 text-sm"
+              >
+                <option value="">Todas</option>
+                {teams.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button
+              onClick={exportManagerCSV}
+              disabled={mgrRows.length === 0 && mgrUnassigned === 0}
+              className="inline-flex items-center gap-1 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary disabled:opacity-60"
+            >
+              <Download className="size-4" /> Exportar CSV
+            </button>
+          </div>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-4">
+            <div className="rounded-lg border border-border p-4">
+              <p className="text-xs text-muted-foreground">Tarefas abertas</p>
+              <p className="text-2xl font-semibold">
+                {mgrActivities.filter((a) => a.status !== "done").length}
+              </p>
+            </div>
+            <div className="rounded-lg border border-border p-4">
+              <p className="text-xs text-muted-foreground">Concluídas</p>
+              <p className="text-2xl font-semibold">
+                {mgrActivities.filter((a) => a.status === "done").length}
+              </p>
+            </div>
+            <div className="rounded-lg border border-border p-4">
+              <p className="text-xs text-muted-foreground">Atrasadas</p>
+              <p className="text-2xl font-semibold text-destructive">
+                {
+                  mgrActivities.filter(
+                    (a) => a.status !== "done" && a.due_date && a.due_date < todayStr,
+                  ).length
+                }
+              </p>
+            </div>
+            <div className="rounded-lg border border-border p-4">
+              <p className="text-xs text-muted-foreground">Sem responsável</p>
+              <p className="text-2xl font-semibold">{mgrUnassigned}</p>
+            </div>
+          </div>
+
+          <div className="mt-4 overflow-x-auto rounded-lg border border-border">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-left text-xs text-muted-foreground">
+                  <th className="px-4 py-2 font-medium">Responsável</th>
+                  <th className="px-4 py-2 text-right font-medium">Total</th>
+                  <th className="px-4 py-2 text-right font-medium">Abertas</th>
+                  <th className="px-4 py-2 text-right font-medium">Concluídas</th>
+                  <th className="px-4 py-2 text-right font-medium">Atrasadas</th>
+                </tr>
+              </thead>
+              <tbody>
+                {mgrRows.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-4 text-center text-muted-foreground">
+                      Nenhuma tarefa atribuída ainda.
+                    </td>
+                  </tr>
+                ) : (
+                  mgrRows.map((r) => (
+                    <tr key={r.id} className="border-b border-border last:border-0">
+                      <td className="px-4 py-2 font-medium">{r.name}</td>
+                      <td className="px-4 py-2 text-right">{r.total}</td>
+                      <td className="px-4 py-2 text-right">{r.open}</td>
+                      <td className="px-4 py-2 text-right text-emerald-600">{r.done}</td>
+                      <td className={`px-4 py-2 text-right ${r.late > 0 ? "font-medium text-destructive" : ""}`}>
+                        {r.late}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </section>
 
