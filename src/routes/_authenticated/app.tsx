@@ -896,11 +896,11 @@ function Dashboard() {
                         if (e.key === "Enter") addMember(team.id);
                       }}
                       placeholder="Nome | email (opcional)"
-                      className="flex-1 rounded-md border border-border bg-background px-2 py-1.5 text-sm outline-none focus:border-primary"
+                      className="flex-1 rounded-lg border border-dashed border-border bg-background/60 px-3 py-2 text-sm outline-none transition-all focus:border-primary focus:bg-background"
                     />
                     <button
                       onClick={() => addMember(team.id)}
-                      className="rounded-md bg-background px-2 py-1.5 text-sm hover:bg-background/70"
+                      className="inline-flex items-center rounded-lg bg-primary px-3 py-2 text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-95"
                       aria-label="Adicionar membro"
                     >
                       <Plus className="size-4" />
