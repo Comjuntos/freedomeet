@@ -98,6 +98,12 @@ function Index() {
             <Settings className="size-5" />
           </button>
           <Link
+            to="/auth"
+            className="ml-1 inline-flex items-center rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
+          >
+            Entrar
+          </Link>
+          <Link
             to="/app"
             className="ml-1 inline-flex items-center rounded-full bg-gradient-to-r from-primary to-accent px-4 py-2 text-sm font-semibold text-primary-foreground transition-transform hover:scale-105"
           >
