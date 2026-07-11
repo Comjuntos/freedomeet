@@ -305,6 +305,80 @@ function Room() {
     }
   }, [captions, makeMinutes, minutesTemplate, roomId, membersInput]);
 
+  // Carrega as equipes e membros do usuário para o envio ao Kanban.
+  useEffect(() => {
+    if (!showMinutes || kanbanTeams.length > 0) return;
+    let active = true;
+    (async () => {
+      const { data: teams } = await supabase.from("teams").select("id, name");
+      const { data: mems } = await supabase
+        .from("team_members")
+        .select("id, team_id, full_name");
+      if (!active) return;
+      setKanbanTeams(teams ?? []);
+      setKanbanMembers(mems ?? []);
+      if ((teams?.length ?? 0) > 0) setKanbanTeam(teams![0].id);
+    })();
+    return () => {
+      active = false;
+    };
+  }, [showMinutes, kanbanTeams.length]);
+
+  const normalize = (s: string) =>
+    s
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim();
+
+  const sendActionsToKanban = useCallback(async () => {
+    if (!kanbanTeam) {
+      toast.error("Selecione uma equipe para receber as tarefas.");
+      return;
+    }
+    const source = minutesText.trim() ||
+      captions.map((c) => c.original).join("\n").trim();
+    if (!source) {
+      toast.error("Gere a ata ou ative a transcrição antes de extrair as ações.");
+      return;
+    }
+    setKanbanSending(true);
+    setKanbanStatus(null);
+    try {
+      const teamMembers = kanbanMembers.filter((m) => m.team_id === kanbanTeam);
+      const members = teamMembers.map((m) => m.full_name);
+      const { actions } = await extractActionsFn({
+        data: { transcript: source, members },
+      });
+      if (actions.length === 0) {
+        setKanbanStatus("Nenhuma ação identificada na reunião.");
+        toast.info("Nenhuma tarefa foi identificada.");
+        return;
+      }
+      const rows = actions.map((a) => {
+        const match = a.assignee
+          ? teamMembers.find((m) => normalize(m.full_name) === normalize(a.assignee))
+          : undefined;
+        return {
+          team_id: kanbanTeam,
+          title: a.title,
+          due_date: a.dueDate,
+          member_id: match?.id ?? null,
+          status: "todo",
+        };
+      });
+      const { error } = await supabase.from("team_activities").insert(rows);
+      if (error) throw error;
+      setKanbanStatus(`${rows.length} tarefa(s) enviada(s) ao Kanban.`);
+      toast.success(`${rows.length} tarefa(s) criada(s) no Kanban.`);
+    } catch {
+      setKanbanStatus("Não foi possível enviar as ações. Tente novamente.");
+      toast.error("Falha ao enviar as ações para o Kanban.");
+    } finally {
+      setKanbanSending(false);
+    }
+  }, [kanbanTeam, kanbanMembers, minutesText, captions, extractActionsFn]);
+
   const downloadAta = useCallback(async (text?: unknown) => {
     const content = (typeof text === "string" ? text : minutesText).trim();
     if (!content) return;
