@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowLeft, Target, Plus, Trash2, Sparkles, User } from "lucide-react";
+import { ArrowLeft, Target, Plus, Trash2, Sparkles, User, Activity } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 
@@ -169,9 +169,17 @@ function CompetencyTool() {
           >
             <ArrowLeft className="size-4" /> Voltar ao painel
           </Link>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-            <Sparkles className="size-3.5" /> Ferramenta de IA
-          </span>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/competencias-live"
+              className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-600 hover:bg-emerald-500/20"
+            >
+              <Activity className="size-3.5" /> Painel Live
+            </Link>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+              <Sparkles className="size-3.5" /> Ferramenta de IA
+            </span>
+          </div>
         </div>
       </header>
 

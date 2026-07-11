@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RoomRoomIdRouteImport } from './routes/room.$roomId'
+import { Route as AuthenticatedCompetenciasLiveRouteImport } from './routes/_authenticated/competencias-live'
 import { Route as AuthenticatedCompetenciasRouteImport } from './routes/_authenticated/competencias'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 
@@ -35,6 +36,12 @@ const RoomRoomIdRoute = RoomRoomIdRouteImport.update({
   path: '/room/$roomId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCompetenciasLiveRoute =
+  AuthenticatedCompetenciasLiveRouteImport.update({
+    id: '/competencias-live',
+    path: '/competencias-live',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCompetenciasRoute =
   AuthenticatedCompetenciasRouteImport.update({
     id: '/competencias',
@@ -52,6 +59,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/app': typeof AuthenticatedAppRoute
   '/competencias': typeof AuthenticatedCompetenciasRoute
+  '/competencias-live': typeof AuthenticatedCompetenciasLiveRoute
   '/room/$roomId': typeof RoomRoomIdRoute
 }
 export interface FileRoutesByTo {
@@ -59,6 +67,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/app': typeof AuthenticatedAppRoute
   '/competencias': typeof AuthenticatedCompetenciasRoute
+  '/competencias-live': typeof AuthenticatedCompetenciasLiveRoute
   '/room/$roomId': typeof RoomRoomIdRoute
 }
 export interface FileRoutesById {
@@ -68,13 +77,26 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/app': typeof AuthenticatedAppRoute
   '/_authenticated/competencias': typeof AuthenticatedCompetenciasRoute
+  '/_authenticated/competencias-live': typeof AuthenticatedCompetenciasLiveRoute
   '/room/$roomId': typeof RoomRoomIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/app' | '/competencias' | '/room/$roomId'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/app'
+    | '/competencias'
+    | '/competencias-live'
+    | '/room/$roomId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/app' | '/competencias' | '/room/$roomId'
+  to:
+    | '/'
+    | '/auth'
+    | '/app'
+    | '/competencias'
+    | '/competencias-live'
+    | '/room/$roomId'
   id:
     | '__root__'
     | '/'
@@ -82,6 +104,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/app'
     | '/_authenticated/competencias'
+    | '/_authenticated/competencias-live'
     | '/room/$roomId'
   fileRoutesById: FileRoutesById
 }
@@ -122,6 +145,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RoomRoomIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/competencias-live': {
+      id: '/_authenticated/competencias-live'
+      path: '/competencias-live'
+      fullPath: '/competencias-live'
+      preLoaderRoute: typeof AuthenticatedCompetenciasLiveRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/competencias': {
       id: '/_authenticated/competencias'
       path: '/competencias'
@@ -142,11 +172,13 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAppRoute: typeof AuthenticatedAppRoute
   AuthenticatedCompetenciasRoute: typeof AuthenticatedCompetenciasRoute
+  AuthenticatedCompetenciasLiveRoute: typeof AuthenticatedCompetenciasLiveRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAppRoute: AuthenticatedAppRoute,
   AuthenticatedCompetenciasRoute: AuthenticatedCompetenciasRoute,
+  AuthenticatedCompetenciasLiveRoute: AuthenticatedCompetenciasLiveRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -161,13 +193,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
