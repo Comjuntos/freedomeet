@@ -812,7 +812,7 @@ function Dashboard() {
                           e.dataTransfer.setData("text/plain", m.id);
                         }}
                         onDragEnd={() => setDragMember(null)}
-                        className={`cursor-grab rounded-lg border border-border bg-background p-2.5 shadow-sm transition-shadow hover:shadow-md active:cursor-grabbing ${
+                        className={`group cursor-grab rounded-xl border border-border/70 bg-background/80 p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md active:cursor-grabbing ${
                           dragMember === m.id ? "opacity-50" : ""
                         }`}
                       >
@@ -829,15 +829,15 @@ function Dashboard() {
                                   <MemberAvatar
                                     member={m}
                                     url={avatarUrlFor(m.email || m.full_name)}
-                                    className="size-8"
-                                    ringClass={`ring-2 ${c.ring}`}
+                                    className="size-10"
+                                    ringClass="ring-2 ring-background"
                                   />
                                 </button>
                               </TooltipTrigger>
                               <TooltipContent>Ver perfil de {m.full_name}</TooltipContent>
                             </Tooltip>
                             <div className="min-w-0">
-                              <p className="truncate text-sm font-medium">{m.full_name}</p>
+                              <p className="truncate text-sm font-bold text-foreground">{m.full_name}</p>
                               {m.email && (
                                 <p className="truncate text-xs text-muted-foreground">
                                   {m.email}
