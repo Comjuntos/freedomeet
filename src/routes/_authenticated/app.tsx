@@ -651,18 +651,20 @@ function Dashboard() {
 
   return (
     <div className="aurora-bg min-h-screen bg-background text-foreground">
-      <header className="glass sticky top-0 z-30 flex items-center justify-between border-b border-border px-6 py-4">
-        <div className="flex items-center gap-2">
-          <span className="grid size-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-accent glow">
-            <Video className="size-4 text-primary-foreground" />
+      <header className="glass sticky top-0 z-30 flex items-center justify-between border-b border-border/60 px-6 py-3.5">
+        <div className="flex items-center gap-3">
+          <span className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-primary to-accent shadow-lg shadow-primary/20">
+            <Video className="size-5 text-primary-foreground" />
           </span>
-          <span className="font-display text-lg font-semibold">FreeduMeet — Painel</span>
+          <span className="bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text font-display text-xl font-bold tracking-tight text-transparent">
+            FreeduMeet
+          </span>
         </div>
         <button
           onClick={signOut}
-          className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm hover:bg-secondary"
+          className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive"
         >
-          <LogOut className="size-4" /> Sair
+          Sair <LogOut className="size-4" />
         </button>
       </header>
 
