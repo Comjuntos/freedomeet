@@ -401,6 +401,22 @@ function Dashboard() {
     toast.success("Atividade removida");
   };
 
+  const saveActivityEdit = async (id: string) => {
+    const title = editTitle.trim();
+    if (!title) return;
+    await supabase
+      .from("team_activities")
+      .update({
+        title,
+        due_date: editDate || null,
+        member_id: editMember || null,
+      })
+      .eq("id", id);
+    setEditAct(null);
+    qc.invalidateQueries({ queryKey: ["team_activities"] });
+    toast.success("Atividade atualizada");
+  };
+
   const moveMember = async (id: string, teamId: string) => {
     setDragOverTeam(null);
     setDragMember(null);
