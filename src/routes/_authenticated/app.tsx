@@ -672,20 +672,23 @@ function Dashboard() {
         {/* EQUIPES */}
         <section className="min-w-0 lg:col-span-2">
           <TooltipProvider>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="flex items-center gap-2 text-xl font-semibold">
-              <Users className="size-5 text-primary" /> Quadro de equipes
-            </h2>
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h2 className="text-3xl font-extrabold tracking-tight">Quadro de equipes</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Gerencie membros e atividades dos times internos.
+              </p>
+            </div>
             <div className="flex gap-2">
               <input
                 value={teamName}
                 onChange={(e) => setTeamName(e.target.value)}
                 placeholder="Nome da equipe"
-                className="w-48 rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+                className="w-48 rounded-xl border border-border bg-background/70 px-3 py-2.5 text-sm outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
               <button
                 onClick={addTeam}
-                className="inline-flex items-center gap-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 active:scale-95"
               >
                 <Plus className="size-4" /> Nova lista
               </button>
@@ -697,14 +700,17 @@ function Dashboard() {
           )}
 
           {teams.length > 0 && (
-            <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-              <input
-                value={memberSearch}
-                onChange={(e) => setMemberSearch(e.target.value)}
-                placeholder="Buscar membro por nome ou email…"
-                className="w-64 rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
-              />
-              <span>
+            <div className="mt-5 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  value={memberSearch}
+                  onChange={(e) => setMemberSearch(e.target.value)}
+                  placeholder="Buscar membro por nome ou email…"
+                  className="w-72 rounded-xl border border-border bg-background/70 py-2.5 pl-10 pr-4 text-sm outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+              <span className="rounded-full bg-secondary/60 px-3 py-1 text-xs font-medium">
                 {teams.length} {teams.length === 1 ? "equipe" : "equipes"} ·{" "}
                 {members.length} {members.length === 1 ? "membro" : "membros"}
               </span>
