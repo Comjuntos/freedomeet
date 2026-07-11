@@ -302,6 +302,7 @@ function Dashboard() {
   const [compHow, setCompHow] = useState("");
   const [compResp, setCompResp] = useState("");
   const [compDeadline, setCompDeadline] = useState("");
+  const [teamTab, setTeamTab] = useState<Record<string, "membros" | "atividades">>({});
 
   const signOut = async () => {
     await qc.cancelQueries();
@@ -764,7 +765,28 @@ function Dashboard() {
                     </span>
                   </div>
 
-                  <div className="mt-3 space-y-2">
+                  {(() => {
+                    const tab = teamTab[team.id] ?? "membros";
+                    const actCount = activities.filter((a) => a.team_id === team.id).length;
+                    return (
+                      <div className="mt-3 grid grid-cols-2 gap-1 rounded-lg bg-background/60 p-1 text-xs font-medium">
+                        <button
+                          onClick={() => setTeamTab((s) => ({ ...s, [team.id]: "membros" }))}
+                          className={`rounded-md px-2 py-1.5 transition-colors ${tab === "membros" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                        >
+                          Membros · {teamMembers.length}
+                        </button>
+                        <button
+                          onClick={() => setTeamTab((s) => ({ ...s, [team.id]: "atividades" }))}
+                          className={`rounded-md px-2 py-1.5 transition-colors ${tab === "atividades" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                        >
+                          Atividades · {actCount}
+                        </button>
+                      </div>
+                    );
+                  })()}
+
+                  <div className={`mt-3 space-y-2 ${(teamTab[team.id] ?? "membros") === "membros" ? "" : "hidden"}`}>
                     {teamMembers.length === 0 && (
                       <p className="px-1 text-xs text-muted-foreground">
                         Sem membros ainda.
@@ -854,7 +876,7 @@ function Dashboard() {
                     ))}
                   </div>
 
-                  <div className="mt-3 flex gap-2">
+                  <div className={`mt-3 flex gap-2 ${(teamTab[team.id] ?? "membros") === "membros" ? "" : "hidden"}`}>
                     <input
                       value={memberInputs[team.id] || ""}
                       onChange={(e) =>
@@ -875,7 +897,7 @@ function Dashboard() {
                     </button>
                   </div>
 
-                  <div className="mt-4 border-t border-border/60 pt-3">
+                  <div className={`mt-4 pt-1 ${(teamTab[team.id] ?? "membros") === "atividades" ? "" : "hidden"}`}>
                     <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                       <CalendarClock className="size-3.5" /> Atividades & prazos
                     </p>
