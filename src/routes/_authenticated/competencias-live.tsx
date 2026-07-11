@@ -198,7 +198,7 @@ function CompetencyLive() {
                   <Tooltip />
                   <Bar
                     dataKey="media"
-                    fill="hsl(var(--primary))"
+                    fill="var(--primary)"
                     radius={[0, 6, 6, 0]}
                   />
                 </BarChart>
@@ -252,8 +252,8 @@ function CompetencyLive() {
                   <PolarRadiusAxis domain={[0, 5]} fontSize={10} />
                   <Radar
                     dataKey="nivel"
-                    stroke="hsl(var(--primary))"
-                    fill="hsl(var(--primary))"
+                    stroke="var(--primary)"
+                    fill="var(--primary)"
                     fillOpacity={0.35}
                   />
                   <Tooltip />
