@@ -263,6 +263,12 @@ function Dashboard() {
   const [memberSearch, setMemberSearch] = useState("");
   const [dragMember, setDragMember] = useState<string | null>(null);
   const [dragOverTeam, setDragOverTeam] = useState<string | null>(null);
+  const [dragAct, setDragAct] = useState<string | null>(null);
+  const [dragLane, setDragLane] = useState<string | null>(null);
+  const [editAct, setEditAct] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDate, setEditDate] = useState("");
+  const [editMember, setEditMember] = useState("");
   const [profileMember, setProfileMember] = useState<Member | null>(null);
   const [actTitle, setActTitle] = useState<Record<string, string>>({});
   const [actDate, setActDate] = useState<Record<string, string>>({});
