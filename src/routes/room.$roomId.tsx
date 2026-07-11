@@ -27,6 +27,9 @@ import { analyzeDashboard, type DashboardResult } from "@/lib/dashboard.function
 import { listSlackChannels, sendToSlack, type SlackChannel } from "@/lib/slack.functions";
 import { getJaasToken } from "@/lib/jaas.functions";
 import { saveMeetingRecord } from "@/lib/history.functions";
+import { extractActions } from "@/lib/actions.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const JITSI_DOMAIN = "8x8.vc";
 const SCRIPT_SRC = `https://${JITSI_DOMAIN}/external_api.js`;
