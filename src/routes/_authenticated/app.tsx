@@ -743,14 +743,14 @@ function Dashboard() {
                     const id = dragMember || e.dataTransfer.getData("text/plain");
                     if (id) moveMember(id, team.id);
                   }}
-                  className={`glass flex w-80 shrink-0 flex-col overflow-hidden rounded-2xl border transition-all ${
+                  className={`glass flex w-80 shrink-0 flex-col overflow-hidden rounded-3xl border shadow-sm transition-all duration-300 hover:shadow-md ${
                     dragOverTeam === team.id
-                      ? "border-primary ring-2 ring-primary/40"
-                      : "border-border/60"
+                      ? "border-primary/50 ring-4 ring-primary/15"
+                      : "border-border/50"
                   }`}
                 >
                   <div className={`h-1 w-full ${c.bar}`} />
-                  <div className="flex flex-col p-4">
+                  <div className="flex flex-col p-5">
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground/80">
                       <span className={`inline-block size-2 rounded-full ${c.bar}`} />
@@ -779,16 +779,16 @@ function Dashboard() {
                     const tab = teamTab[team.id] ?? "membros";
                     const actCount = activities.filter((a) => a.team_id === team.id).length;
                     return (
-                      <div className="mt-4 grid grid-cols-2 gap-1 rounded-xl border border-border/40 bg-background/50 p-1 text-xs font-semibold">
+                      <div className="mt-4 grid grid-cols-2 gap-1 rounded-full border border-border/30 bg-secondary/40 p-1 text-xs font-medium">
                         <button
                           onClick={() => setTeamTab((s) => ({ ...s, [team.id]: "membros" }))}
-                          className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 transition-all ${tab === "membros" ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                          className={`inline-flex items-center justify-center gap-1.5 rounded-full px-2 py-1.5 transition-all ${tab === "membros" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                         >
                           <Users className="size-3.5" /> Membros · {teamMembers.length}
                         </button>
                         <button
                           onClick={() => setTeamTab((s) => ({ ...s, [team.id]: "atividades" }))}
-                          className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 transition-all ${tab === "atividades" ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                          className={`inline-flex items-center justify-center gap-1.5 rounded-full px-2 py-1.5 transition-all ${tab === "atividades" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                         >
                           <CalendarClock className="size-3.5" /> Atividades · {actCount}
                         </button>
