@@ -796,7 +796,7 @@ function Dashboard() {
                     );
                   })()}
 
-                  <div className={`mt-3 space-y-2 ${(teamTab[team.id] ?? "membros") === "membros" ? "" : "hidden"}`}>
+                  <div className={`mt-3 max-h-[26rem] space-y-2 overflow-y-auto pr-1 [scrollbar-width:thin] ${(teamTab[team.id] ?? "membros") === "membros" ? "" : "hidden"}`}>
                     {teamMembers.length === 0 && (
                       <p className="px-1 text-xs text-muted-foreground">
                         Sem membros ainda.
