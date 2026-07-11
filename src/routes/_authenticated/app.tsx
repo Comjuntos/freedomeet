@@ -15,6 +15,9 @@ import {
   CalendarClock,
   Power,
   Target,
+  Pencil,
+  Check,
+  X as XIcon,
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
