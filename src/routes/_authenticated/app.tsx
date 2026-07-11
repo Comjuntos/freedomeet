@@ -765,7 +765,28 @@ function Dashboard() {
                     </span>
                   </div>
 
-                  <div className="mt-3 space-y-2">
+                  {(() => {
+                    const tab = teamTab[team.id] ?? "membros";
+                    const actCount = activities.filter((a) => a.team_id === team.id).length;
+                    return (
+                      <div className="mt-3 grid grid-cols-2 gap-1 rounded-lg bg-background/60 p-1 text-xs font-medium">
+                        <button
+                          onClick={() => setTeamTab((s) => ({ ...s, [team.id]: "membros" }))}
+                          className={`rounded-md px-2 py-1.5 transition-colors ${tab === "membros" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                        >
+                          Membros · {teamMembers.length}
+                        </button>
+                        <button
+                          onClick={() => setTeamTab((s) => ({ ...s, [team.id]: "atividades" }))}
+                          className={`rounded-md px-2 py-1.5 transition-colors ${tab === "atividades" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                        >
+                          Atividades · {actCount}
+                        </button>
+                      </div>
+                    );
+                  })()}
+
+                  <div className={`mt-3 space-y-2 ${(teamTab[team.id] ?? "membros") === "membros" ? "" : "hidden"}`}>
                     {teamMembers.length === 0 && (
                       <p className="px-1 text-xs text-muted-foreground">
                         Sem membros ainda.
