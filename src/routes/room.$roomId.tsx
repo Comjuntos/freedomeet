@@ -175,6 +175,7 @@ function Room() {
   const loadChannels = useServerFn(listSlackChannels);
   const postToSlack = useServerFn(sendToSlack);
   const saveRecord = useServerFn(saveMeetingRecord);
+  const extractActionsFn = useServerFn(extractActions);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [showMinutes, setShowMinutes] = useState(false);
@@ -196,6 +197,14 @@ function Room() {
   const [slackChannel, setSlackChannel] = useState("");
   const [slackSending, setSlackSending] = useState(false);
   const [slackStatus, setSlackStatus] = useState<string | null>(null);
+  // Envio das ações da ata para o Kanban de equipes.
+  const [kanbanTeams, setKanbanTeams] = useState<{ id: string; name: string }[]>([]);
+  const [kanbanMembers, setKanbanMembers] = useState<
+    { id: string; team_id: string; full_name: string }[]
+  >([]);
+  const [kanbanTeam, setKanbanTeam] = useState("");
+  const [kanbanSending, setKanbanSending] = useState(false);
+  const [kanbanStatus, setKanbanStatus] = useState<string | null>(null);
   // Fluxo automático de ata ao encerrar a reunião (somente administrador).
   const [endMinutes, setEndMinutes] = useState("");
   const [endLoading, setEndLoading] = useState(false);
