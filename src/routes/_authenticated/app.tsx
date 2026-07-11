@@ -674,8 +674,8 @@ function Dashboard() {
           <TooltipProvider>
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h2 className="text-3xl font-extrabold tracking-tight">Quadro de equipes</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <h2 className="text-[2rem] font-semibold tracking-[-0.02em] text-foreground">Quadro de equipes</h2>
+              <p className="mt-1.5 text-sm text-muted-foreground">
                 Gerencie membros e atividades dos times internos.
               </p>
             </div>
@@ -684,11 +684,11 @@ function Dashboard() {
                 value={teamName}
                 onChange={(e) => setTeamName(e.target.value)}
                 placeholder="Nome da equipe"
-                className="w-48 rounded-xl border border-border bg-background/70 px-3 py-2.5 text-sm outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="w-48 rounded-full border border-border/70 bg-background/60 px-4 py-2.5 text-sm outline-none transition-all focus:border-primary/60 focus:ring-4 focus:ring-primary/10"
               />
               <button
                 onClick={addTeam}
-                className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 active:scale-95"
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.97]"
               >
                 <Plus className="size-4" /> Nova lista
               </button>
@@ -707,10 +707,10 @@ function Dashboard() {
                   value={memberSearch}
                   onChange={(e) => setMemberSearch(e.target.value)}
                   placeholder="Buscar membro por nome ou email…"
-                  className="w-72 rounded-xl border border-border bg-background/70 py-2.5 pl-10 pr-4 text-sm outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  className="w-72 rounded-full border border-border/70 bg-background/60 py-2.5 pl-10 pr-4 text-sm outline-none transition-all focus:border-primary/60 focus:ring-4 focus:ring-primary/10"
                 />
               </div>
-              <span className="rounded-full bg-secondary/60 px-3 py-1 text-xs font-medium">
+              <span className="rounded-full bg-secondary/50 px-3 py-1 text-xs font-medium">
                 {teams.length} {teams.length === 1 ? "equipe" : "equipes"} ·{" "}
                 {members.length} {members.length === 1 ? "membro" : "membros"}
               </span>
