@@ -18,6 +18,8 @@ import {
   Pencil,
   Check,
   X as XIcon,
+  Download,
+  UserCheck,
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
