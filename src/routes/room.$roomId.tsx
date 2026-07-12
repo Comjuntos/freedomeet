@@ -1030,6 +1030,13 @@ function Room() {
                       <ChartColumnBig className="size-4" />
                       Dashboard de falas
                     </button>
+                    <button
+                      onClick={openChapters}
+                      className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
+                    >
+                      <ListTree className="size-4" />
+                      Capítulos & highlights
+                    </button>
                   </div>
                 )}
               </div>
