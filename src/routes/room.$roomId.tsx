@@ -197,6 +197,11 @@ function Room() {
   const [dashboardStats, setDashboardStats] = useState({ words: 0, segments: 0 });
   const [dashboardLoading, setDashboardLoading] = useState(false);
   const [dashboardError, setDashboardError] = useState<string | null>(null);
+
+  const [showChapters, setShowChapters] = useState(false);
+  const [chapters, setChapters] = useState<ChaptersResult["chapters"] | null>(null);
+  const [chaptersLoading, setChaptersLoading] = useState(false);
+  const [chaptersError, setChaptersError] = useState<string | null>(null);
   const [slackChannels, setSlackChannels] = useState<SlackChannel[]>([]);
   const [slackChannel, setSlackChannel] = useState("");
   const [slackSending, setSlackSending] = useState(false);
