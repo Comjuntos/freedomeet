@@ -25,6 +25,7 @@ import { punctuateText } from "@/lib/punctuate.functions";
 import { generateMinutes } from "@/lib/minutes.functions";
 import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment.functions";
 import { analyzeDashboard, type DashboardResult } from "@/lib/dashboard.functions";
+import { detectChapters, type ChaptersResult } from "@/lib/chapters.functions";
 import { listSlackChannels, sendToSlack, type SlackChannel } from "@/lib/slack.functions";
 import { getJaasToken } from "@/lib/jaas.functions";
 import { saveMeetingRecord } from "@/lib/history.functions";
