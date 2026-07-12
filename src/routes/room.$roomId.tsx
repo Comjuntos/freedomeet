@@ -246,6 +246,30 @@ function Room() {
     }
   }, [captions, runDashboard]);
 
+  const openChapters = useCallback(async () => {
+    const segments = captions
+      .filter((c) => c.original && c.original.trim())
+      .map((c) => ({ t: c.t ?? 0, text: c.original }));
+    setShowChapters(true);
+    if (segments.length === 0) {
+      setChapters(null);
+      setChaptersError(
+        "Não há transcrição ainda. Ative a transcrição e fale durante a reunião.",
+      );
+      return;
+    }
+    setChaptersLoading(true);
+    setChaptersError(null);
+    try {
+      const res = await runChapters({ data: { segments } });
+      setChapters(res.chapters);
+    } catch {
+      setChaptersError("Não foi possível detectar os capítulos. Tente novamente.");
+    } finally {
+      setChaptersLoading(false);
+    }
+  }, [captions, runChapters]);
+
   const analyze = useCallback(async () => {
     const transcript = captions
       .map((c) => c.original)
