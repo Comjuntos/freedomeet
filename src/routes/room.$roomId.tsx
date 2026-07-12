@@ -19,6 +19,7 @@ import {
   Send,
   KanbanSquare,
 } from "lucide-react";
+import { ListTree, Clapperboard } from "lucide-react";
 import { translateText } from "@/lib/translate.functions";
 import { punctuateText } from "@/lib/punctuate.functions";
 import { generateMinutes } from "@/lib/minutes.functions";
