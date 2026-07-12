@@ -1399,10 +1399,6 @@ function Room() {
             </div>
           )}
 
-          {!showCaptions && (
-            <>
-            </>
-          ) && null}
           {showChapters && (
             <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 p-4">
               <div className="flex max-h-[85vh] w-full max-w-lg flex-col rounded-xl border border-border bg-card shadow-xl">
