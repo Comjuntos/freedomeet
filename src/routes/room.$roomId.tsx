@@ -19,11 +19,13 @@ import {
   Send,
   KanbanSquare,
 } from "lucide-react";
+import { ListTree, Clapperboard } from "lucide-react";
 import { translateText } from "@/lib/translate.functions";
 import { punctuateText } from "@/lib/punctuate.functions";
 import { generateMinutes } from "@/lib/minutes.functions";
 import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment.functions";
 import { analyzeDashboard, type DashboardResult } from "@/lib/dashboard.functions";
+import { detectChapters, type ChaptersResult } from "@/lib/chapters.functions";
 import { listSlackChannels, sendToSlack, type SlackChannel } from "@/lib/slack.functions";
 import { getJaasToken } from "@/lib/jaas.functions";
 import { saveMeetingRecord } from "@/lib/history.functions";
@@ -107,6 +109,7 @@ interface Caption {
   id: number;
   original: string;
   translated?: string;
+  t?: number;
 }
 
 function loadJitsiScript(): Promise<void> {
@@ -172,6 +175,7 @@ function Room() {
   const makeMinutes = useServerFn(generateMinutes);
   const runSentiment = useServerFn(analyzeSentiment);
   const runDashboard = useServerFn(analyzeDashboard);
+  const runChapters = useServerFn(detectChapters);
   const loadChannels = useServerFn(listSlackChannels);
   const postToSlack = useServerFn(sendToSlack);
   const saveRecord = useServerFn(saveMeetingRecord);
@@ -193,6 +197,11 @@ function Room() {
   const [dashboardStats, setDashboardStats] = useState({ words: 0, segments: 0 });
   const [dashboardLoading, setDashboardLoading] = useState(false);
   const [dashboardError, setDashboardError] = useState<string | null>(null);
+
+  const [showChapters, setShowChapters] = useState(false);
+  const [chapters, setChapters] = useState<ChaptersResult["chapters"] | null>(null);
+  const [chaptersLoading, setChaptersLoading] = useState(false);
+  const [chaptersError, setChaptersError] = useState<string | null>(null);
   const [slackChannels, setSlackChannels] = useState<SlackChannel[]>([]);
   const [slackChannel, setSlackChannel] = useState("");
   const [slackSending, setSlackSending] = useState(false);
@@ -236,6 +245,30 @@ function Room() {
       setDashboardLoading(false);
     }
   }, [captions, runDashboard]);
+
+  const openChapters = useCallback(async () => {
+    const segments = captions
+      .filter((c) => c.original && c.original.trim())
+      .map((c) => ({ t: c.t ?? 0, text: c.original }));
+    setShowChapters(true);
+    if (segments.length === 0) {
+      setChapters(null);
+      setChaptersError(
+        "Não há transcrição ainda. Ative a transcrição e fale durante a reunião.",
+      );
+      return;
+    }
+    setChaptersLoading(true);
+    setChaptersError(null);
+    try {
+      const res = await runChapters({ data: { segments } });
+      setChapters(res.chapters);
+    } catch {
+      setChaptersError("Não foi possível detectar os capítulos. Tente novamente.");
+    } finally {
+      setChaptersLoading(false);
+    }
+  }, [captions, runChapters]);
 
   const analyze = useCallback(async () => {
     const transcript = captions
@@ -577,7 +610,11 @@ function Room() {
         const raw = r[0].transcript.trim();
         if (!raw) continue;
         const id = ++idRef.current;
-        setCaptions((prev) => [...prev, { id, original: raw }]);
+        const t =
+          startTimeRef.current !== null
+            ? Math.floor((Date.now() - startTimeRef.current) / 1000)
+            : 0;
+        setCaptions((prev) => [...prev, { id, original: raw, t }]);
         // Polish the raw speech-to-text into natural, punctuated text,
         // then translate the polished version.
         punctuate({ data: { text: raw, lang: sourceLang } })
@@ -993,6 +1030,13 @@ function Room() {
                       <ChartColumnBig className="size-4" />
                       Dashboard de falas
                     </button>
+                    <button
+                      onClick={openChapters}
+                      className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
+                    >
+                      <ListTree className="size-4" />
+                      Capítulos & highlights
+                    </button>
                   </div>
                 )}
               </div>
@@ -1349,6 +1393,73 @@ function Room() {
                         Atualizar
                       </button>
                     </div>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showChapters && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 p-4">
+              <div className="flex max-h-[85vh] w-full max-w-lg flex-col rounded-xl border border-border bg-card shadow-xl">
+                <div className="flex items-center justify-between border-b border-border px-5 py-3">
+                  <div className="flex items-center gap-2 font-medium">
+                    <Clapperboard className="size-4 text-primary" />
+                    Capítulos & highlights
+                  </div>
+                  <button
+                    onClick={() => setShowChapters(false)}
+                    className="rounded-md p-1 text-muted-foreground hover:bg-secondary"
+                    aria-label="Fechar"
+                  >
+                    <X className="size-4" />
+                  </button>
+                </div>
+                <div className="flex-1 overflow-y-auto px-5 py-4 text-sm">
+                  {chaptersError ? (
+                    <p className="text-destructive">{chaptersError}</p>
+                  ) : chaptersLoading ? (
+                    <p className="text-muted-foreground">Dividindo a reunião em capítulos…</p>
+                  ) : chapters ? (
+                    chapters.length === 0 ? (
+                      <p className="text-muted-foreground">Nenhum capítulo identificado.</p>
+                    ) : (
+                      <div className="space-y-4">
+                        {chapters.map((ch, i) => (
+                          <div
+                            key={i}
+                            className="rounded-lg border border-border p-3"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <h3 className="font-medium">{ch.title}</h3>
+                              <span className="flex shrink-0 items-center gap-1 rounded-md bg-secondary px-2 py-0.5 font-mono text-xs text-muted-foreground">
+                                <Clock className="size-3" />
+                                {formatDuration(ch.start)}
+                              </span>
+                            </div>
+                            {ch.summary && (
+                              <p className="mt-1 text-xs text-muted-foreground">{ch.summary}</p>
+                            )}
+                            {ch.highlights.length > 0 && (
+                              <ul className="mt-2 space-y-1">
+                                {ch.highlights.map((h, j) => (
+                                  <li key={j} className="flex items-start gap-2 text-xs">
+                                    <Sparkles className="mt-0.5 size-3 shrink-0 text-primary" />
+                                    <span>{h}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        ))}
+                        <button
+                          onClick={openChapters}
+                          className="w-full rounded-md border border-border px-3 py-2 font-medium hover:bg-secondary"
+                        >
+                          Atualizar
+                        </button>
+                      </div>
+                    )
                   ) : null}
                 </div>
               </div>
