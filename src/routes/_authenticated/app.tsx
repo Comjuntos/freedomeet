@@ -1586,12 +1586,13 @@ function Dashboard() {
                   <th className="px-4 py-2 text-right font-medium">Abertas</th>
                   <th className="px-4 py-2 text-right font-medium">Concluídas</th>
                   <th className="px-4 py-2 text-right font-medium">Atrasadas</th>
+                  <th className="px-4 py-2 text-right font-medium">Progresso</th>
                 </tr>
               </thead>
               <tbody>
                 {mgrRows.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-4 text-center text-muted-foreground">
+                    <td colSpan={6} className="px-4 py-4 text-center text-muted-foreground">
                       Nenhuma tarefa atribuída ainda.
                     </td>
                   </tr>
@@ -1604,6 +1605,19 @@ function Dashboard() {
                       <td className="px-4 py-2 text-right text-emerald-600">{r.done}</td>
                       <td className={`px-4 py-2 text-right ${r.late > 0 ? "font-medium text-destructive" : ""}`}>
                         {r.late}
+                      </td>
+                      <td className="px-4 py-2">
+                        <div className="flex items-center justify-end gap-2">
+                          <div className="h-2 w-24 overflow-hidden rounded-full bg-secondary">
+                            <div
+                              className="h-full rounded-full bg-emerald-500"
+                              style={{ width: `${r.total ? Math.round((r.done / r.total) * 100) : 0}%` }}
+                            />
+                          </div>
+                          <span className="w-9 text-right text-xs text-muted-foreground">
+                            {r.total ? Math.round((r.done / r.total) * 100) : 0}%
+                          </span>
+                        </div>
                       </td>
                     </tr>
                   ))
