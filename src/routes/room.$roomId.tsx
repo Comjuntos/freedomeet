@@ -1400,6 +1400,77 @@ function Room() {
           )}
 
           {!showCaptions && (
+            <>
+            </>
+          ) && null}
+          {showChapters && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 p-4">
+              <div className="flex max-h-[85vh] w-full max-w-lg flex-col rounded-xl border border-border bg-card shadow-xl">
+                <div className="flex items-center justify-between border-b border-border px-5 py-3">
+                  <div className="flex items-center gap-2 font-medium">
+                    <Clapperboard className="size-4 text-primary" />
+                    Capítulos & highlights
+                  </div>
+                  <button
+                    onClick={() => setShowChapters(false)}
+                    className="rounded-md p-1 text-muted-foreground hover:bg-secondary"
+                    aria-label="Fechar"
+                  >
+                    <X className="size-4" />
+                  </button>
+                </div>
+                <div className="flex-1 overflow-y-auto px-5 py-4 text-sm">
+                  {chaptersError ? (
+                    <p className="text-destructive">{chaptersError}</p>
+                  ) : chaptersLoading ? (
+                    <p className="text-muted-foreground">Dividindo a reunião em capítulos…</p>
+                  ) : chapters ? (
+                    chapters.length === 0 ? (
+                      <p className="text-muted-foreground">Nenhum capítulo identificado.</p>
+                    ) : (
+                      <div className="space-y-4">
+                        {chapters.map((ch, i) => (
+                          <div
+                            key={i}
+                            className="rounded-lg border border-border p-3"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <h3 className="font-medium">{ch.title}</h3>
+                              <span className="flex shrink-0 items-center gap-1 rounded-md bg-secondary px-2 py-0.5 font-mono text-xs text-muted-foreground">
+                                <Clock className="size-3" />
+                                {formatDuration(ch.start)}
+                              </span>
+                            </div>
+                            {ch.summary && (
+                              <p className="mt-1 text-xs text-muted-foreground">{ch.summary}</p>
+                            )}
+                            {ch.highlights.length > 0 && (
+                              <ul className="mt-2 space-y-1">
+                                {ch.highlights.map((h, j) => (
+                                  <li key={j} className="flex items-start gap-2 text-xs">
+                                    <Sparkles className="mt-0.5 size-3 shrink-0 text-primary" />
+                                    <span>{h}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        ))}
+                        <button
+                          onClick={openChapters}
+                          className="w-full rounded-md border border-border px-3 py-2 font-medium hover:bg-secondary"
+                        >
+                          Atualizar
+                        </button>
+                      </div>
+                    )
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!showCaptions && (
             <button
               onClick={() => setShowCaptions(true)}
               className="absolute bottom-6 right-6 flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-lg hover:bg-primary/90"
