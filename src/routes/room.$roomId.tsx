@@ -108,6 +108,7 @@ interface Caption {
   id: number;
   original: string;
   translated?: string;
+  t?: number;
 }
 
 function loadJitsiScript(): Promise<void> {
