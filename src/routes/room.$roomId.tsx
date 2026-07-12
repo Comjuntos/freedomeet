@@ -175,6 +175,7 @@ function Room() {
   const makeMinutes = useServerFn(generateMinutes);
   const runSentiment = useServerFn(analyzeSentiment);
   const runDashboard = useServerFn(analyzeDashboard);
+  const runChapters = useServerFn(detectChapters);
   const loadChannels = useServerFn(listSlackChannels);
   const postToSlack = useServerFn(sendToSlack);
   const saveRecord = useServerFn(saveMeetingRecord);
