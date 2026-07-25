@@ -90,46 +90,46 @@ function Index() {
 
   return (
     <div className="aurora-bg flex min-h-screen flex-col bg-background text-foreground">
-      <header className="flex items-center justify-between px-6 py-4">
-        <div className="flex items-center gap-2">
-          <img src={logoUrl.url} alt="FreeduMeet" className="size-9 rounded-xl object-cover" />
-          <span className="font-display text-xl font-semibold tracking-tight">FreeduMeet</span>
+      <header className="flex items-center justify-between gap-2 px-4 py-3 sm:px-6 sm:py-4">
+        <div className="flex min-w-0 items-center gap-2">
+          <img src={logoUrl.url} alt="FreeduMeet" className="size-8 shrink-0 rounded-xl object-cover sm:size-9" />
+          <span className="truncate font-display text-lg font-semibold tracking-tight sm:text-xl">FreeduMeet</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
           <span className="mr-2 hidden text-sm text-muted-foreground sm:block">
             {new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
           </span>
-          <button className="rounded-full p-2.5 text-muted-foreground hover:bg-secondary" aria-label="Ajuda">
+          <button className="hidden rounded-full p-2.5 text-muted-foreground hover:bg-secondary sm:inline-flex" aria-label="Ajuda">
             <HelpCircle className="size-5" />
           </button>
-          <button className="rounded-full p-2.5 text-muted-foreground hover:bg-secondary" aria-label="Configurações">
+          <button className="hidden rounded-full p-2.5 text-muted-foreground hover:bg-secondary sm:inline-flex" aria-label="Configurações">
             <Settings className="size-5" />
           </button>
           <Link
             to="/auth"
-            className="ml-1 inline-flex items-center rounded-full border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
+            className="inline-flex items-center rounded-full border border-border px-3 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-secondary sm:ml-1 sm:px-4 sm:py-2"
           >
             Entrar
           </Link>
           <Link
             to="/app"
-            className="ml-1 inline-flex items-center rounded-full bg-gradient-to-r from-primary to-accent px-4 py-2 text-sm font-semibold text-primary-foreground transition-transform hover:scale-105"
+            className="inline-flex items-center rounded-full bg-gradient-to-r from-primary to-accent px-3 py-1.5 text-sm font-semibold text-primary-foreground transition-transform hover:scale-105 sm:ml-1 sm:px-4 sm:py-2"
           >
             Painel
           </Link>
         </div>
       </header>
 
-      <main className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-12 px-6 py-8 md:grid-cols-2">
-        <div className="max-w-md">
+      <main className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-12 px-4 py-8 sm:px-6 md:grid-cols-2">
+        <div className="w-full max-w-md min-w-0">
           <span className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
             Soberania Nacional
           </span>
-          <h1 className="mt-5 text-4xl font-semibold leading-[1.05] tracking-tight md:text-6xl">
+          <h1 className="mt-5 text-[2rem] font-semibold leading-[1.05] tracking-tight sm:text-4xl md:text-6xl">
             Reuniões que{" "}
             <span className="text-gradient">pensam</span> com você
           </h1>
-          <p className="mt-5 text-lg text-muted-foreground">
+          <p className="mt-5 text-base text-muted-foreground sm:text-lg">
             Conecte-se, colabore e comemore de qualquer lugar. Escolha o plano ideal —
             do Gratuito ao Empresarial — e pague menos do que nas grandes plataformas.
           </p>
@@ -143,21 +143,21 @@ function Index() {
               Nova reunião
             </button>
 
-            <div className="flex items-center gap-2">
-              <div className="glass flex items-center gap-2 rounded-full px-4 py-2.5">
+            <div className="flex min-w-0 items-center gap-2">
+              <div className="glass flex min-w-0 flex-1 items-center gap-2 rounded-full px-4 py-2.5">
                 <Keyboard className="size-5 text-muted-foreground" />
                 <input
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && joinMeeting()}
                   placeholder="Digite um código ou link"
-                  className="w-44 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                  className="w-full min-w-0 bg-transparent text-sm outline-none placeholder:text-muted-foreground sm:w-44"
                 />
               </div>
               <button
                 onClick={joinMeeting}
                 disabled={!code.trim()}
-                className="px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-secondary/70 rounded-md disabled:text-muted-foreground disabled:opacity-60"
+                className="shrink-0 px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-secondary/70 rounded-md disabled:text-muted-foreground disabled:opacity-60"
               >
                 Participar
               </button>
@@ -183,28 +183,28 @@ function Index() {
           </dl>
         </div>
 
-        <div className="flex flex-col items-center justify-center text-center">
-          <div className="relative flex size-80 items-center justify-center [perspective:1200px]">
+        <div className="flex w-full min-w-0 flex-col items-center justify-center overflow-hidden text-center">
+          <div className="relative flex size-64 shrink-0 items-center justify-center [--orbit-r:118px] [perspective:1200px] sm:size-80 sm:[--orbit-r:180px]">
             {/* living aura */}
             <div className="absolute inset-0 animate-pulse rounded-full bg-gradient-to-br from-primary/30 to-accent/30 blur-3xl" />
-            <div className="absolute size-80 breathe rounded-full bg-gradient-to-tr from-primary/10 to-accent/10 blur-2xl" />
+            <div className="absolute size-64 breathe rounded-full bg-gradient-to-tr from-primary/10 to-accent/10 blur-2xl sm:size-80" />
 
             {/* rotating orbital rings */}
-            <div className="spin-slow absolute size-72 rounded-full border border-dashed border-primary/25" />
-            <div className="spin-slow-rev absolute size-60 rounded-full border border-primary/15" />
-            <div className="spin-slow absolute size-72">
+            <div className="spin-slow absolute size-56 rounded-full border border-dashed border-primary/25 sm:size-72" />
+            <div className="spin-slow-rev absolute size-44 rounded-full border border-primary/15 sm:size-60" />
+            <div className="spin-slow absolute size-56 sm:size-72">
               <span className="absolute left-1/2 top-0 size-2 -translate-x-1/2 rounded-full bg-primary glow" />
             </div>
-            <div className="spin-slow-rev absolute size-60">
+            <div className="spin-slow-rev absolute size-44 sm:size-60">
               <span className="absolute left-1/2 top-0 size-1.5 -translate-x-1/2 rounded-full bg-accent" />
             </div>
 
             {/* floating logo core */}
-            <div className="glass breathe tilt-3d relative flex size-52 items-center justify-center rounded-full glow">
+            <div className="glass breathe tilt-3d relative flex size-40 items-center justify-center rounded-full glow sm:size-52">
               <img
                 src={logoTransparentUrl.url}
                 alt="FreeduMeet"
-                className="float size-36 object-contain drop-shadow-[0_10px_30px_oklch(0.58_0.17_258_/_35%)]"
+                className="float size-28 object-contain drop-shadow-[0_10px_30px_oklch(0.58_0.17_258_/_35%)] sm:size-36"
               />
             </div>
 
@@ -215,23 +215,22 @@ function Index() {
                 <div
                   key={f.title}
                   style={{
-                    ["--orbit-r" as string]: "180px",
                     animation: "orbit 44s linear infinite",
                     animationDelay: `${delay}s`,
                   }}
                   className="absolute left-1/2 top-1/2"
                 >
                   <span
-                    className="flex -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 whitespace-nowrap text-xs font-medium text-foreground/90 transition-transform hover:scale-110"
+                    className="flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 whitespace-nowrap text-[10px] font-medium text-foreground/90 transition-transform hover:scale-110 sm:gap-1.5 sm:text-xs"
                   >
-                    <f.icon className="size-3.5 shrink-0 text-primary" />
+                    <f.icon className="size-3 shrink-0 text-primary sm:size-3.5" />
                     {f.title}
                   </span>
                 </div>
               );
             })}
           </div>
-          <h2 className="mt-10 text-xl font-semibold">Receba um link para compartilhar</h2>
+          <h2 className="mt-10 text-lg font-semibold sm:text-xl">Receba um link para compartilhar</h2>
           <p className="mt-2 max-w-sm text-sm text-muted-foreground">
             Clique em <span className="font-medium">Nova reunião</span> para receber um link
             que você pode enviar às pessoas com quem quer se reunir.
@@ -239,7 +238,7 @@ function Index() {
         </div>
       </main>
 
-      <section className="border-t border-border bg-secondary/20 px-6 py-16">
+      <section className="border-t border-border bg-secondary/20 px-4 py-12 sm:px-6 sm:py-16">
         <div className="mx-auto max-w-6xl">
           <span className="text-xs font-semibold uppercase tracking-widest text-primary">Recursos</span>
           <h2 className="mt-2 text-2xl font-semibold md:text-3xl">
@@ -266,7 +265,7 @@ function Index() {
         </div>
       </section>
 
-      <section id="planos" className="border-t border-border px-6 py-16">
+      <section id="planos" className="border-t border-border px-4 py-12 sm:px-6 sm:py-16">
         <div className="mx-auto max-w-6xl">
           <span className="text-xs font-semibold uppercase tracking-widest text-primary">Planos</span>
           <h2 className="mt-2 text-2xl font-medium md:text-3xl">Planos e assinaturas</h2>
@@ -322,13 +321,13 @@ function Index() {
         </div>
       </section>
 
-      <footer className="border-t border-border px-6 py-10">
+      <footer className="border-t border-border px-4 py-10 sm:px-6">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 text-sm text-muted-foreground sm:flex-row">
           <div className="flex items-center gap-2">
             <img src={logoUrl.url} alt="FreeduMeet" className="size-7 rounded-lg object-cover" />
             <span className="font-display font-semibold text-foreground">FreeduMeet</span>
           </div>
-          <p>© {new Date().getFullYear()} FreeduMeet — Videoconferência com soberania nacional.</p>
+          <p className="text-center sm:text-right">© {new Date().getFullYear()} FreeduMeet — Videoconferência com soberania nacional.</p>
         </div>
       </footer>
     </div>
