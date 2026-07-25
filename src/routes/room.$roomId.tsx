@@ -898,7 +898,7 @@ function Room() {
             {formatDuration(elapsed)}
           </div>
           {showCaptions && (
-            <aside className="absolute inset-y-0 right-0 z-20 flex w-full flex-col border-l border-border bg-card sm:static sm:z-10 sm:w-80">
+            <aside className="absolute bottom-24 right-0 top-0 z-20 flex w-full flex-col border-l border-border bg-card sm:static sm:bottom-auto sm:top-auto sm:z-10 sm:w-80">
               <div className="flex items-center justify-between border-b border-border px-4 py-3">
                 <div className="flex items-center gap-2 font-medium">
                   <Captions className="size-4 text-primary" />
@@ -970,7 +970,7 @@ function Room() {
                 )}
               </div>
 
-              <div className="space-y-2 border-t border-border p-3">
+              <div className="max-h-[45vh] shrink-0 space-y-2 overflow-y-auto border-t border-border p-3 sm:max-h-none sm:overflow-visible">
                 <button
                   onClick={listening ? stopListening : startListening}
                   className={`w-full rounded-md px-3 py-2 text-sm font-medium transition-colors ${
