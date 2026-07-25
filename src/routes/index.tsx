@@ -184,7 +184,7 @@ function Index() {
         </div>
 
         <div className="flex w-full min-w-0 flex-col items-center justify-center overflow-hidden text-center">
-          <div className="relative flex size-64 shrink-0 items-center justify-center [--orbit-r:118px] [perspective:1200px] sm:size-80 sm:[--orbit-r:180px]">
+          <div className="relative flex size-64 shrink-0 items-center justify-center [--orbit-r:96px] [perspective:1200px] sm:size-80 sm:[--orbit-r:180px]">
             {/* living aura */}
             <div className="absolute inset-0 animate-pulse rounded-full bg-gradient-to-br from-primary/30 to-accent/30 blur-3xl" />
             <div className="absolute size-64 breathe rounded-full bg-gradient-to-tr from-primary/10 to-accent/10 blur-2xl sm:size-80" />
@@ -221,7 +221,7 @@ function Index() {
                   className="absolute left-1/2 top-1/2"
                 >
                   <span
-                    className="flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 whitespace-nowrap text-[10px] font-medium text-foreground/90 transition-transform hover:scale-110 sm:gap-1.5 sm:text-xs"
+                    className="flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 whitespace-nowrap text-[9px] font-medium text-foreground/90 transition-transform hover:scale-110 sm:gap-1.5 sm:text-xs"
                   >
                     <f.icon className="size-3 shrink-0 text-primary sm:size-3.5" />
                     {f.title}
