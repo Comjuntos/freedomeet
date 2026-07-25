@@ -146,7 +146,7 @@ function CompetencyLive() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-8">
+      <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
         <div className="flex items-start gap-3">
           <span className="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <Activity className="size-7" />
@@ -184,7 +184,7 @@ function CompetencyLive() {
         <div className="mt-6 grid gap-4 lg:grid-cols-2">
           <div className="rounded-xl border border-border bg-card p-5">
             <h2 className="text-sm font-semibold">Nível médio por pessoa</h2>
-            <div className="mt-4 h-72">
+            <div className="mt-4 h-64 sm:h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={byMember} layout="vertical" margin={{ left: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
@@ -192,7 +192,7 @@ function CompetencyLive() {
                   <YAxis
                     type="category"
                     dataKey="name"
-                    width={120}
+                    width={88}
                     fontSize={12}
                   />
                   <Tooltip />
@@ -208,7 +208,7 @@ function CompetencyLive() {
 
           <div className="rounded-xl border border-border bg-card p-5">
             <h2 className="text-sm font-semibold">Distribuição por impacto</h2>
-            <div className="mt-4 h-72">
+            <div className="mt-4 h-64 sm:h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -244,7 +244,7 @@ function CompetencyLive() {
 
           <div className="rounded-xl border border-border bg-card p-5 lg:col-span-2">
             <h2 className="text-sm font-semibold">Radar de competências</h2>
-            <div className="mt-4 h-80">
+            <div className="mt-4 h-72 sm:h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart data={radar}>
                   <PolarGrid opacity={0.3} />

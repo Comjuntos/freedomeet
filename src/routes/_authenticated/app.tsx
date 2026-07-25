@@ -651,7 +651,7 @@ function Dashboard() {
 
   return (
     <div className="aurora-bg min-h-screen bg-background text-foreground">
-      <header className="glass sticky top-0 z-30 flex items-center justify-between border-b border-border/60 px-6 py-3.5">
+      <header className="glass sticky top-0 z-30 flex items-center justify-between border-b border-border/60 px-4 py-3 sm:px-6 sm:py-3.5">
         <div className="flex items-center gap-3">
           <span className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-primary to-accent shadow-lg shadow-primary/20">
             <Video className="size-5 text-primary-foreground" />
@@ -668,7 +668,7 @@ function Dashboard() {
         </button>
       </header>
 
-      <main className="mx-auto grid w-full max-w-6xl gap-8 px-6 py-8 lg:grid-cols-2">
+      <main className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-6 sm:gap-8 sm:px-6 sm:py-8 lg:grid-cols-2">
         {/* EQUIPES */}
         <section className="min-w-0 lg:col-span-2">
           <TooltipProvider>
@@ -1270,7 +1270,7 @@ function Dashboard() {
         </section>
 
         {/* SALAS */}
-        <section>
+        <section className="min-w-0">
           <h2 className="flex items-center gap-2 text-xl font-semibold">
             <DoorOpen className="size-5 text-primary" /> Salas de projeto
           </h2>
@@ -1355,7 +1355,7 @@ function Dashboard() {
         </section>
 
         {/* HISTÓRICO DE REUNIÕES */}
-        <section className="lg:col-span-2">
+        <section className="min-w-0 lg:col-span-2">
           <h2 className="flex items-center gap-2 text-xl font-semibold">
             <History className="size-5 text-primary" /> Histórico de reuniões
           </h2>
@@ -1450,7 +1450,7 @@ function Dashboard() {
         </section>
 
         {/* RELATÓRIOS DE ENGAJAMENTO */}
-        <section className="lg:col-span-2">
+        <section className="min-w-0 lg:col-span-2">
           <h2 className="flex items-center gap-2 text-xl font-semibold">
             <BarChart3 className="size-5 text-primary" /> Relatórios de engajamento
           </h2>
@@ -1519,7 +1519,7 @@ function Dashboard() {
         </section>
 
         {/* VISÃO DO GESTOR — TAREFAS POR PESSOA */}
-        <section className="lg:col-span-2">
+        <section className="min-w-0 lg:col-span-2">
           <h2 className="flex items-center gap-2 text-xl font-semibold">
             <UserCheck className="size-5 text-primary" /> Visão do gestor
           </h2>
@@ -1578,7 +1578,7 @@ function Dashboard() {
           </div>
 
           <div className="mt-4 overflow-x-auto rounded-lg border border-border">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[36rem] text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-xs text-muted-foreground">
                   <th className="px-4 py-2 font-medium">Responsável</th>
@@ -1628,7 +1628,7 @@ function Dashboard() {
         </section>
 
         {/* AGENDA DE REUNIÕES RECORRENTES */}
-        <section className="lg:col-span-2">
+        <section className="min-w-0 lg:col-span-2">
           <h2 className="flex items-center gap-2 text-xl font-semibold">
             <CalendarClock className="size-5 text-primary" /> Agenda recorrente
           </h2>
@@ -1739,7 +1739,7 @@ function Dashboard() {
           </div>
         </section>
 
-        <section className="lg:col-span-2">
+        <section className="min-w-0 lg:col-span-2">
           <Link
             to="/competencias"
             className="group flex flex-col gap-3 rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary md:flex-row md:items-center md:justify-between"
