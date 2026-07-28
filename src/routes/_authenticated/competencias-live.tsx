@@ -21,10 +21,15 @@ import {
 import { ArrowLeft, Activity, Target, TrendingUp, Users } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { AdminOnly } from "@/components/AdminOnly";
 
 export const Route = createFileRoute("/_authenticated/competencias-live")({
   head: () => ({ meta: [{ title: "Painel Live de Competências — FreeduMeet" }] }),
-  component: CompetencyLive,
+  component: () => (
+    <AdminOnly>
+      <CompetencyLive />
+    </AdminOnly>
+  ),
 });
 
 type Member = { id: string; full_name: string };
