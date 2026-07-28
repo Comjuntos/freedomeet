@@ -69,11 +69,16 @@ function randomRoom() {
 function Index() {
   const navigate = useNavigate();
   const [code, setCode] = useState("");
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
+  const { openCheckout, loading: checkoutLoading } = usePaddleCheckout();
 
   // Se o usuário já estiver logado, carrega o painel automaticamente.
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate({ to: "/app" });
+      if (data.user) {
+        setUser({ id: data.user.id, email: data.user.email });
+        navigate({ to: "/app" });
+      }
     });
   }, [navigate]);
 
@@ -87,6 +92,20 @@ function Index() {
   const joinMeeting = () => {
     const room = code.trim().replace(/\s+/g, "-");
     if (room) navigate({ to: "/room/$roomId", params: { roomId: room } });
+  };
+
+  const handleSubscribe = (priceId: string) => {
+    if (!user) {
+      navigate({ to: "/auth" });
+      return;
+    }
+    openCheckout({
+      priceId,
+      quantity: 1,
+      customerEmail: user.email,
+      customData: { userId: user.id },
+      successUrl: `${window.location.origin}/app?checkout=success`,
+    });
   };
 
   return (
