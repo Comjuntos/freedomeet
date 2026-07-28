@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { initializePaddle, getPaddleEnvironment } from "@/lib/paddle";
 import { resolvePaddlePrice } from "@/utils/payments.functions";
 
 export function usePaddleCheckout() {
   const [loading, setLoading] = useState(false);
+  const resolvePrice = useServerFn(resolvePaddlePrice);
 
   const openCheckout = async (options: {
     priceId: string;
@@ -15,9 +17,8 @@ export function usePaddleCheckout() {
     setLoading(true);
     try {
       await initializePaddle();
-      const paddlePriceId = await resolvePaddlePrice({
-        priceId: options.priceId,
-        environment: getPaddleEnvironment(),
+      const paddlePriceId = await resolvePrice({
+        data: { priceId: options.priceId, environment: getPaddleEnvironment() },
       });
 
       window.Paddle.Checkout.open({
