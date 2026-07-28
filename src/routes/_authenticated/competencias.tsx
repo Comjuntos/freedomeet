@@ -5,10 +5,15 @@ import { toast } from "sonner";
 import { ArrowLeft, Target, Plus, Trash2, Sparkles, User, Activity } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { AdminOnly } from "@/components/AdminOnly";
 
 export const Route = createFileRoute("/_authenticated/competencias")({
   head: () => ({ meta: [{ title: "Mapa de Competências — FreeduMeet" }] }),
-  component: CompetencyTool,
+  component: () => (
+    <AdminOnly>
+      <CompetencyTool />
+    </AdminOnly>
+  ),
 });
 
 type Team = { id: string; name: string };
