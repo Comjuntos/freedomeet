@@ -16,7 +16,6 @@ import {
   Loader2,
   Clock,
   Hash,
-  Send,
   KanbanSquare,
 } from "lucide-react";
 import { ListTree, Clapperboard } from "lucide-react";
@@ -26,7 +25,6 @@ import { generateMinutes } from "@/lib/minutes.functions";
 import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment.functions";
 import { analyzeDashboard, type DashboardResult } from "@/lib/dashboard.functions";
 import { detectChapters, type ChaptersResult } from "@/lib/chapters.functions";
-import { listSlackChannels, sendToSlack, type SlackChannel } from "@/lib/slack.functions";
 import { getJaasToken } from "@/lib/jaas.functions";
 import { saveMeetingRecord } from "@/lib/history.functions";
 import { extractActions } from "@/lib/actions.functions";
@@ -176,8 +174,6 @@ function Room() {
   const runSentiment = useServerFn(analyzeSentiment);
   const runDashboard = useServerFn(analyzeDashboard);
   const runChapters = useServerFn(detectChapters);
-  const loadChannels = useServerFn(listSlackChannels);
-  const postToSlack = useServerFn(sendToSlack);
   const saveRecord = useServerFn(saveMeetingRecord);
   const extractActionsFn = useServerFn(extractActions);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
@@ -202,10 +198,6 @@ function Room() {
   const [chapters, setChapters] = useState<ChaptersResult["chapters"] | null>(null);
   const [chaptersLoading, setChaptersLoading] = useState(false);
   const [chaptersError, setChaptersError] = useState<string | null>(null);
-  const [slackChannels, setSlackChannels] = useState<SlackChannel[]>([]);
-  const [slackChannel, setSlackChannel] = useState("");
-  const [slackSending, setSlackSending] = useState(false);
-  const [slackStatus, setSlackStatus] = useState<string | null>(null);
   // Envio das ações da ata para o Kanban de equipes.
   const [kanbanTeams, setKanbanTeams] = useState<{ id: string; name: string }[]>([]);
   const [kanbanMembers, setKanbanMembers] = useState<
@@ -218,7 +210,6 @@ function Room() {
   const [endMinutes, setEndMinutes] = useState("");
   const [endLoading, setEndLoading] = useState(false);
   const [endError, setEndError] = useState<string | null>(null);
-  const [endSlackStatus, setEndSlackStatus] = useState<string | null>(null);
   const autoRanRef = useRef(false);
 
   const openDashboard = useCallback(async () => {
@@ -464,33 +455,6 @@ function Room() {
     URL.revokeObjectURL(url);
   }, [captions, roomId]);
 
-  // Carrega os canais do Slack quando a ata é gerada.
-  useEffect(() => {
-    if (!minutesText || slackChannels.length > 0) return;
-    loadChannels()
-      .then((chs) => {
-        setSlackChannels(chs);
-        if (chs[0]) setSlackChannel(chs[0].id);
-      })
-      .catch(() => setSlackStatus("Não foi possível carregar os canais do Slack."));
-  }, [minutesText, slackChannels.length, loadChannels]);
-
-  const sendAtaToSlack = useCallback(async () => {
-    if (!slackChannel || !minutesText) return;
-    setSlackSending(true);
-    setSlackStatus(null);
-    try {
-      await postToSlack({
-        data: { channel: slackChannel, text: `*Ata da reunião ${roomId}*\n\n${minutesText}` },
-      });
-      setSlackStatus("Ata enviada para o Slack! ✅");
-    } catch {
-      setSlackStatus("Falha ao enviar para o Slack.");
-    } finally {
-      setSlackSending(false);
-    }
-  }, [slackChannel, minutesText, postToSlack, roomId]);
-
   const saveToHistory = useCallback(
     async (minutes: string) => {
       if (!minutes.trim()) return;
@@ -529,7 +493,7 @@ function Room() {
   }, [targetLang]);
 
   // Ao encerrar a reunião, o administrador recebe automaticamente a ata
-  // gerada a partir da transcrição e enviada para o Slack — sem cliques.
+  // gerada a partir da transcrição — sem cliques.
   useEffect(() => {
     if (!ended || !isHost || autoRanRef.current) return;
     autoRanRef.current = true;
@@ -554,30 +518,13 @@ function Room() {
           data: { transcript, template: "executiva", title: roomId, startedAt },
         });
         setEndMinutes(res.minutes);
-        try {
-          const chs = await loadChannels();
-          const ch = chs[0];
-          if (ch) {
-            await postToSlack({
-              data: {
-                channel: ch.id,
-                text: `*Ata automática — reunião ${roomId}*\n\n${res.minutes}`,
-              },
-            });
-            setEndSlackStatus(`Ata enviada automaticamente para #${ch.name} no Slack ✅`);
-          }
-        } catch {
-          setEndSlackStatus(
-            "Ata gerada, mas não foi possível enviá-la ao Slack automaticamente.",
-          );
-        }
       } catch {
         setEndError("Não foi possível gerar a ata automática. Tente gerar manualmente.");
       } finally {
         setEndLoading(false);
       }
     })();
-  }, [ended, isHost, captions, makeMinutes, roomId, loadChannels, postToSlack]);
+  }, [ended, isHost, captions, makeMinutes, roomId]);
 
   // Meeting duration timer: starts once the room mounts, stops when it ends.
   useEffect(() => {
@@ -807,9 +754,6 @@ function Room() {
                       )}
                       Salvar no histórico
                     </button>
-                    {endSlackStatus && (
-                      <span className="text-xs text-muted-foreground">{endSlackStatus}</span>
-                    )}
                     {saveStatus && (
                       <span className="text-xs text-muted-foreground">{saveStatus}</span>
                     )}
@@ -1127,33 +1071,6 @@ function Room() {
                         )}
                         Salvar no histórico
                       </button>
-                      <select
-                        value={slackChannel}
-                        onChange={(e) => setSlackChannel(e.target.value)}
-                        className="rounded-md border border-border bg-background px-2 py-2 text-sm"
-                      >
-                        {slackChannels.length === 0 ? (
-                          <option value="">Carregando canais…</option>
-                        ) : (
-                          slackChannels.map((c) => (
-                            <option key={c.id} value={c.id}>
-                              #{c.name}
-                            </option>
-                          ))
-                        )}
-                      </select>
-                      <button
-                        onClick={sendAtaToSlack}
-                        disabled={slackSending || !slackChannel}
-                        className="flex items-center gap-2 rounded-md border border-border px-3 py-2 font-medium hover:bg-secondary disabled:opacity-60"
-                      >
-                        {slackSending ? (
-                          <Loader2 className="size-4 animate-spin" />
-                        ) : (
-                          <Send className="size-4" />
-                        )}
-                        Enviar ao Slack
-                      </button>
                       {kanbanTeams.length > 0 && (
                         <>
                           <select
@@ -1185,9 +1102,6 @@ function Room() {
                     </>
                   )}
                 </div>
-                {slackStatus && (
-                  <p className="px-5 pt-1 text-xs text-muted-foreground">{slackStatus}</p>
-                )}
                 {kanbanStatus && (
                   <p className="px-5 pt-1 text-xs text-muted-foreground">{kanbanStatus}</p>
                 )}

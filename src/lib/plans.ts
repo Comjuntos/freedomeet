@@ -14,7 +14,6 @@ export type PlanFeatures = {
   maxMinutes: number; // Infinity = ilimitado
   maxParticipants: number;
   traducao: boolean;
-  slack: boolean;
   ata: boolean;
   sentimento: boolean;
   // Itens exibidos na tabela de preços (texto livre):
@@ -32,7 +31,6 @@ export const PLANS: Record<PlanId, PlanFeatures> = {
     maxMinutes: 80,
     maxParticipants: 8,
     traducao: false,
-    slack: false,
     ata: true,
     sentimento: true,
     features: [
@@ -55,7 +53,6 @@ export const PLANS: Record<PlanId, PlanFeatures> = {
     maxMinutes: Infinity,
     maxParticipants: 50,
     traducao: true,
-    slack: true,
     ata: true,
     sentimento: true,
     features: [
@@ -64,7 +61,6 @@ export const PLANS: Record<PlanId, PlanFeatures> = {
       "Tudo do plano Gratuito",
       "Tradução em tempo real",
       "Ata gerada por IA ao final",
-      "Integração com Slack",
     ],
   },
   empresarial: {
@@ -77,7 +73,6 @@ export const PLANS: Record<PlanId, PlanFeatures> = {
     maxMinutes: Infinity,
     maxParticipants: 300,
     traducao: true,
-    slack: true,
     ata: true,
     sentimento: true,
     features: [
