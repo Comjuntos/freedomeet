@@ -1,0 +1,178 @@
+{
+  "version": 1,
+  "sdk_version": "0.25.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://qenuktosxlzbsjvcqiwf.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "freedumeet-mcp",
+      "version": "0.1.0",
+      "title": "FreeduMeet"
+    },
+    "tools": [
+      {
+        "name": "list_teams",
+        "title": "Listar equipes",
+        "description": "List the teams the signed-in user can access in FreeduMeet.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_team_members",
+        "title": "Listar membros da equipe",
+        "description": "List members of a team, optionally filtered by team id.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "team_id": {
+              "description": "Team UUID. Omit to list members of every accessible team.",
+              "type": "string"
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_activities",
+        "title": "Listar atividades",
+        "description": "List Kanban activities/tasks, optionally filtered by team or completion state.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "team_id": {
+              "description": "Team UUID to filter by.",
+              "type": "string"
+            },
+            "done": {
+              "description": "Filter by completion state.",
+              "type": "boolean"
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_activity",
+        "title": "Criar atividade",
+        "description": "Create a Kanban activity/task for a team in FreeduMeet.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "team_id": {
+              "type": "string",
+              "description": "Team UUID the activity belongs to."
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Short description of the task."
+            },
+            "status": {
+              "description": "Kanban column. Defaults to todo.",
+              "type": "string",
+              "enum": [
+                "todo",
+                "doing",
+                "done"
+              ]
+            },
+            "member_id": {
+              "description": "Team member UUID to assign the task to.",
+              "type": "string"
+            },
+            "due_date": {
+              "description": "Due date in YYYY-MM-DD format.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "team_id",
+            "title"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_competencies",
+        "title": "Listar mapa de competências",
+        "description": "List mapped critical competencies, levels and evolution plans.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "team_id": {
+              "description": "Team UUID to filter by.",
+              "type": "string"
+            },
+            "member_id": {
+              "description": "Team member UUID to filter by.",
+              "type": "string"
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_meetings",
+        "title": "Listar reuniões",
+        "description": "List recorded meetings with their AI minutes and analysis.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "limit": {
+              "description": "How many meetings to return (default 10, max 50).",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
