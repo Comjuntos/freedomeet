@@ -1,0 +1,41 @@
+import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { initializePaddle, getPaddleEnvironment } from "@/lib/paddle";
+import { resolvePaddlePrice } from "@/utils/payments.functions";
+
+export function usePaddleCheckout() {
+  const [loading, setLoading] = useState(false);
+  const resolvePrice = useServerFn(resolvePaddlePrice);
+
+  const openCheckout = async (options: {
+    priceId: string;
+    quantity?: number;
+    customerEmail?: string;
+    customData?: Record<string, string>;
+    successUrl?: string;
+  }) => {
+    setLoading(true);
+    try {
+      await initializePaddle();
+      const paddlePriceId = await resolvePrice({
+        data: { priceId: options.priceId, environment: getPaddleEnvironment() },
+      });
+
+      window.Paddle.Checkout.open({
+        items: [{ priceId: paddlePriceId, quantity: options.quantity ?? 1 }],
+        customer: options.customerEmail ? { email: options.customerEmail } : undefined,
+        customData: options.customData,
+        settings: {
+          displayMode: "overlay",
+          successUrl: options.successUrl || `${window.location.origin}/app?checkout=success`,
+          allowLogout: false,
+          variant: "one-page",
+        },
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { openCheckout, loading };
+}

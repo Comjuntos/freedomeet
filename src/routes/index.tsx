@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
 import { PLAN_LIST } from "@/lib/plans";
 import logoUrl from "@/assets/freedumeet-logo.png.asset.json";
 import logoTransparentUrl from "@/assets/freedumeet-logo-transparent.png.asset.json";
@@ -68,11 +69,16 @@ function randomRoom() {
 function Index() {
   const navigate = useNavigate();
   const [code, setCode] = useState("");
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
+  const { openCheckout, loading: checkoutLoading } = usePaddleCheckout();
 
   // Se o usuário já estiver logado, carrega o painel automaticamente.
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate({ to: "/app" });
+      if (data.user) {
+        setUser({ id: data.user.id, email: data.user.email });
+        navigate({ to: "/app" });
+      }
     });
   }, [navigate]);
 
@@ -86,6 +92,20 @@ function Index() {
   const joinMeeting = () => {
     const room = code.trim().replace(/\s+/g, "-");
     if (room) navigate({ to: "/room/$roomId", params: { roomId: room } });
+  };
+
+  const handleSubscribe = (priceId: string) => {
+    if (!user) {
+      navigate({ to: "/auth" });
+      return;
+    }
+    openCheckout({
+      priceId,
+      quantity: 1,
+      customerEmail: user.email,
+      customData: { userId: user.id },
+      successUrl: `${window.location.origin}/app?checkout=success`,
+    });
   };
 
   return (
@@ -303,8 +323,9 @@ function Index() {
                   ))}
                 </ul>
                 <button
-                  onClick={createMeeting}
-                  className={`mt-7 inline-flex items-center justify-center rounded-md px-4 py-2.5 text-sm font-medium transition-colors ${
+                  onClick={() => (plan.priceId ? handleSubscribe(plan.priceId) : createMeeting())}
+                  disabled={checkoutLoading}
+                  className={`mt-7 inline-flex items-center justify-center rounded-md px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-60 ${
                     plan.highlight
                       ? "rounded-full bg-gradient-to-r from-primary to-accent text-primary-foreground hover:scale-105"
                       : "rounded-full border border-border hover:bg-secondary"

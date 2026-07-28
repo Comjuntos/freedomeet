@@ -10,6 +10,8 @@ export type PlanFeatures = {
   period: string;
   tagline: string;
   highlight: boolean;
+  // ID do preço Paddle usado no checkout:
+  priceId?: string;
   // Limites e recursos que o sistema pode verificar em código:
   maxMinutes: number; // Infinity = ilimitado
   maxParticipants: number;
@@ -50,6 +52,7 @@ export const PLANS: Record<PlanId, PlanFeatures> = {
     period: "/mês por usuário",
     tagline: "Para equipes que se reúnem todos os dias.",
     highlight: true,
+    priceId: "negocios_monthly",
     maxMinutes: Infinity,
     maxParticipants: 50,
     traducao: true,
@@ -70,6 +73,7 @@ export const PLANS: Record<PlanId, PlanFeatures> = {
     period: "/mês por usuário",
     tagline: "Para organizações que precisam de escala e controle.",
     highlight: false,
+    priceId: "empresarial_monthly",
     maxMinutes: Infinity,
     maxParticipants: 300,
     traducao: true,
