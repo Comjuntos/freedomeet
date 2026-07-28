@@ -1751,25 +1751,48 @@ function Dashboard() {
         </section>
 
         <section className="min-w-0 lg:col-span-2">
-          <Link
-            to="/competencias"
-            className="group flex flex-col gap-3 rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary md:flex-row md:items-center md:justify-between"
-          >
-            <div className="flex items-start gap-3">
-              <span className="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <Target className="size-6" />
-              </span>
-              <div>
-                <h2 className="text-lg font-semibold">Mapa de Competências</h2>
-                <p className="mt-0.5 text-sm text-muted-foreground">
-                  Ferramenta de IA para mapear habilidades e competências de cada membro da equipe.
-                </p>
+          {isAdmin ? (
+            <Link
+              to="/competencias"
+              className="group flex flex-col gap-3 rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary md:flex-row md:items-center md:justify-between"
+            >
+              <div className="flex items-start gap-3">
+                <span className="flex size-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <Target className="size-6" />
+                </span>
+                <div>
+                  <h2 className="text-lg font-semibold">Mapa de Competências</h2>
+                  <p className="mt-0.5 text-sm text-muted-foreground">
+                    Ferramenta de IA para mapear habilidades e competências de cada membro da equipe.
+                  </p>
+                </div>
               </div>
+              <span className="inline-flex items-center gap-1 self-start rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground group-hover:bg-primary/90 md:self-auto">
+                Abrir ferramenta
+              </span>
+            </Link>
+          ) : (
+            <div className="flex flex-col gap-3 rounded-xl border border-dashed border-border bg-card/60 p-5 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-start gap-3">
+                <span className="flex size-11 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                  <Target className="size-6" />
+                </span>
+                <div>
+                  <h2 className="text-lg font-semibold">Mapa de Competências</h2>
+                  <p className="mt-0.5 text-sm text-muted-foreground">
+                    Disponível para administradores — libere assinando um plano pago.
+                  </p>
+                </div>
+              </div>
+              <Link
+                to="/"
+                hash="planos"
+                className="inline-flex items-center gap-1 self-start rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary md:self-auto"
+              >
+                Ver planos
+              </Link>
             </div>
-            <span className="inline-flex items-center gap-1 self-start rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground group-hover:bg-primary/90 md:self-auto">
-              Abrir ferramenta
-            </span>
-          </Link>
+          )}
         </section>
       </main>
 
