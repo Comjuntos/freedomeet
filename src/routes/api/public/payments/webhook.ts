@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { verifyWebhook, EventName, type PaddleEnv } from "@/lib/paddle.server";
+import type { Database } from "@/integrations/supabase/types";
 
-let _supabase: ReturnType<typeof createClient> | null = null;
+let _supabase: ReturnType<typeof createClient<Database>> | null = null;
 function getSupabase() {
   if (!_supabase) {
-    _supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+    _supabase = createClient<Database>(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
   }
   return _supabase;
 }
@@ -43,7 +44,6 @@ async function handleSubscriptionCreated(data: any, env: PaddleEnv) {
         provider_customer_id: customerId,
         provider_subscription_id: id,
         environment: env,
-        updated_at: new Date().toISOString(),
       },
       { onConflict: "provider_subscription_id" },
     );
@@ -59,7 +59,6 @@ async function handleSubscriptionUpdated(data: any, env: PaddleEnv) {
       current_period_start: currentBillingPeriod?.startsAt,
       current_period_end: currentBillingPeriod?.endsAt,
       cancel_at_period_end: scheduledChange?.action === "cancel",
-      updated_at: new Date().toISOString(),
     })
     .eq("provider_subscription_id", id)
     .eq("environment", env);
@@ -70,7 +69,6 @@ async function handleSubscriptionCanceled(data: any, env: PaddleEnv) {
     .from("subscriptions")
     .update({
       status: "canceled",
-      updated_at: new Date().toISOString(),
     })
     .eq("provider_subscription_id", data.id)
     .eq("environment", env);
