@@ -660,6 +660,15 @@ function Dashboard() {
           <span className="bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text font-display text-xl font-bold tracking-tight text-transparent">
             FreeduMeet
           </span>
+          <span
+            className={`hidden rounded-full px-2.5 py-1 text-[0.7rem] font-medium sm:inline-block ${
+              isAdmin
+                ? "bg-primary/10 text-primary"
+                : "bg-muted text-muted-foreground"
+            }`}
+          >
+            {isAdmin ? `Administrador · ${plan.name}` : `Plano ${plan.name}`}
+          </span>
         </div>
         <button
           onClick={signOut}
