@@ -16,7 +16,6 @@ import {
   Loader2,
   Clock,
   Hash,
-  Send,
   KanbanSquare,
 } from "lucide-react";
 import { ListTree, Clapperboard } from "lucide-react";
