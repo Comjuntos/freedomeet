@@ -169,6 +169,7 @@ function slugify(name: string) {
 function Dashboard() {
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const { isAdmin, plan } = useAccess();
 
   const teamsQ = useQuery({
     queryKey: ["teams"],
