@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
 import { PLAN_LIST } from "@/lib/plans";
 import logoUrl from "@/assets/freedumeet-logo.png.asset.json";
 import logoTransparentUrl from "@/assets/freedumeet-logo-transparent.png.asset.json";
