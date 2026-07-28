@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { useAccess } from "@/hooks/use-access";
 import {
   Tooltip,
   TooltipContent,
