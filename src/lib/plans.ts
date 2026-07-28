@@ -73,6 +73,7 @@ export const PLANS: Record<PlanId, PlanFeatures> = {
     period: "/mês por usuário",
     tagline: "Para organizações que precisam de escala e controle.",
     highlight: false,
+    priceId: "empresarial_monthly",
     maxMinutes: Infinity,
     maxParticipants: 300,
     traducao: true,
