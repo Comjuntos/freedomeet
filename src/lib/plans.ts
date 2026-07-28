@@ -52,6 +52,7 @@ export const PLANS: Record<PlanId, PlanFeatures> = {
     period: "/mês por usuário",
     tagline: "Para equipes que se reúnem todos os dias.",
     highlight: true,
+    priceId: "negocios_monthly",
     maxMinutes: Infinity,
     maxParticipants: 50,
     traducao: true,
