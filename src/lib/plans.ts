@@ -10,6 +10,8 @@ export type PlanFeatures = {
   period: string;
   tagline: string;
   highlight: boolean;
+  // ID do preço Paddle usado no checkout:
+  priceId?: string;
   // Limites e recursos que o sistema pode verificar em código:
   maxMinutes: number; // Infinity = ilimitado
   maxParticipants: number;
