@@ -26,7 +26,6 @@ import { generateMinutes } from "@/lib/minutes.functions";
 import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment.functions";
 import { analyzeDashboard, type DashboardResult } from "@/lib/dashboard.functions";
 import { detectChapters, type ChaptersResult } from "@/lib/chapters.functions";
-import { listSlackChannels, sendToSlack, type SlackChannel } from "@/lib/slack.functions";
 import { getJaasToken } from "@/lib/jaas.functions";
 import { saveMeetingRecord } from "@/lib/history.functions";
 import { extractActions } from "@/lib/actions.functions";
@@ -176,8 +175,6 @@ function Room() {
   const runSentiment = useServerFn(analyzeSentiment);
   const runDashboard = useServerFn(analyzeDashboard);
   const runChapters = useServerFn(detectChapters);
-  const loadChannels = useServerFn(listSlackChannels);
-  const postToSlack = useServerFn(sendToSlack);
   const saveRecord = useServerFn(saveMeetingRecord);
   const extractActionsFn = useServerFn(extractActions);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
@@ -202,10 +199,6 @@ function Room() {
   const [chapters, setChapters] = useState<ChaptersResult["chapters"] | null>(null);
   const [chaptersLoading, setChaptersLoading] = useState(false);
   const [chaptersError, setChaptersError] = useState<string | null>(null);
-  const [slackChannels, setSlackChannels] = useState<SlackChannel[]>([]);
-  const [slackChannel, setSlackChannel] = useState("");
-  const [slackSending, setSlackSending] = useState(false);
-  const [slackStatus, setSlackStatus] = useState<string | null>(null);
   // Envio das ações da ata para o Kanban de equipes.
   const [kanbanTeams, setKanbanTeams] = useState<{ id: string; name: string }[]>([]);
   const [kanbanMembers, setKanbanMembers] = useState<
@@ -218,7 +211,6 @@ function Room() {
   const [endMinutes, setEndMinutes] = useState("");
   const [endLoading, setEndLoading] = useState(false);
   const [endError, setEndError] = useState<string | null>(null);
-  const [endSlackStatus, setEndSlackStatus] = useState<string | null>(null);
   const autoRanRef = useRef(false);
 
   const openDashboard = useCallback(async () => {
@@ -502,7 +494,7 @@ function Room() {
   }, [targetLang]);
 
   // Ao encerrar a reunião, o administrador recebe automaticamente a ata
-  // gerada a partir da transcrição e enviada para o Slack — sem cliques.
+  // gerada a partir da transcrição — sem cliques.
   useEffect(() => {
     if (!ended || !isHost || autoRanRef.current) return;
     autoRanRef.current = true;
@@ -533,7 +525,7 @@ function Room() {
         setEndLoading(false);
       }
     })();
-  }, [ended, isHost, captions, makeMinutes, roomId, loadChannels, postToSlack]);
+  }, [ended, isHost, captions, makeMinutes, roomId]);
 
   // Meeting duration timer: starts once the room mounts, stops when it ends.
   useEffect(() => {
