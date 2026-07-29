@@ -132,6 +132,12 @@ function Index() {
             Entrar
           </Link>
           <Link
+            to="/manual"
+            className="inline-flex items-center rounded-full border border-border px-3 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-secondary sm:ml-1 sm:px-4 sm:py-2"
+          >
+            Manual
+          </Link>
+          <Link
             to="/app"
             className="inline-flex items-center rounded-full bg-gradient-to-r from-primary to-accent px-3 py-1.5 text-sm font-semibold text-primary-foreground transition-transform hover:scale-105 sm:ml-1 sm:px-4 sm:py-2"
           >
