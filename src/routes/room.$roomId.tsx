@@ -1,0 +1,1362 @@
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  Captions,
+  X,
+  Languages,
+  FileText,
+  ClipboardList,
+  Gauge,
+  ChartColumnBig,
+  Sparkles,
+  ChevronDown,
+  Download,
+  Copy,
+  Loader2,
+  Clock,
+  Hash,
+  KanbanSquare,
+  Mic,
+  MicOff,
+  Video as VideoIcon,
+  VideoOff,
+  MonitorUp,
+} from "lucide-react";
+import { ListTree, Clapperboard } from "lucide-react";
+import { translateText } from "@/lib/translate.functions";
+import { punctuateText } from "@/lib/punctuate.functions";
+import { generateMinutes } from "@/lib/minutes.functions";
+import { analyzeSentiment, type SentimentResult } from "@/lib/sentiment.functions";
+import { analyzeDashboard, type DashboardResult } from "@/lib/dashboard.functions";
+import { detectChapters, type ChaptersResult } from "@/lib/chapters.functions";
+import { saveMeetingRecord } from "@/lib/history.functions";
+import { extractActions } from "@/lib/actions.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useWebRTC } from "@/hooks/useWebRTC";
+
+function formatDuration(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+}
+
+export const Route = createFileRoute("/room/$roomId")({
+  head: () => ({
+    meta: [{ title: "Sala — FreeduMeet" }],
+  }),
+  component: Room,
+});
+
+declare global {
+  interface Window {
+    SpeechRecognition?: new () => SpeechRecognitionLike;
+    webkitSpeechRecognition?: new () => SpeechRecognitionLike;
+  }
+}
+
+interface SpeechRecognitionLike {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  start: () => void;
+  stop: () => void;
+  onresult: ((e: SpeechRecognitionEventLike) => void) | null;
+  onend: (() => void) | null;
+  onerror: ((e: unknown) => void) | null;
+}
+interface SpeechRecognitionEventLike {
+  resultIndex: number;
+  results: {
+    length: number;
+    [i: number]: { 0: { transcript: string }; isFinal: boolean };
+  };
+}
+
+const SOURCE_LANGS = [
+  { code: "pt-BR", label: "Português" },
+  { code: "en-US", label: "Inglês" },
+  { code: "es-ES", label: "Espanhol" },
+  { code: "fr-FR", label: "Francês" },
+  { code: "de-DE", label: "Alemão" },
+  { code: "it-IT", label: "Italiano" },
+];
+const TARGET_LANGS = [
+  { code: "", label: "Sem tradução" },
+  { code: "Português", label: "Português" },
+  { code: "Inglês", label: "Inglês" },
+  { code: "Espanhol", label: "Espanhol" },
+  { code: "Francês", label: "Francês" },
+  { code: "Alemão", label: "Alemão" },
+  { code: "Italiano", label: "Italiano" },
+];
+
+const MINUTES_TEMPLATES = [
+  { code: "formal", label: "Formal / Corporativa" },
+  { code: "executiva", label: "Executiva (resumida)" },
+  { code: "detalhada", label: "Detalhada" },
+];
+
+interface Caption {
+  id: number;
+  original: string;
+  translated?: string;
+  t?: number;
+}
+
+function VideoTile({ stream, name, isLocal }: { stream: MediaStream | null; name: string; isLocal?: boolean }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  
+  useEffect(() => {
+    if (videoRef.current && stream) {
+      videoRef.current.srcObject = stream;
+    }
+  }, [stream]);
+
+  return (
+    <div className="relative overflow-hidden rounded-xl bg-black w-full h-full min-h-[300px]">
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted={isLocal}
+        className="h-full w-full object-cover"
+      />
+      <div className="absolute bottom-3 left-3 rounded-md bg-black/60 px-2 py-1 text-xs text-white">
+        {name} {isLocal && "(Você)"}
+      </div>
+    </div>
+  );
+}
+
+function Room() {
+  const { roomId } = Route.useParams();
+  const navigate = useNavigate();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [ended, setEnded] = useState(false);
+  const [isHost, setIsHost] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
+  const [name, setName] = useState<string | null>(null);
+  const [nameInput, setNameInput] = useState("");
+  const startTimeRef = useRef<number | null>(null);
+  const [showCaptions, setShowCaptions] = useState(false);
+  const [showAiTools, setShowAiTools] = useState(false);
+  const [listening, setListening] = useState(false);
+  const [sourceLang, setSourceLang] = useState("pt-BR");
+  const [targetLang, setTargetLang] = useState("");
+  const [captions, setCaptions] = useState<Caption[]>([]);
+  const [unsupported, setUnsupported] = useState(false);
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  const listeningRef = useRef(false);
+  const targetRef = useRef(targetLang);
+  const idRef = useRef(0);
+
+  // Apenas quem criou a sala é o administrador (host) da reunião.
+  useEffect(() => {
+    setIsHost(sessionStorage.getItem(`freedomeet-host-${roomId}`) === "1");
+  }, [roomId]);
+
+  // Nome do participante (usado para gerar o avatar de cada um).
+  useEffect(() => {
+    const saved = sessionStorage.getItem("freedomeet-name");
+    if (saved) setName(saved);
+  }, []);
+
+  const avatarUrl = name
+    ? `https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(name)}`
+    : "";
+  const translate = useServerFn(translateText);
+  const punctuate = useServerFn(punctuateText);
+  const makeMinutes = useServerFn(generateMinutes);
+  const runSentiment = useServerFn(analyzeSentiment);
+  const runDashboard = useServerFn(analyzeDashboard);
+  const runChapters = useServerFn(detectChapters);
+  const saveRecord = useServerFn(saveMeetingRecord);
+  const extractActionsFn = useServerFn(extractActions);
+  const [saveStatus, setSaveStatus] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [showMinutes, setShowMinutes] = useState(false);
+  const [minutesTemplate, setMinutesTemplate] = useState("formal");
+  const [minutesText, setMinutesText] = useState("");
+  const [membersInput, setMembersInput] = useState("");
+  const [minutesLoading, setMinutesLoading] = useState(false);
+  const [minutesError, setMinutesError] = useState<string | null>(null);
+  const [showSentiment, setShowSentiment] = useState(false);
+  const [sentiment, setSentiment] = useState<SentimentResult | null>(null);
+  const [sentimentLoading, setSentimentLoading] = useState(false);
+  const [sentimentError, setSentimentError] = useState<string | null>(null);
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [dashboard, setDashboard] = useState<DashboardResult | null>(null);
+  const [dashboardStats, setDashboardStats] = useState({ words: 0, segments: 0 });
+  const [dashboardLoading, setDashboardLoading] = useState(false);
+  const [dashboardError, setDashboardError] = useState<string | null>(null);
+
+  const [showChapters, setShowChapters] = useState(false);
+  const [chapters, setChapters] = useState<ChaptersResult["chapters"] | null>(null);
+  const [chaptersLoading, setChaptersLoading] = useState(false);
+  const [chaptersError, setChaptersError] = useState<string | null>(null);
+  // Envio das ações da ata para o Kanban de equipes.
+  const [kanbanTeams, setKanbanTeams] = useState<{ id: string; name: string }[]>([]);
+  const [kanbanMembers, setKanbanMembers] = useState<
+    { id: string; team_id: string; full_name: string }[]
+  >([]);
+  const [kanbanTeam, setKanbanTeam] = useState("");
+  const [kanbanSending, setKanbanSending] = useState(false);
+  const [kanbanStatus, setKanbanStatus] = useState<string | null>(null);
+  // Fluxo automático de ata ao encerrar a reunião (somente administrador).
+  const [endMinutes, setEndMinutes] = useState("");
+  const [endLoading, setEndLoading] = useState(false);
+  const [endError, setEndError] = useState<string | null>(null);
+  const autoRanRef = useRef(false);
+
+  const openDashboard = useCallback(async () => {
+    const segments = captions.map((c) => c.original).filter(Boolean);
+    const transcript = segments.join("\n").trim();
+    setShowDashboard(true);
+    if (!transcript) {
+      setDashboard(null);
+      setDashboardError(
+        "Não há transcrição ainda. Ative a transcrição e fale durante a reunião.",
+      );
+      return;
+    }
+    const words = transcript.split(/\s+/).filter(Boolean).length;
+    setDashboardStats({ words, segments: segments.length });
+    setDashboardLoading(true);
+    setDashboardError(null);
+    try {
+      const res = await runDashboard({ data: { transcript } });
+      setDashboard(res);
+    } catch {
+      setDashboardError("Não foi possível gerar o dashboard. Tente novamente.");
+    } finally {
+      setDashboardLoading(false);
+    }
+  }, [captions, runDashboard]);
+
+  const openChapters = useCallback(async () => {
+    const segments = captions
+      .filter((c) => c.original && c.original.trim())
+      .map((c) => ({ t: c.t ?? 0, text: c.original }));
+    setShowChapters(true);
+    if (segments.length === 0) {
+      setChapters(null);
+      setChaptersError(
+        "Não há transcrição ainda. Ative a transcrição e fale durante a reunião.",
+      );
+      return;
+    }
+    setChaptersLoading(true);
+    setChaptersError(null);
+    try {
+      const res = await runChapters({ data: { segments } });
+      setChapters(res.chapters);
+    } catch {
+      setChaptersError("Não foi possível detectar os capítulos. Tente novamente.");
+    } finally {
+      setChaptersLoading(false);
+    }
+  }, [captions, runChapters]);
+
+  const analyze = useCallback(async () => {
+    const transcript = captions
+      .map((c) => c.original)
+      .join("\n")
+      .trim();
+    setShowSentiment(true);
+    if (!transcript) {
+      setSentiment(null);
+      setSentimentError(
+        "Não há transcrição ainda. Ative a transcrição e fale durante a reunião.",
+      );
+      return;
+    }
+    setSentimentLoading(true);
+    setSentimentError(null);
+    try {
+      const res = await runSentiment({ data: { transcript } });
+      setSentiment(res);
+    } catch {
+      setSentimentError("Não foi possível analisar o sentimento. Tente novamente.");
+    } finally {
+      setSentimentLoading(false);
+    }
+  }, [captions, runSentiment]);
+
+  const generateAta = useCallback(async () => {
+    const transcript = captions
+      .map((c) => c.original)
+      .join("\n")
+      .trim();
+    const members = membersInput
+      .split("\n")
+      .map((m) => m.trim())
+      .filter(Boolean);
+    if (members.length === 0) {
+      setMinutesError(
+        "Informe os membros da reunião (nome completo de cada um, um por linha).",
+      );
+      setShowMinutes(true);
+      return;
+    }
+    if (!transcript) {
+      setMinutesError(
+        "Não há transcrição ainda. Ative a transcrição e fale durante a reunião.",
+      );
+      setShowMinutes(true);
+      return;
+    }
+    setShowMinutes(true);
+    setMinutesLoading(true);
+    setMinutesError(null);
+    setMinutesText("");
+    try {
+      const startedAt =
+        startTimeRef.current !== null
+          ? new Date(startTimeRef.current).toLocaleString("pt-BR")
+          : undefined;
+      const res = await makeMinutes({
+        data: { transcript, template: minutesTemplate, title: roomId, members, startedAt },
+      });
+      setMinutesText(res.minutes);
+    } catch {
+      setMinutesError("Não foi possível gerar a ata. Tente novamente.");
+    } finally {
+      setMinutesLoading(false);
+    }
+  }, [captions, makeMinutes, minutesTemplate, roomId, membersInput]);
+
+  // Carrega as equipes e membros do usuário para o envio ao Kanban.
+  useEffect(() => {
+    if (!showMinutes || kanbanTeams.length > 0) return;
+    let active = true;
+    (async () => {
+      const { data: teams } = await supabase.from("teams").select("id, name");
+      const { data: mems } = await supabase
+        .from("team_members")
+        .select("id, team_id, full_name");
+      if (!active) return;
+      setKanbanTeams(teams ?? []);
+      setKanbanMembers(mems ?? []);
+      if ((teams?.length ?? 0) > 0) setKanbanTeam(teams![0].id);
+    })();
+    return () => {
+      active = false;
+    };
+  }, [showMinutes, kanbanTeams.length]);
+
+  const normalize = (s: string) =>
+    s
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim();
+
+  const sendActionsToKanban = useCallback(async () => {
+    if (!kanbanTeam) {
+      toast.error("Selecione uma equipe para receber as tarefas.");
+      return;
+    }
+    const source = minutesText.trim() ||
+      captions.map((c) => c.original).join("\n").trim();
+    if (!source) {
+      toast.error("Gere a ata ou ative a transcrição antes de extrair as ações.");
+      return;
+    }
+    setKanbanSending(true);
+    setKanbanStatus(null);
+    try {
+      const teamMembers = kanbanMembers.filter((m) => m.team_id === kanbanTeam);
+      const members = teamMembers.map((m) => m.full_name);
+      const { actions } = await extractActionsFn({
+        data: { transcript: source, members },
+      });
+      if (actions.length === 0) {
+        setKanbanStatus("Nenhuma ação identificada na reunião.");
+        toast.info("Nenhuma tarefa foi identificada.");
+        return;
+      }
+      const rows = actions.map((a) => {
+        const match = a.assignee
+          ? teamMembers.find((m) => normalize(m.full_name) === normalize(a.assignee))
+          : undefined;
+        return {
+          team_id: kanbanTeam,
+          title: a.title,
+          due_date: a.dueDate,
+          member_id: match?.id ?? null,
+          status: "todo",
+        };
+      });
+      const { error } = await supabase.from("team_activities").insert(rows);
+      if (error) throw error;
+      setKanbanStatus(`${rows.length} tarefa(s) enviada(s) ao Kanban.`);
+      toast.success(`${rows.length} tarefa(s) criada(s) no Kanban.`);
+    } catch {
+      setKanbanStatus("Não foi possível enviar as ações. Tente novamente.");
+      toast.error("Falha ao enviar as ações para o Kanban.");
+    } finally {
+      setKanbanSending(false);
+    }
+  }, [kanbanTeam, kanbanMembers, minutesText, captions, extractActionsFn]);
+
+  const downloadAta = useCallback(async (text?: unknown) => {
+    const content = (typeof text === "string" ? text : minutesText).trim();
+    if (!content) return;
+    const { Document, Packer, Paragraph, TextRun, HeadingLevel } = await import("docx");
+
+    const paragraphs = content.split("\n").map((raw) => {
+      const line = raw.trimEnd();
+      if (line.startsWith("# "))
+        return new Paragraph({ heading: HeadingLevel.HEADING_1, children: [new TextRun(line.slice(2))] });
+      if (line.startsWith("## "))
+        return new Paragraph({ heading: HeadingLevel.HEADING_2, children: [new TextRun(line.slice(3))] });
+      if (line.startsWith("### "))
+        return new Paragraph({ heading: HeadingLevel.HEADING_3, children: [new TextRun(line.slice(4))] });
+      if (/^\s*[-*]\s+/.test(line))
+        return new Paragraph({ bullet: { level: 0 }, children: [new TextRun(line.replace(/^\s*[-*]\s+/, ""))] });
+      // Renderiza **negrito** de forma simples.
+      const parts = line.split(/(\*\*[^*]+\*\*)/g).filter(Boolean);
+      const runs = parts.map((p) =>
+        p.startsWith("**") && p.endsWith("**")
+          ? new TextRun({ text: p.slice(2, -2), bold: true })
+          : new TextRun(p),
+      );
+      return new Paragraph({ children: runs.length ? runs : [new TextRun("")] });
+    });
+
+    const doc = new Document({ sections: [{ children: paragraphs }] });
+    const blob = await Packer.toBlob(doc);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `ata-${roomId}.docx`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [minutesText, roomId]);
+
+  const downloadTranscript = useCallback(() => {
+    const lines = captions
+      .map((c) => (c.translated ? `${c.original}\n  → ${c.translated}` : c.original))
+      .filter(Boolean);
+    if (lines.length === 0) return;
+    const header = `Transcrição da reunião: ${roomId}\nData: ${new Date().toLocaleString("pt-BR")}\n\n`;
+    const blob = new Blob([header + lines.join("\n")], {
+      type: "text/plain;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `transcricao-${roomId}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [captions, roomId]);
+
+  const saveToHistory = useCallback(
+    async (minutes: string) => {
+      if (!minutes.trim()) return;
+      setSaving(true);
+      setSaveStatus(null);
+      const transcript = captions.map((c) => c.original).join("\n").trim();
+      try {
+        await saveRecord({
+          data: {
+            title: roomId,
+            transcript,
+            minutes,
+            sentiment: sentiment ?? null,
+            dashboard: dashboard ?? null,
+            startedAt:
+              startTimeRef.current !== null
+                ? new Date(startTimeRef.current).toISOString()
+                : null,
+            endedAt: new Date().toISOString(),
+          },
+        });
+        setSaveStatus("Reunião salva no histórico! ✅");
+      } catch {
+        setSaveStatus(
+          "Não foi possível salvar. Faça login no painel para guardar o histórico.",
+        );
+      } finally {
+        setSaving(false);
+      }
+    },
+    [captions, roomId, sentiment, dashboard, saveRecord],
+  );
+
+  useEffect(() => {
+    targetRef.current = targetLang;
+  }, [targetLang]);
+
+  // Ao encerrar a reunião, o administrador recebe automaticamente a ata
+  // gerada a partir da transcrição — sem cliques.
+  useEffect(() => {
+    if (!ended || !isHost || autoRanRef.current) return;
+    autoRanRef.current = true;
+    const transcript = captions
+      .map((c) => c.original)
+      .join("\n")
+      .trim();
+    if (!transcript) {
+      setEndError(
+        "Nenhuma transcrição foi capturada nesta reunião, então não há ata para gerar.",
+      );
+      return;
+    }
+    setEndLoading(true);
+    (async () => {
+      try {
+        const startedAt =
+          startTimeRef.current !== null
+            ? new Date(startTimeRef.current).toLocaleString("pt-BR")
+            : undefined;
+        const res = await makeMinutes({
+          data: { transcript, template: "executiva", title: roomId, startedAt },
+        });
+        setEndMinutes(res.minutes);
+      } catch {
+        setEndError("Não foi possível gerar a ata automática. Tente gerar manualmente.");
+      } finally {
+        setEndLoading(false);
+      }
+    })();
+  }, [ended, isHost, captions, makeMinutes, roomId]);
+
+  // Meeting duration timer: starts once the room mounts, stops when it ends.
+  useEffect(() => {
+    if (startTimeRef.current === null) startTimeRef.current = Date.now();
+    if (ended) return;
+    const tick = () => {
+      if (startTimeRef.current !== null) {
+        setElapsed(Math.floor((Date.now() - startTimeRef.current) / 1000));
+      }
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [ended]);
+
+  const startListening = useCallback(() => {
+    const Ctor = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!Ctor) {
+      setUnsupported(true);
+      return;
+    }
+    const recognition = new Ctor();
+    recognition.lang = sourceLang;
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.onresult = (e) => {
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const r = e.results[i];
+        if (!r.isFinal) continue;
+        const raw = r[0].transcript.trim();
+        if (!raw) continue;
+        const id = ++idRef.current;
+        const t =
+          startTimeRef.current !== null
+            ? Math.floor((Date.now() - startTimeRef.current) / 1000)
+            : 0;
+        setCaptions((prev) => [...prev, { id, original: raw, t }]);
+        // Polish the raw speech-to-text into natural, punctuated text,
+        // then translate the polished version.
+        punctuate({ data: { text: raw, lang: sourceLang } })
+          .then((res) => {
+            const clean = res.text || raw;
+            setCaptions((prev) =>
+              prev.map((c) => (c.id === id ? { ...c, original: clean } : c)),
+            );
+            const target = targetRef.current;
+            if (target) {
+              translate({ data: { text: clean, target } })
+                .then((tr) => {
+                  setCaptions((prev) =>
+                    prev.map((c) =>
+                      c.id === id ? { ...c, translated: tr.translation } : c,
+                    ),
+                  );
+                })
+                .catch(() => {});
+            }
+          })
+          .catch(() => {});
+      }
+    };
+    recognition.onend = () => {
+      if (listeningRef.current) recognition.start();
+    };
+    recognition.onerror = () => {};
+    recognitionRef.current = recognition;
+    listeningRef.current = true;
+    setListening(true);
+    recognition.start();
+  }, [sourceLang, translate, punctuate]);
+
+  const stopListening = useCallback(() => {
+    listeningRef.current = false;
+    setListening(false);
+    recognitionRef.current?.stop();
+    recognitionRef.current = null;
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      listeningRef.current = false;
+      recognitionRef.current?.stop();
+    };
+  }, []);
+
+  // Restart recognition when the source language changes mid-session.
+  useEffect(() => {
+    if (listening) {
+      stopListening();
+      const t = setTimeout(startListening, 200);
+      return () => clearTimeout(t);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sourceLang]);
+
+  const {
+    localStream,
+    remotePeers,
+    isMuted,
+    isVideoOff,
+    isScreenSharing,
+    toggleMute,
+    toggleVideo,
+    toggleScreenShare
+  } = useWebRTC(roomId, name);
+
+  return (
+    <div className="aurora-bg flex h-screen flex-col bg-background text-foreground">
+      {ended ? (
+        <div className="flex flex-1 flex-col items-center justify-center gap-6 px-4 text-center">
+          <div className="flex items-center gap-2">
+            <span className="grid size-9 place-items-center rounded-lg bg-gradient-to-br from-primary to-accent glow">
+              <Captions className="size-5 text-primary-foreground" />
+            </span>
+            <span className="font-display text-2xl font-semibold">FreeduMeet</span>
+          </div>
+          <div>
+            <h1 className="text-2xl font-semibold">Você saiu da reunião</h1>
+            <p className="mt-2 text-muted-foreground">
+              Obrigado por usar o FreeduMeet.
+            </p>
+            <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium">
+              <Clock className="size-4 text-primary" />
+              Duração total: {formatDuration(elapsed)}
+            </p>
+          </div>
+          {isHost && (endLoading || endMinutes || endError) && (
+            <div className="w-full max-w-2xl text-left">
+              <div className="flex max-h-[50vh] flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+                <div className="flex items-center gap-2 border-b border-border px-5 py-3 font-medium">
+                  <FileText className="size-4 text-primary" />
+                  Ata inteligente da reunião
+                </div>
+                <div className="flex-1 overflow-y-auto px-5 py-4 text-sm">
+                  {endLoading ? (
+                    <p className="flex items-center gap-2 text-muted-foreground">
+                      <Loader2 className="size-4 animate-spin" />
+                      Gerando a ata automaticamente a partir da transcrição…
+                    </p>
+                  ) : endError ? (
+                    <p className="text-muted-foreground">{endError}</p>
+                  ) : (
+                    <pre className="whitespace-pre-wrap font-sans leading-relaxed">
+                      {endMinutes}
+                    </pre>
+                  )}
+                </div>
+                {endMinutes && !endLoading && (
+                  <div className="flex flex-wrap items-center gap-2 border-t border-border px-5 py-3">
+                    <button
+                      onClick={() => navigator.clipboard?.writeText(endMinutes)}
+                      className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
+                    >
+                      <Copy className="size-4" />
+                      Copiar
+                    </button>
+                    <button
+                      onClick={() => downloadAta(endMinutes)}
+                      className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
+                    >
+                      <Download className="size-4" />
+                      Baixar
+                    </button>
+                    <button
+                      onClick={() => saveToHistory(endMinutes)}
+                      disabled={saving}
+                      className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary disabled:opacity-60"
+                    >
+                      {saving ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <ClipboardList className="size-4" />
+                      )}
+                      Salvar no histórico
+                    </button>
+                    {saveStatus && (
+                      <span className="text-xs text-muted-foreground">{saveStatus}</span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <button
+              onClick={() => window.location.reload()}
+              className="rounded-lg border border-border px-4 py-2 font-medium hover:bg-secondary"
+            >
+              Voltar a entrar
+            </button>
+            <button
+              onClick={() => navigate({ to: "/" })}
+              className="rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              Voltar ao início
+            </button>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 px-4 text-center">
+          <p className="text-muted-foreground">{error}</p>
+          <button
+            onClick={() => navigate({ to: "/" })}
+            className="rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground hover:bg-primary/90"
+          >
+            Voltar ao início
+          </button>
+        </div>
+      ) : !name ? (
+        <div className="flex flex-1 flex-col items-center justify-center gap-6 px-4 text-center">
+          <div className="flex items-center gap-2">
+            <span className="grid size-9 place-items-center rounded-lg bg-gradient-to-br from-primary to-accent glow">
+              <Captions className="size-5 text-primary-foreground" />
+            </span>
+            <span className="font-display text-2xl font-semibold">FreeduMeet</span>
+          </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const v = nameInput.trim();
+              if (!v) return;
+              sessionStorage.setItem("freedomeet-name", v);
+              setName(v);
+            }}
+            className="glass flex w-full max-w-sm flex-col items-center gap-4 rounded-2xl p-6"
+          >
+            <div>
+              <h1 className="text-xl font-semibold">Como você quer aparecer?</h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Seu nome gera um avatar visível para todos os participantes.
+              </p>
+            </div>
+            {nameInput.trim() && (
+              <img
+                src={`https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(nameInput.trim())}`}
+                alt="Prévia do avatar"
+                className="size-20 rounded-full border border-border bg-secondary"
+              />
+            )}
+            <input
+              autoFocus
+              value={nameInput}
+              onChange={(e) => setNameInput(e.target.value)}
+              placeholder="Seu nome"
+              className="w-full rounded-lg border border-border bg-background px-4 py-2 text-center"
+            />
+            <button
+              type="submit"
+              disabled={!nameInput.trim()}
+              className="w-full rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            >
+              Entrar na reunião
+            </button>
+          </form>
+        </div>
+      ) : (
+        <div className="relative flex flex-1 flex-col overflow-hidden">
+          <div className="flex-1 grid gap-4 p-4 overflow-y-auto" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gridAutoRows: "minmax(300px, 1fr)" }}>
+            <VideoTile stream={localStream} name={name || "Você"} isLocal />
+            {remotePeers.map(peer => (
+              <VideoTile key={peer.id} stream={peer.stream} name={peer.name} />
+            ))}
+          </div>
+          <div className="flex shrink-0 items-center justify-center gap-4 bg-background p-4 border-t border-border z-10">
+            <button onClick={toggleMute} className={`rounded-full p-3 ${isMuted ? 'bg-destructive text-white' : 'bg-secondary'}`}>
+              {isMuted ? <MicOff className="size-5" /> : <Mic className="size-5" />}
+            </button>
+            <button onClick={toggleVideo} className={`rounded-full p-3 ${isVideoOff ? 'bg-destructive text-white' : 'bg-secondary'}`}>
+              {isVideoOff ? <VideoOff className="size-5" /> : <VideoIcon className="size-5" />}
+            </button>
+            <button onClick={toggleScreenShare} className={`rounded-full p-3 ${isScreenSharing ? 'bg-primary text-white' : 'bg-secondary'}`}>
+              <MonitorUp className="size-5" />
+            </button>
+            <button onClick={() => setEnded(true)} className="rounded-full bg-destructive px-6 py-3 font-semibold text-white">
+              Sair
+            </button>
+          </div>
+          <div className="pointer-events-none absolute left-4 top-4 z-10 flex items-center gap-2 rounded-full bg-black/60 px-3 py-1.5 text-sm font-medium text-white">
+            <Clock className="size-4" />
+            {formatDuration(elapsed)}
+          </div>
+          {showCaptions && (
+            <aside className="absolute bottom-24 right-0 top-0 z-20 flex w-full flex-col border-l border-border bg-card sm:static sm:bottom-auto sm:top-auto sm:z-10 sm:w-80">
+              <div className="flex items-center justify-between border-b border-border px-4 py-3">
+                <div className="flex items-center gap-2 font-medium">
+                  <Captions className="size-4 text-primary" />
+                  Transcrição
+                </div>
+                <button
+                  onClick={() => setShowCaptions(false)}
+                  className="rounded-md p-1 text-muted-foreground hover:bg-secondary"
+                  aria-label="Fechar transcrição"
+                >
+                  <X className="size-4" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 border-b border-border p-3 text-xs">
+                <label className="flex flex-col gap-1">
+                  <span className="text-muted-foreground">Idioma falado</span>
+                  <select
+                    value={sourceLang}
+                    onChange={(e) => setSourceLang(e.target.value)}
+                    className="rounded-md border border-border bg-background px-2 py-1.5"
+                  >
+                    {SOURCE_LANGS.map((l) => (
+                      <option key={l.code} value={l.code}>
+                        {l.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-muted-foreground">Traduzir para</span>
+                  <select
+                    value={targetLang}
+                    onChange={(e) => setTargetLang(e.target.value)}
+                    className="rounded-md border border-border bg-background px-2 py-1.5"
+                  >
+                    {TARGET_LANGS.map((l) => (
+                      <option key={l.code} value={l.code}>
+                        {l.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <div className="flex-1 space-y-3 overflow-y-auto p-4 text-sm">
+                {unsupported ? (
+                  <p className="text-muted-foreground">
+                    Seu navegador não suporta transcrição por voz. Use o Chrome
+                    para esse recurso.
+                  </p>
+                ) : captions.length === 0 ? (
+                  <p className="text-muted-foreground">
+                    Ative a transcrição e comece a falar para ver as legendas
+                    aqui.
+                  </p>
+                ) : (
+                  captions.map((c) => (
+                    <div key={c.id}>
+                      <p>{c.original}</p>
+                      {c.translated && (
+                        <p className="mt-0.5 flex items-start gap-1 text-primary">
+                          <Languages className="mt-0.5 size-3 shrink-0" />
+                          {c.translated}
+                        </p>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div className="max-h-[45vh] shrink-0 space-y-2 overflow-y-auto border-t border-border p-3 sm:max-h-none sm:overflow-visible">
+                <button
+                  onClick={listening ? stopListening : startListening}
+                  className={`w-full rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                    listening
+                      ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      : "bg-primary text-primary-foreground hover:bg-primary/90"
+                  }`}
+                >
+                  {listening ? "Parar transcrição" : "Iniciar transcrição"}
+                </button>
+                {isHost ? (
+                  <>
+                    <button
+                      onClick={downloadTranscript}
+                      disabled={captions.length === 0}
+                      className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary disabled:opacity-60"
+                    >
+                      <Download className="size-4" />
+                      Baixar transcrição
+                    </button>
+                    <button
+                      onClick={() => setShowAiTools((v) => !v)}
+                      className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
+                    >
+                      <Sparkles className="size-4" />
+                      Ferramentas IA
+                      <ChevronDown
+                        className={`size-4 transition-transform ${showAiTools ? "rotate-180" : ""}`}
+                      />
+                    </button>
+                  </>
+                ) : (
+                  <p className="rounded-md bg-secondary/50 px-3 py-2 text-center text-xs text-muted-foreground">
+                    Apenas o administrador da sala pode baixar a transcrição e usar as ferramentas de IA.
+                  </p>
+                )}
+                {isHost && showAiTools && (
+                  <div className="space-y-2">
+                    <button
+                      onClick={generateAta}
+                      className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
+                    >
+                      <ClipboardList className="size-4" />
+                      Gerar ata
+                    </button>
+                    <button
+                      onClick={analyze}
+                      className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
+                    >
+                      <Gauge className="size-4" />
+                      Análise de sentimento
+                    </button>
+                    <button
+                      onClick={openDashboard}
+                      className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
+                    >
+                      <ChartColumnBig className="size-4" />
+                      Dashboard de falas
+                    </button>
+                    <button
+                      onClick={openChapters}
+                      className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
+                    >
+                      <ListTree className="size-4" />
+                      Capítulos & highlights
+                    </button>
+                  </div>
+                )}
+              </div>
+            </aside>
+          )}
+
+          {showMinutes && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 p-4">
+              <div className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-xl border border-border bg-card shadow-xl">
+                <div className="flex items-center justify-between border-b border-border px-5 py-3">
+                  <div className="flex items-center gap-2 font-medium">
+                    <FileText className="size-4 text-primary" />
+                    Ata da reunião
+                  </div>
+                  <button
+                    onClick={() => setShowMinutes(false)}
+                    className="rounded-md p-1 text-muted-foreground hover:bg-secondary"
+                    aria-label="Fechar"
+                  >
+                    <X className="size-4" />
+                  </button>
+                </div>
+
+                <div className="flex flex-wrap items-end gap-3 border-b border-border px-5 py-3 text-sm">
+                  <label className="flex w-full flex-col gap-1">
+                    <span className="text-xs text-muted-foreground">
+                      Membros da reunião (nome completo, um por linha)
+                    </span>
+                    <textarea
+                      value={membersInput}
+                      onChange={(e) => setMembersInput(e.target.value)}
+                      rows={3}
+                      placeholder={"Maria da Silva Santos\nJoão Pereira de Souza"}
+                      className="w-full resize-y rounded-md border border-border bg-background px-2 py-1.5"
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1">
+                    <span className="text-xs text-muted-foreground">Modelo</span>
+                    <select
+                      value={minutesTemplate}
+                      onChange={(e) => setMinutesTemplate(e.target.value)}
+                      className="rounded-md border border-border bg-background px-2 py-1.5"
+                    >
+                      {MINUTES_TEMPLATES.map((t) => (
+                        <option key={t.code} value={t.code}>
+                          {t.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <button
+                    onClick={generateAta}
+                    disabled={minutesLoading}
+                    className="flex items-center gap-2 rounded-md bg-primary px-3 py-2 font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+                  >
+                    {minutesLoading ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <ClipboardList className="size-4" />
+                    )}
+                    {minutesText ? "Gerar novamente" : "Gerar ata"}
+                  </button>
+                  {minutesText && !minutesLoading && (
+                    <>
+                      <button
+                        onClick={() => navigator.clipboard?.writeText(minutesText)}
+                        className="flex items-center gap-2 rounded-md border border-border px-3 py-2 font-medium hover:bg-secondary"
+                      >
+                        <Copy className="size-4" />
+                        Copiar
+                      </button>
+                      <button
+                        onClick={downloadAta}
+                        className="flex items-center gap-2 rounded-md border border-border px-3 py-2 font-medium hover:bg-secondary"
+                      >
+                        <Download className="size-4" />
+                        Baixar
+                      </button>
+                      <button
+                        onClick={() => saveToHistory(minutesText)}
+                        disabled={saving}
+                        className="flex items-center gap-2 rounded-md border border-border px-3 py-2 font-medium hover:bg-secondary disabled:opacity-60"
+                      >
+                        {saving ? (
+                          <Loader2 className="size-4 animate-spin" />
+                        ) : (
+                          <ClipboardList className="size-4" />
+                        )}
+                        Salvar no histórico
+                      </button>
+                      {kanbanTeams.length > 0 && (
+                        <>
+                          <select
+                            value={kanbanTeam}
+                            onChange={(e) => setKanbanTeam(e.target.value)}
+                            aria-label="Equipe para o Kanban"
+                            className="rounded-md border border-border bg-background px-2 py-2 text-sm"
+                          >
+                            {kanbanTeams.map((t) => (
+                              <option key={t.id} value={t.id}>
+                                {t.name}
+                              </option>
+                            ))}
+                          </select>
+                          <button
+                            onClick={sendActionsToKanban}
+                            disabled={kanbanSending}
+                            className="flex items-center gap-2 rounded-md border border-border px-3 py-2 font-medium hover:bg-secondary disabled:opacity-60"
+                          >
+                            {kanbanSending ? (
+                              <Loader2 className="size-4 animate-spin" />
+                            ) : (
+                              <KanbanSquare className="size-4" />
+                            )}
+                            Enviar ações ao Kanban
+                          </button>
+                        </>
+                      )}
+                    </>
+                  )}
+                </div>
+                {kanbanStatus && (
+                  <p className="px-5 pt-1 text-xs text-muted-foreground">{kanbanStatus}</p>
+                )}
+                {saveStatus && (
+                  <p className="px-5 pt-1 text-xs text-muted-foreground">{saveStatus}</p>
+                )}
+
+                <div className="flex-1 overflow-y-auto px-5 py-4 text-sm">
+                  {minutesError ? (
+                    <p className="text-destructive">{minutesError}</p>
+                  ) : minutesLoading ? (
+                    <p className="text-muted-foreground">Gerando a ata com base na transcrição…</p>
+                  ) : minutesText ? (
+                    <pre className="whitespace-pre-wrap font-sans leading-relaxed">
+                      {minutesText}
+                    </pre>
+                  ) : (
+                    <p className="text-muted-foreground">
+                      Escolha um modelo e clique em “Gerar ata” para criar o
+                      documento a partir da transcrição.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showSentiment && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 p-4">
+              <div className="flex max-h-[85vh] w-full max-w-md flex-col rounded-xl border border-border bg-card shadow-xl">
+                <div className="flex items-center justify-between border-b border-border px-5 py-3">
+                  <div className="flex items-center gap-2 font-medium">
+                    <Gauge className="size-4 text-primary" />
+                    Análise de sentimento
+                  </div>
+                  <button
+                    onClick={() => setShowSentiment(false)}
+                    className="rounded-md p-1 text-muted-foreground hover:bg-secondary"
+                    aria-label="Fechar"
+                  >
+                    <X className="size-4" />
+                  </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto px-5 py-4 text-sm">
+                  {sentimentError ? (
+                    <p className="text-destructive">{sentimentError}</p>
+                  ) : sentimentLoading ? (
+                    <p className="text-muted-foreground">
+                      Analisando o clima da reunião…
+                    </p>
+                  ) : sentiment ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${
+                            sentiment.label === "positivo"
+                              ? "bg-green-500/15 text-green-600"
+                              : sentiment.label === "negativo"
+                                ? "bg-destructive/15 text-destructive"
+                                : "bg-secondary text-muted-foreground"
+                          }`}
+                        >
+                          {sentiment.label}
+                        </span>
+                        <span className="text-2xl font-semibold">
+                          {sentiment.score}
+                          <span className="text-sm text-muted-foreground">/100</span>
+                        </span>
+                      </div>
+                      <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
+                        <div
+                          className={`h-full rounded-full ${
+                            sentiment.label === "positivo"
+                              ? "bg-green-500"
+                              : sentiment.label === "negativo"
+                                ? "bg-destructive"
+                                : "bg-muted-foreground"
+                          }`}
+                          style={{ width: `${sentiment.score}%` }}
+                        />
+                      </div>
+                      <p className="text-muted-foreground">{sentiment.summary}</p>
+                      {sentiment.emotions.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {sentiment.emotions.map((e) => (
+                            <span
+                              key={e}
+                              className="rounded-md bg-secondary px-2 py-1 text-xs capitalize"
+                            >
+                              {e}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      <button
+                        onClick={analyze}
+                        className="w-full rounded-md border border-border px-3 py-2 font-medium hover:bg-secondary"
+                      >
+                        Analisar novamente
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showDashboard && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 p-4">
+              <div className="flex max-h-[85vh] w-full max-w-lg flex-col rounded-xl border border-border bg-card shadow-xl">
+                <div className="flex items-center justify-between border-b border-border px-5 py-3">
+                  <div className="flex items-center gap-2 font-medium">
+                    <ChartColumnBig className="size-4 text-primary" />
+                    Dashboard de falas
+                  </div>
+                  <button
+                    onClick={() => setShowDashboard(false)}
+                    className="rounded-md p-1 text-muted-foreground hover:bg-secondary"
+                    aria-label="Fechar"
+                  >
+                    <X className="size-4" />
+                  </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto px-5 py-4 text-sm">
+                  {dashboardError ? (
+                    <p className="text-destructive">{dashboardError}</p>
+                  ) : dashboardLoading ? (
+                    <p className="text-muted-foreground">Analisando as falas…</p>
+                  ) : dashboard ? (
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="rounded-lg border border-border p-3">
+                          <div className="text-2xl font-semibold">
+                            {dashboardStats.words}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            Palavras faladas
+                          </div>
+                        </div>
+                        <div className="rounded-lg border border-border p-3">
+                          <div className="text-2xl font-semibold">
+                            {dashboardStats.segments}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            Trechos de fala
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h3 className="mb-3 font-medium">Assuntos mais citados</h3>
+                        {dashboard.topics.length === 0 ? (
+                          <p className="text-muted-foreground">Nenhum assunto identificado.</p>
+                        ) : (
+                          <div className="space-y-2">
+                            {dashboard.topics.map((t) => {
+                              const max = dashboard.topics[0]?.mentions || 1;
+                              return (
+                                <div key={t.topic}>
+                                  <div className="mb-1 flex justify-between text-xs">
+                                    <span className="capitalize">{t.topic}</span>
+                                    <span className="text-muted-foreground">{t.mentions}x</span>
+                                  </div>
+                                  <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
+                                    <div
+                                      className="h-full rounded-full bg-primary"
+                                      style={{ width: `${Math.max(6, (t.mentions / max) * 100)}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <h3 className="mb-3 font-medium">Palavras-chave</h3>
+                        {dashboard.keywords.length === 0 ? (
+                          <p className="text-muted-foreground">Nenhuma palavra-chave identificada.</p>
+                        ) : (
+                          <div className="flex flex-wrap gap-2">
+                            {dashboard.keywords.map((k) => (
+                              <span
+                                key={k.word}
+                                className="flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs"
+                              >
+                                <Hash className="size-3 text-primary" />
+                                {k.word}
+                                <span className="text-muted-foreground">{k.count}</span>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={openDashboard}
+                        className="w-full rounded-md border border-border px-3 py-2 font-medium hover:bg-secondary"
+                      >
+                        Atualizar
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showChapters && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 p-4">
+              <div className="flex max-h-[85vh] w-full max-w-lg flex-col rounded-xl border border-border bg-card shadow-xl">
+                <div className="flex items-center justify-between border-b border-border px-5 py-3">
+                  <div className="flex items-center gap-2 font-medium">
+                    <Clapperboard className="size-4 text-primary" />
+                    Capítulos & highlights
+                  </div>
+                  <button
+                    onClick={() => setShowChapters(false)}
+                    className="rounded-md p-1 text-muted-foreground hover:bg-secondary"
+                    aria-label="Fechar"
+                  >
+                    <X className="size-4" />
+                  </button>
+                </div>
+                <div className="flex-1 overflow-y-auto px-5 py-4 text-sm">
+                  {chaptersError ? (
+                    <p className="text-destructive">{chaptersError}</p>
+                  ) : chaptersLoading ? (
+                    <p className="text-muted-foreground">Dividindo a reunião em capítulos…</p>
+                  ) : chapters ? (
+                    chapters.length === 0 ? (
+                      <p className="text-muted-foreground">Nenhum capítulo identificado.</p>
+                    ) : (
+                      <div className="space-y-4">
+                        {chapters.map((ch, i) => (
+                          <div
+                            key={i}
+                            className="rounded-lg border border-border p-3"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <h3 className="font-medium">{ch.title}</h3>
+                              <span className="flex shrink-0 items-center gap-1 rounded-md bg-secondary px-2 py-0.5 font-mono text-xs text-muted-foreground">
+                                <Clock className="size-3" />
+                                {formatDuration(ch.start)}
+                              </span>
+                            </div>
+                            {ch.summary && (
+                              <p className="mt-1 text-xs text-muted-foreground">{ch.summary}</p>
+                            )}
+                            {ch.highlights.length > 0 && (
+                              <ul className="mt-2 space-y-1">
+                                {ch.highlights.map((h, j) => (
+                                  <li key={j} className="flex items-start gap-2 text-xs">
+                                    <Sparkles className="mt-0.5 size-3 shrink-0 text-primary" />
+                                    <span>{h}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        ))}
+                        <button
+                          onClick={openChapters}
+                          className="w-full rounded-md border border-border px-3 py-2 font-medium hover:bg-secondary"
+                        >
+                          Atualizar
+                        </button>
+                      </div>
+                    )
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!showCaptions && (
+            <button
+              onClick={() => setShowCaptions(true)}
+              className="absolute bottom-6 right-6 flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-lg hover:bg-primary/90"
+            >
+              <Captions className="size-4" />
+              Transcrição
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
