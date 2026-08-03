@@ -308,63 +308,90 @@ function Index() {
         </div>
       </div>
 
-      <section className="relative overflow-hidden border-t border-border bg-secondary/40 px-4 py-14 sm:px-6 sm:py-20">
-        <div
-          aria-hidden
-          className="blob pointer-events-none -bottom-32 right-[-6%] size-[24rem] bg-[color-mix(in_oklab,var(--color-primary)_18%,transparent)] opacity-40"
-        />
+      <section className="relative overflow-hidden border-t border-border bg-secondary/40 px-4 py-8 sm:px-6 sm:py-10">
         <div className="relative mx-auto max-w-6xl">
-          <div className="max-w-2xl">
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/8 px-3 py-1 text-xs font-medium text-primary">
-              Como funciona
-            </span>
-            <h2 className="mt-3 font-display text-2xl font-normal tracking-[-0.02em] md:text-[2.1rem]">
-              Do convite à decisão em{" "}
-              <span className="bg-[linear-gradient(100deg,var(--color-primary),color-mix(in_oklab,var(--color-primary)_45%,var(--color-foreground)))] bg-clip-text text-transparent">
-                três passos
+          <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-end">
+            <div className="max-w-xl">
+              <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/8 px-3 py-1 text-xs font-medium text-primary">
+                Como funciona
               </span>
-            </h2>
-            <p className="mt-3 text-sm text-muted-foreground sm:text-base">
-              Sem treinamento, sem plugins. A equipe entra, conversa e sai com o próximo
-              passo definido.
+              <h2 className="mt-2 font-display text-xl font-normal tracking-[-0.02em] sm:text-2xl">
+                Do convite à decisão em{" "}
+                <span className="bg-[linear-gradient(100deg,var(--color-primary),color-mix(in_oklab,var(--color-primary)_45%,var(--color-foreground)))] bg-clip-text text-transparent">
+                  três passos
+                </span>
+              </h2>
+            </div>
+            <p className="max-w-sm text-xs text-muted-foreground sm:text-right sm:text-sm">
+              Sem treinamento. A equipe entra, conversa e sai com o próximo passo
+              definido.
             </p>
           </div>
 
-          <ol className="relative mt-12 grid gap-6 md:grid-cols-3">
-            {/* trilha conectando os passos no desktop */}
+          <ol className="relative mt-8 grid gap-4 md:grid-cols-3">
+            {/* trilha 3D conectando os passos no desktop */}
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-x-[16%] top-7 hidden h-px bg-[linear-gradient(90deg,transparent,color-mix(in_oklab,var(--color-primary)_45%,transparent),transparent)] md:block"
+              className="pointer-events-none absolute inset-x-[12%] top-[2.6rem] hidden h-0.5 md:block"
+              style={{
+                background:
+                  "linear-gradient(90deg, transparent, color-mix(in oklab, var(--color-primary) 55%, transparent) 10%, color-mix(in oklab, var(--color-primary) 55%, transparent) 90%, transparent)",
+              }}
             />
             {STEPS.map((s, i) => (
               <li
                 key={s.title}
-                className="lift group relative flex flex-col rounded-2xl border border-border bg-card/80 p-6 pt-10 backdrop-blur transition-colors hover:border-primary/40"
+                className="group relative"
+                style={{ perspective: "900px" }}
               >
-                <span className="absolute -top-4 left-6 flex size-8 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground shadow-[0_10px_22px_-12px_color-mix(in_oklab,var(--color-primary)_90%,transparent)]">
-                  {i + 1}
-                </span>
-                <span className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:bg-primary/15">
-                  <s.icon className="size-5" />
-                </span>
-                <h3 className="mt-4 font-display text-base font-medium">
-                  {s.title.replace(/^\d+\.\s*/, "")}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
+                <div
+                  className="relative flex flex-col rounded-2xl border border-border bg-card/90 p-4 pt-8 shadow-sm backdrop-blur transition-all duration-300 hover:border-primary/40 hover:shadow-[0_20px_44px_-20px_color-mix(in_oklab,var(--color-primary)_45%,transparent)]"
+                  style={{
+                    transformStyle: "preserve-3d",
+                    transform: "rotateX(2deg) rotateY(0deg) translateZ(0)",
+                  }}
+                >
+                  {/* número 3D flutuante */}
+                  <span
+                    className="absolute -top-3 left-4 flex size-7 items-center justify-center rounded-xl bg-primary text-[10px] font-bold text-primary-foreground shadow-[0_12px_24px_-10px_color-mix(in_oklab,var(--color-primary)_95%,transparent)] transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-110"
+                    style={{ transform: "translateZ(18px)" }}
+                  >
+                    {i + 1}
+                  </span>
+                  {/* ponto de conexão na trilha */}
+                  <span
+                    aria-hidden
+                    className="absolute -top-[0.6rem] left-1/2 hidden size-2.5 -translate-x-1/2 rounded-full border-2 border-background bg-primary shadow-[0_0_12px_color-mix(in_oklab,var(--color-primary)_80%,transparent)] md:block"
+                  />
+
+                  <div className="flex items-center gap-3">
+                    <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20 transition-transform duration-300 group-hover:-translate-y-0.5">
+                      <s.icon className="size-4" />
+                    </span>
+                    <div>
+                      <h3 className="font-display text-sm font-medium">
+                        {s.title.replace(/^\d+\.\s*/, "")}
+                      </h3>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                    {s.desc}
+                  </p>
+                </div>
               </li>
             ))}
           </ol>
 
-          <div className="mt-10 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+          <div className="mt-6 flex items-center gap-3">
             <button
               onClick={createMeeting}
-              className="sheen inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground shadow-[0_14px_30px_-14px_color-mix(in_oklab,var(--color-primary)_80%,transparent)] transition-transform hover:-translate-y-0.5"
+              className="sheen inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-xs font-medium text-primary-foreground shadow-[0_12px_24px_-12px_color-mix(in_oklab,var(--color-primary)_80%,transparent)] transition-transform hover:-translate-y-0.5"
             >
-              <span className="relative z-10">Testar agora, é grátis</span>
-              <ArrowRight className="relative z-10 size-4" />
+              <span className="relative z-10">Testar agora</span>
+              <ArrowRight className="relative z-10 size-3.5" />
             </button>
             <span className="text-xs text-muted-foreground">
-              Sem cartão de crédito · sala pronta em segundos
+              Sem cartão · sala pronta em segundos
             </span>
           </div>
         </div>
