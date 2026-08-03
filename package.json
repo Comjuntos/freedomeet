@@ -3,6 +3,15 @@
   "private": true,
   "sideEffects": false,
   "type": "module",
+  "browserslist": [
+    "chrome >= 111",
+    "edge >= 111",
+    "firefox >= 113",
+    "safari >= 16.4",
+    "ios_saf >= 16.4",
+    "opera >= 97",
+    "samsung >= 22"
+  ],
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",

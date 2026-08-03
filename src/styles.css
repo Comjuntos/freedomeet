@@ -189,6 +189,8 @@
     linear-gradient(to right, color-mix(in oklab, var(--color-foreground) 6%, transparent) 1px, transparent 1px),
     linear-gradient(to bottom, color-mix(in oklab, var(--color-foreground) 6%, transparent) 1px, transparent 1px);
   background-size: 56px 56px;
+  /* Prefixo -webkit- garante o recorte também no Safari/iOS. */
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 35%, transparent 78%);
   mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 35%, transparent 78%);
 }
 
