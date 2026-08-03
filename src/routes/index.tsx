@@ -49,32 +49,16 @@ const OUTCOMES: { icon: typeof Clock; k: string; v: string }[] = [
   { icon: Users, k: "100%", v: "das decisões viram tarefas" },
 ];
 
+/**
+ * Recursos exibidos em cartões compactos: descrições curtas para que a seção
+ * ocupe pouco espaço e o destaque da página fique nos planos de assinatura.
+ */
 const FEATURES = [
-  {
-    icon: Captions,
-    title: "Transcrição ao vivo com IA",
-    desc: "A fala vira texto em tempo real, com pontuação e acentuação natural — nada de legenda robótica.",
-  },
-  {
-    icon: Languages,
-    title: "Tradução em tempo real",
-    desc: "Traduza as legendas na hora para inglês, espanhol, francês, alemão, italiano e mais.",
-  },
-  {
-    icon: FileText,
-    title: "Ata gerada por IA",
-    desc: "Ao final, gere uma ata profissional a partir da transcrição — modelos formal, executivo ou detalhado.",
-  },
-  {
-    icon: KanbanSquare,
-    title: "Gestão estilo Kanban",
-    desc: "Organize tarefas e acompanhamentos das reuniões em quadros Kanban, movendo cartões entre colunas.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Vídeo HD seguro",
-    desc: "Câmera, áudio, chat e compartilhamento de tela com acesso protegido por tokens assinados.",
-  },
+  { icon: Captions, title: "Transcrição ao vivo", desc: "Fala vira texto na hora." },
+  { icon: Languages, title: "Tradução em tempo real", desc: "Legendas em 5+ idiomas." },
+  { icon: FileText, title: "Ata por IA", desc: "Resumo pronto ao final." },
+  { icon: KanbanSquare, title: "Kanban da equipe", desc: "Decisões viram tarefas." },
+  { icon: ShieldCheck, title: "Vídeo HD seguro", desc: "Acesso por token assinado." },
 ];
 
 const PLANS = PLAN_LIST;
