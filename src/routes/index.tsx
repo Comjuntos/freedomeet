@@ -15,7 +15,40 @@ import {
   FileText,
   ShieldCheck,
   KanbanSquare,
+  ArrowRight,
+  Sparkles,
+  Clock,
+  Users,
+  BarChart3,
+  Check,
 } from "lucide-react";
+
+/** Etapas do fluxo comercial exibidas na seção "Como funciona". */
+const STEPS: { icon: typeof Video; title: string; desc: string }[] = [
+  {
+    icon: Video,
+    title: "1. Abra a sala",
+    desc: "Um clique em Nova reunião gera um link seguro. Sem instalar nada, sem fricção para o convidado.",
+  },
+  {
+    icon: Captions,
+    title: "2. A IA acompanha",
+    desc: "Transcrição, tradução e capítulos acontecem enquanto vocês conversam.",
+  },
+  {
+    icon: KanbanSquare,
+    title: "3. Saia com decisões",
+    desc: "Ata pronta e tarefas já no Kanban da equipe, com responsável e prazo.",
+  },
+];
+
+/** Resultados de negócio usados como prova de valor no topo da página. */
+const OUTCOMES: { icon: typeof Clock; k: string; v: string }[] = [
+  { icon: Clock, k: "-70%", v: "tempo escrevendo atas" },
+  { icon: BarChart3, k: "20%", v: "mais barato que o mercado" },
+  { icon: Users, k: "100%", v: "das decisões viram tarefas" },
+];
+
 const FEATURES = [
   {
     icon: Captions,
