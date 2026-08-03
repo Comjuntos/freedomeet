@@ -15,7 +15,11 @@ import {
   FileText,
   ShieldCheck,
   KanbanSquare,
+  Sparkles,
+  ArrowRight,
+  CheckCircle2,
 } from "lucide-react";
+
 const FEATURES = [
   {
     icon: Captions,
@@ -45,6 +49,11 @@ const FEATURES = [
 ];
 
 const PLANS = PLAN_LIST;
+const STATS = [
+  { value: "20%", label: "mais barato" },
+  { value: "HD", label: "vídeo seguro" },
+  { value: "IA", label: "ata automática" },
+];
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -72,7 +81,6 @@ function Index() {
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const { openCheckout, loading: checkoutLoading } = usePaddleCheckout();
 
-  // Se o usuário já estiver logado, carrega o painel automaticamente.
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) {
@@ -84,7 +92,6 @@ function Index() {
 
   const createMeeting = () => {
     const roomId = randomRoom();
-    // Marca quem criou a sala como administrador (host) desta reunião.
     sessionStorage.setItem(`freedomeet-host-${roomId}`, "1");
     navigate({ to: "/room/$roomId", params: { roomId } });
   };
@@ -109,65 +116,81 @@ function Index() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <header className="flex items-center justify-between gap-2 px-4 py-3 sm:px-6 sm:py-4">
-        <div className="flex min-w-0 items-center gap-2">
-          <img src={logoUrl.url} alt="FreeduMeet" className="size-8 shrink-0 rounded-lg object-cover sm:size-9" />
-          <span className="truncate font-display text-xl font-normal tracking-tight text-muted-foreground sm:text-[1.375rem]">
-            FreeduMeet
-          </span>
-        </div>
-        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-          <span className="mr-2 hidden text-sm text-muted-foreground sm:block">
-            {new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-          </span>
-          <button className="hidden rounded-full p-2.5 text-muted-foreground transition-colors hover:bg-secondary sm:inline-flex" aria-label="Ajuda">
-            <HelpCircle className="size-5" />
-          </button>
-          <button className="hidden rounded-full p-2.5 text-muted-foreground transition-colors hover:bg-secondary sm:inline-flex" aria-label="Configurações">
-            <Settings className="size-5" />
-          </button>
-          <Link
-            to="/auth"
-            className="inline-flex items-center rounded-full px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/8"
-          >
-            Entrar
-          </Link>
-          <Link
-            to="/manual"
-            className="inline-flex items-center rounded-full px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/8"
-          >
-            Manual
-          </Link>
-          <Link
-            to="/app"
-            className="inline-flex items-center rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-none transition-shadow hover:shadow-[var(--shadow-glow)]"
-          >
-            Painel
-          </Link>
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-background text-foreground">
+      {/* aurora background */}
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute -left-[20%] -top-[20%] h-[70%] w-[70%] rounded-full bg-aurora-teal/20 blur-[120px]" />
+        <div className="absolute -bottom-[20%] -right-[20%] h-[70%] w-[70%] rounded-full bg-aurora-violet/20 blur-[120px]" />
+        <div className="absolute left-1/2 top-1/3 h-[50%] w-[50%] -translate-x-1/2 rounded-full bg-primary/10 blur-[100px]" />
+      </div>
+
+      <header className="fixed left-0 right-0 top-0 z-50 mx-auto mt-3 max-w-6xl px-3 sm:px-6">
+        <div className="glass flex items-center justify-between gap-2 rounded-full px-4 py-2.5 sm:px-5 sm:py-3">
+          <div className="flex min-w-0 items-center gap-2">
+            <img src={logoUrl.url} alt="FreeduMeet" className="size-8 shrink-0 rounded-lg object-cover sm:size-9" />
+            <span className="truncate font-display text-xl font-normal tracking-tight text-foreground sm:text-[1.375rem]">
+              FreeduMeet
+            </span>
+          </div>
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+            <span className="mr-2 hidden text-sm text-muted-foreground sm:block">
+              {new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+            </span>
+            <button className="hidden rounded-full p-2.5 text-muted-foreground transition-colors hover:bg-secondary sm:inline-flex" aria-label="Ajuda">
+              <HelpCircle className="size-5" />
+            </button>
+            <button className="hidden rounded-full p-2.5 text-muted-foreground transition-colors hover:bg-secondary sm:inline-flex" aria-label="Configurações">
+              <Settings className="size-5" />
+            </button>
+            <Link
+              to="/auth"
+              className="inline-flex items-center rounded-full px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+            >
+              Entrar
+            </Link>
+            <Link
+              to="/manual"
+              className="inline-flex items-center rounded-full px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+            >
+              Manual
+            </Link>
+            <Link
+              to="/app"
+              className="inline-flex items-center rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-[var(--shadow-glow)] transition-all hover:shadow-[var(--shadow-elegant)]"
+            >
+              Painel
+            </Link>
+          </div>
         </div>
       </header>
 
-      <main className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-12 px-4 py-10 sm:px-6 md:grid-cols-2">
-        <div className="w-full max-w-md min-w-0">
-          <h1 className="font-display text-[2.25rem] font-normal leading-[1.15] tracking-[-0.01em] sm:text-[2.75rem] md:text-[3.25rem]">
-            Videochamadas e reuniões para todos
+      <main className="mx-auto mt-24 grid w-full max-w-6xl flex-1 items-center gap-12 px-4 py-12 sm:px-6 md:mt-28 md:grid-cols-2 md:py-16">
+        <div className="w-full max-w-lg min-w-0">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/60 px-4 py-1.5 text-sm text-muted-foreground backdrop-blur-sm">
+            <Sparkles className="size-4 text-primary" />
+            Reuniões com IA integrada
+          </div>
+
+          <h1 className="mt-6 font-display text-[2.25rem] font-normal leading-[1.1] tracking-[-0.02em] sm:text-[2.75rem] md:text-[3.5rem]">
+            Videochamadas e reuniões para{" "}
+            <span className="text-gradient">todos</span>
           </h1>
-          <p className="mt-4 text-base font-normal text-muted-foreground sm:text-lg">
+          <p className="mt-5 text-base font-normal text-muted-foreground sm:text-lg">
             Conecte-se, colabore e comemore de qualquer lugar com o FreeduMeet.
+            Segurança nacional, preço justo e inteligência artificial que economiza seu tempo.
           </p>
 
           <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
             <button
               onClick={createMeeting}
-              className="inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-shadow hover:shadow-[var(--shadow-elegant)]"
+              className="inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground shadow-[var(--shadow-glow)] transition-all hover:shadow-[var(--shadow-elegant)] hover:brightness-105"
             >
               <Video className="size-5" />
               Nova reunião
             </button>
 
-            <div className="flex min-w-0 items-center gap-2">
-              <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-input px-4 py-2.5 transition-colors focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
+            <div className="glass flex min-w-0 items-center gap-2 rounded-full px-2 py-1.5">
+              <div className="flex min-w-0 flex-1 items-center gap-2 rounded-full px-3 py-2 transition-colors focus-within:bg-secondary/50">
                 <Keyboard className="size-5 text-muted-foreground" />
                 <input
                   value={code}
@@ -180,27 +203,33 @@ function Index() {
               <button
                 onClick={joinMeeting}
                 disabled={!code.trim()}
-                className="shrink-0 rounded-full px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/8 disabled:text-muted-foreground disabled:opacity-60 disabled:hover:bg-transparent"
+                className="shrink-0 rounded-full px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-secondary disabled:text-muted-foreground disabled:opacity-60 disabled:hover:bg-transparent"
               >
                 Participar
               </button>
             </div>
           </div>
 
-          <hr className="mt-8 border-border" />
-          <p className="mt-4 text-sm text-muted-foreground">
-            <a className="text-primary hover:underline" href="#planos">Saiba mais</a> sobre o FreeduMeet
-          </p>
+          <div className="mt-8 flex items-center gap-4 text-sm text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <CheckCircle2 className="size-4 text-primary" />
+              Sem instalação
+            </span>
+            <span className="flex items-center gap-1.5">
+              <CheckCircle2 className="size-4 text-primary" />
+              Criptografia de ponta
+            </span>
+            <span className="hidden items-center gap-1.5 sm:flex">
+              <CheckCircle2 className="size-4 text-primary" />
+              Atas automáticas
+            </span>
+          </div>
 
           <dl className="mt-8 grid grid-cols-3 gap-4">
-            {[
-              { k: "20%", v: "mais barato" },
-              { k: "HD", v: "vídeo seguro" },
-              { k: "IA", v: "ata automática" },
-            ].map((s) => (
-              <div key={s.v}>
-                <dt className="font-display text-2xl font-normal text-primary">{s.k}</dt>
-                <dd className="text-xs text-muted-foreground">{s.v}</dd>
+            {STATS.map((s) => (
+              <div key={s.label} className="glass rounded-2xl p-4 text-center">
+                <dt className="font-display text-2xl font-normal text-primary">{s.value}</dt>
+                <dd className="text-xs text-muted-foreground">{s.label}</dd>
               </div>
             ))}
           </dl>
@@ -208,12 +237,13 @@ function Index() {
 
         <div className="flex w-full min-w-0 flex-col items-center justify-center overflow-hidden text-center">
           <div className="relative flex size-64 shrink-0 items-center justify-center [--orbit-r:112px] sm:size-80 sm:[--orbit-r:172px]">
-            {/* soft Meet-style disc */}
-            <div className="absolute size-56 rounded-full bg-primary/8 sm:size-72" />
-            <div className="absolute size-44 rounded-full border border-border sm:size-60" />
+            {/* soft aurora disc */}
+            <div className="absolute size-56 rounded-full bg-gradient-to-br from-aurora-teal/30 to-aurora-violet/30 blur-2xl sm:size-72" />
+            <div className="absolute size-44 rounded-full border border-border/60 sm:size-60" />
+            <div className="absolute size-56 rounded-full border border-dashed border-border/40 sm:size-72" />
 
             {/* logo core */}
-            <div className="relative flex size-40 items-center justify-center rounded-full bg-card shadow-[var(--shadow-elegant)] sm:size-52">
+            <div className="relative flex size-40 items-center justify-center rounded-full bg-card/80 shadow-[var(--shadow-elegant)] backdrop-blur-xl sm:size-52">
               <img
                 src={logoTransparentUrl.url}
                 alt="FreeduMeet"
@@ -233,10 +263,8 @@ function Index() {
                   }}
                   className="absolute left-1/2 top-1/2"
                 >
-                  <span
-                    className="flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 whitespace-nowrap text-[9px] font-medium text-muted-foreground sm:gap-1.5 sm:text-xs"
-                  >
-                    <f.icon className="size-3 shrink-0 text-primary sm:size-3.5" />
+                  <span className="glass flex -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-[10px] font-medium text-foreground sm:text-xs">
+                    <f.icon className="size-3.5 shrink-0 text-primary" />
                     {f.title}
                   </span>
                 </div>
@@ -245,27 +273,37 @@ function Index() {
           </div>
           <h2 className="mt-10 font-display text-lg font-normal sm:text-xl">Receba um link para compartilhar</h2>
           <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-            Clique em <span className="font-medium">Nova reunião</span> para receber um link
+            Clique em <span className="font-medium text-foreground">Nova reunião</span> para receber um link
             que você pode enviar às pessoas com quem quer se reunir.
           </p>
         </div>
       </main>
 
-      <section className="border-t border-border bg-secondary/50 px-4 py-12 sm:px-6 sm:py-16">
+      <section className="border-t border-border/60 px-4 py-16 sm:px-6 sm:py-20">
         <div className="mx-auto max-w-6xl">
-          <span className="text-sm font-medium text-primary">Recursos</span>
-          <h2 className="mt-2 font-display text-2xl font-normal md:text-3xl">
-            Por que escolher o FreeduMeet
-          </h2>
-          <p className="mt-2 max-w-xl text-muted-foreground">
-            Muito além de uma chamada de vídeo: recursos de IA que economizam
-            seu tempo em cada reunião.
-          </p>
+          <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
+            <div>
+              <span className="text-sm font-medium text-primary">Recursos</span>
+              <h2 className="mt-2 font-display text-2xl font-normal md:text-3xl">
+                Por que escolher o FreeduMeet
+              </h2>
+              <p className="mt-2 max-w-xl text-muted-foreground">
+                Muito além de uma chamada de vídeo: recursos de IA que economizam
+                seu tempo em cada reunião.
+              </p>
+            </div>
+            <Link
+              to="/manual"
+              className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+            >
+              Ver manual <ArrowRight className="size-4" />
+            </Link>
+          </div>
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((f) => (
               <div
                 key={f.title}
-                className="rounded-xl border border-border bg-card p-6 transition-shadow hover:shadow-[var(--shadow-elegant)]"
+                className="glass rounded-2xl p-6 transition-all hover:shadow-[var(--shadow-elegant)]"
               >
                 <div className="flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary">
                   <f.icon className="size-6" />
@@ -278,7 +316,7 @@ function Index() {
         </div>
       </section>
 
-      <section id="planos" className="border-t border-border px-4 py-12 sm:px-6 sm:py-16">
+      <section id="planos" className="border-t border-border/60 px-4 py-16 sm:px-6 sm:py-20">
         <div className="mx-auto max-w-6xl">
           <span className="text-sm font-medium text-primary">Planos</span>
           <h2 className="mt-2 font-display text-2xl font-normal md:text-3xl">Planos e assinaturas</h2>
@@ -290,8 +328,8 @@ function Index() {
             {PLANS.map((plan) => (
               <div
                 key={plan.name}
-                className={`relative flex flex-col rounded-xl border bg-card p-7 transition-shadow hover:shadow-[var(--shadow-elegant)] ${
-                  plan.highlight ? "border-primary shadow-[var(--shadow-glow)]" : "border-border"
+                className={`relative flex flex-col rounded-2xl border bg-card/60 p-7 backdrop-blur-xl transition-all hover:shadow-[var(--shadow-elegant)] ${
+                  plan.highlight ? "border-primary shadow-[var(--shadow-glow)]" : "border-border/60"
                 }`}
               >
                 {plan.highlight && (
@@ -316,10 +354,10 @@ function Index() {
                 <button
                   onClick={() => (plan.priceId ? handleSubscribe(plan.priceId) : createMeeting())}
                   disabled={checkoutLoading}
-                  className={`mt-7 inline-flex items-center justify-center rounded-full px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-60 ${
+                  className={`mt-7 inline-flex items-center justify-center rounded-full px-4 py-2.5 text-sm font-medium transition-all disabled:opacity-60 ${
                     plan.highlight
-                      ? "bg-primary text-primary-foreground hover:opacity-90"
-                      : "border border-border text-primary hover:bg-primary/8"
+                      ? "bg-primary text-primary-foreground shadow-[var(--shadow-glow)] hover:shadow-[var(--shadow-elegant)]"
+                      : "border border-border/60 text-primary hover:bg-secondary"
                   }`}
                 >
                   {plan.price === "R$ 0" ? "Começar grátis" : `Assinar ${plan.name}`}
@@ -333,7 +371,7 @@ function Index() {
         </div>
       </section>
 
-      <footer className="border-t border-border px-4 py-10 sm:px-6">
+      <footer className="border-t border-border/60 px-4 py-10 sm:px-6">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 text-sm text-muted-foreground sm:flex-row">
           <div className="flex items-center gap-2">
             <img src={logoUrl.url} alt="FreeduMeet" className="size-7 rounded-lg object-cover" />
