@@ -181,13 +181,27 @@ function Index() {
         </div>
       </header>
 
-      <main className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-12 px-4 py-10 sm:px-6 md:grid-cols-2">
-        <div className="w-full max-w-md min-w-0">
-          <h1 className="font-display text-[2.25rem] font-normal leading-[1.15] tracking-[-0.01em] sm:text-[2.75rem] md:text-[3.25rem]">
-            Videochamadas e reuniões para todos
+      <main className="relative flex-1 overflow-hidden">
+        {/* Brilho sutil de fundo — reforça o ar sofisticado sem poluir o conteúdo. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-40 right-[-10%] size-[36rem] rounded-full bg-[radial-gradient(circle,color-mix(in_oklab,var(--color-primary)_20%,transparent)_0%,transparent_65%)] blur-3xl"
+        />
+        <div className="relative mx-auto grid w-full max-w-6xl items-center gap-12 px-4 py-12 sm:px-6 sm:py-16 md:grid-cols-[1.05fr_0.95fr]">
+        <div className="w-full min-w-0 max-w-xl">
+          <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-3 py-1 text-xs font-medium text-primary">
+            <Sparkles className="size-3.5" />
+            Reuniões com IA em português
+          </span>
+          <h1 className="mt-5 font-display text-[2.25rem] font-normal leading-[1.1] tracking-[-0.02em] sm:text-[2.9rem] md:text-[3.4rem]">
+            Reuniões que terminam com{" "}
+            <span className="bg-[linear-gradient(100deg,var(--color-primary),color-mix(in_oklab,var(--color-primary)_45%,var(--color-foreground)))] bg-clip-text text-transparent">
+              decisões, não com anotações
+            </span>
           </h1>
-          <p className="mt-4 text-base font-normal text-muted-foreground sm:text-lg">
-            Conecte-se, colabore e comemore de qualquer lugar com o FreeduMeet.
+          <p className="mt-5 text-base font-normal text-muted-foreground sm:text-lg">
+            Vídeo HD, transcrição ao vivo, ata pronta e tarefas no Kanban da equipe —
+            tudo em uma plataforma só, por até 20% menos que as alternativas.
           </p>
 
           <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
@@ -221,22 +235,25 @@ function Index() {
           </div>
 
           <hr className="mt-8 border-border" />
-          <p className="mt-4 text-sm text-muted-foreground">
-            <a className="text-primary hover:underline" href="#planos">Saiba mais</a> sobre o FreeduMeet
-          </p>
-
-          <dl className="mt-8 grid grid-cols-3 gap-4">
-            {[
-              { k: "20%", v: "mais barato" },
-              { k: "HD", v: "vídeo seguro" },
-              { k: "IA", v: "ata automática" },
-            ].map((s) => (
-              <div key={s.v}>
-                <dt className="font-display text-2xl font-normal text-primary">{s.k}</dt>
-                <dd className="text-xs text-muted-foreground">{s.v}</dd>
+          <dl className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {OUTCOMES.map((s) => (
+              <div key={s.v} className="flex min-w-0 items-center gap-3">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <s.icon className="size-4" />
+                </span>
+                <div className="min-w-0">
+                  <dt className="font-display text-xl font-normal text-foreground">{s.k}</dt>
+                  <dd className="text-xs text-muted-foreground">{s.v}</dd>
+                </div>
               </div>
             ))}
           </dl>
+          <p className="mt-6 text-sm text-muted-foreground">
+            Comece grátis hoje ·{" "}
+            <a className="text-primary hover:underline" href="#planos">
+              ver planos e preços
+            </a>
+          </p>
         </div>
 
         <div className="flex w-full min-w-0 flex-col items-center justify-center overflow-hidden text-center">
@@ -256,15 +273,54 @@ function Index() {
               />
             </div>
           </div>
-          <h2 className="mt-10 font-display text-lg font-normal sm:text-xl">Receba um link para compartilhar</h2>
-          <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-            Clique em <span className="font-medium">Nova reunião</span> para receber um link
-            que você pode enviar às pessoas com quem quer se reunir.
-          </p>
+          <div className="mt-8 w-full max-w-sm rounded-2xl border border-border bg-card p-6 text-left shadow-[var(--shadow-elegant)]">
+            <h2 className="font-display text-base font-medium">O que já vem incluso</h2>
+            <ul className="mt-4 space-y-2.5 text-sm text-muted-foreground">
+              {[
+                "Link de convite instantâneo, sem instalação",
+                "Transcrição e tradução ao vivo",
+                "Ata profissional gerada por IA",
+                "Tarefas enviadas direto ao Kanban",
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-2">
+                  <Check className="mt-0.5 size-4 shrink-0 text-primary" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
         </div>
       </main>
 
-      <section className="border-t border-border bg-secondary/50 px-4 py-12 sm:px-6 sm:py-16">
+      <section className="border-t border-border bg-secondary/40 px-4 py-12 sm:px-6 sm:py-16">
+        <div className="mx-auto max-w-6xl">
+          <span className="text-sm font-medium text-primary">Como funciona</span>
+          <h2 className="mt-2 font-display text-2xl font-normal md:text-3xl">
+            Do convite à decisão em três passos
+          </h2>
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
+            {STEPS.map((s) => (
+              <div key={s.title} className="rounded-2xl border border-border bg-card p-6">
+                <span className="flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <s.icon className="size-5" />
+                </span>
+                <h3 className="mt-4 font-display text-base font-medium">{s.title}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{s.desc}</p>
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={createMeeting}
+            className="mt-8 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-shadow hover:shadow-[var(--shadow-elegant)]"
+          >
+            Testar agora, é grátis
+            <ArrowRight className="size-4" />
+          </button>
+        </div>
+      </section>
+
+      <section className="border-t border-border px-4 py-12 sm:px-6 sm:py-16">
         <div className="mx-auto max-w-6xl">
           <span className="text-sm font-medium text-primary">Recursos</span>
           <h2 className="mt-2 font-display text-2xl font-normal md:text-3xl">
