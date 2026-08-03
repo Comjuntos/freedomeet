@@ -402,6 +402,34 @@ function Index() {
         </div>
       </section>
 
+      <section className="border-t border-border px-4 py-14 sm:px-6">
+        <div className="mx-auto max-w-6xl overflow-hidden rounded-3xl border border-primary/20 bg-[linear-gradient(120deg,color-mix(in_oklab,var(--color-primary)_12%,var(--color-card)),var(--color-card))] p-8 text-center shadow-[var(--shadow-elegant)] sm:p-12">
+          <h2 className="font-display text-2xl font-normal md:text-3xl">
+            Pronto para a próxima reunião produtiva?
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
+            Crie uma sala agora mesmo, sem cartão de crédito. Faça o upgrade quando a
+            equipe quiser relatórios, competências e reuniões ilimitadas.
+          </p>
+          <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <button
+              onClick={createMeeting}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-shadow hover:shadow-[var(--shadow-glow)] sm:w-auto"
+            >
+              <Video className="size-4" />
+              Criar reunião grátis
+            </button>
+            <a
+              href="#planos"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-border px-6 py-3 text-sm font-medium text-primary transition-colors hover:bg-primary/8 sm:w-auto"
+            >
+              Comparar planos
+              <ArrowRight className="size-4" />
+            </a>
+          </div>
+        </div>
+      </section>
+
       <footer className="border-t border-border px-4 py-10 sm:px-6">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 text-sm text-muted-foreground sm:flex-row">
           <div className="flex items-center gap-2">
