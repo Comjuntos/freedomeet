@@ -127,7 +127,7 @@ function Index() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <header className="flex items-center justify-between gap-2 px-4 py-3 sm:px-6 sm:py-4">
+      <header className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b border-border/60 bg-background/70 px-4 py-3 backdrop-blur-xl sm:px-6 sm:py-4">
         <div className="flex min-w-0 items-center gap-2">
           <img src={logoUrl.url} alt="FreeduMeet" className="size-8 shrink-0 rounded-lg object-cover sm:size-9" />
           <span className="truncate font-display text-xl font-normal tracking-tight text-muted-foreground sm:text-[1.375rem]">
@@ -166,14 +166,23 @@ function Index() {
       </header>
 
       <main className="relative flex-1 overflow-hidden">
-        {/* Brilho sutil de fundo — reforça o ar sofisticado sem poluir o conteúdo. */}
+        {/* Camadas de fundo: malha técnica + blobs de aurora em movimento lento. */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 grid-mesh" />
         <div
           aria-hidden
-          className="pointer-events-none absolute -top-40 right-[-10%] size-[36rem] rounded-full bg-[radial-gradient(circle,color-mix(in_oklab,var(--color-primary)_20%,transparent)_0%,transparent_65%)] blur-3xl"
+          className="blob pointer-events-none -top-32 right-[-8%] size-[34rem] bg-[color-mix(in_oklab,var(--color-primary)_28%,transparent)] opacity-60"
+        />
+        <div
+          aria-hidden
+          className="blob pointer-events-none -left-24 top-40 size-[26rem] bg-[color-mix(in_oklab,var(--color-primary)_18%,transparent)] opacity-50 [animation-delay:-6s]"
         />
         <div className="relative mx-auto grid w-full max-w-6xl items-center gap-12 px-4 py-12 sm:px-6 sm:py-16 md:grid-cols-[1.05fr_0.95fr]">
-        <div className="w-full min-w-0 max-w-xl">
-          <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-3 py-1 text-xs font-medium text-primary">
+        <div className="rise w-full min-w-0 max-w-xl">
+          <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/8 px-3 py-1 text-xs font-medium text-primary backdrop-blur">
+            <span className="relative flex size-1.5">
+              <span className="absolute inline-flex size-full animate-ping rounded-full bg-primary opacity-70" />
+              <span className="relative inline-flex size-1.5 rounded-full bg-primary" />
+            </span>
             <Sparkles className="size-3.5" />
             Reuniões com IA em português
           </span>
@@ -191,10 +200,10 @@ function Index() {
           <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
             <button
               onClick={createMeeting}
-              className="inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-shadow hover:shadow-[var(--shadow-elegant)]"
+              className="sheen inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground shadow-[0_14px_30px_-14px_color-mix(in_oklab,var(--color-primary)_80%,transparent)] transition-transform hover:-translate-y-0.5"
             >
-              <Video className="size-5" />
-              Nova reunião
+              <Video className="relative z-10 size-5" />
+              <span className="relative z-10">Nova reunião</span>
             </button>
 
             <div className="flex min-w-0 items-center gap-2">
@@ -240,8 +249,11 @@ function Index() {
           </p>
         </div>
 
-        <div className="flex w-full min-w-0 flex-col items-center justify-center overflow-hidden text-center">
-          <div className="relative flex size-64 shrink-0 items-center justify-center sm:size-80">
+        <div className="rise flex w-full min-w-0 flex-col items-center justify-center overflow-hidden text-center [animation-delay:150ms]">
+          <div className="float-slow relative flex size-64 shrink-0 items-center justify-center sm:size-80">
+            {/* anéis orbitais girando devagar */}
+            <div aria-hidden className="spin-slow absolute size-64 rounded-full border border-dashed border-primary/25 sm:size-80" />
+            <div aria-hidden className="spin-slow-rev absolute size-52 rounded-full border border-primary/15 sm:size-68" />
             {/* 3D blue halo */}
             <div className="absolute size-60 rounded-full bg-[radial-gradient(circle_at_30%_25%,var(--color-primary)_0%,transparent_62%)] opacity-25 blur-2xl sm:size-76" />
             <div className="absolute size-56 rounded-full bg-[linear-gradient(150deg,color-mix(in_oklab,var(--color-primary)_22%,transparent),transparent_70%)] shadow-[inset_0_-14px_30px_color-mix(in_oklab,var(--color-primary)_28%,transparent),0_30px_60px_-20px_color-mix(in_oklab,var(--color-primary)_45%,transparent)] sm:size-72" />
@@ -257,7 +269,7 @@ function Index() {
               />
             </div>
           </div>
-          <div className="mt-8 w-full max-w-sm rounded-2xl border border-border bg-card p-6 text-left shadow-[var(--shadow-elegant)]">
+          <div className="gradient-ring lift mt-8 w-full max-w-sm rounded-2xl p-6 text-left shadow-[var(--shadow-elegant)]">
             <h2 className="font-display text-base font-medium">O que já vem incluso</h2>
             <ul className="mt-4 space-y-2.5 text-sm text-muted-foreground">
               {[
@@ -277,6 +289,25 @@ function Index() {
         </div>
       </main>
 
+      {/* Faixa em movimento contínuo com os diferenciais do produto. */}
+      <div className="overflow-hidden border-y border-border bg-[linear-gradient(90deg,color-mix(in_oklab,var(--color-primary)_10%,var(--color-background)),var(--color-background),color-mix(in_oklab,var(--color-primary)_10%,var(--color-background)))] py-3">
+        <div className="marquee-track gap-10 pr-10">
+          {[0, 1].map((dup) => (
+            <div key={dup} className="flex shrink-0 items-center gap-10 pr-10" aria-hidden={dup === 1}>
+              {FEATURES.map((f) => (
+                <span
+                  key={f.title}
+                  className="flex items-center gap-2 whitespace-nowrap text-sm font-medium text-muted-foreground"
+                >
+                  <f.icon className="size-4 text-primary" />
+                  {f.title}
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+
       <section className="border-t border-border bg-secondary/40 px-4 py-12 sm:px-6 sm:py-16">
         <div className="mx-auto max-w-6xl">
           <span className="text-sm font-medium text-primary">Como funciona</span>
@@ -285,8 +316,8 @@ function Index() {
           </h2>
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             {STEPS.map((s) => (
-              <div key={s.title} className="rounded-2xl border border-border bg-card p-6">
-                <span className="flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <div key={s.title} className="gradient-ring lift rounded-2xl p-6">
+                <span className="flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary ring-1 ring-primary/20">
                   <s.icon className="size-5" />
                 </span>
                 <h3 className="mt-4 font-display text-base font-medium">{s.title}</h3>
@@ -323,8 +354,10 @@ function Index() {
             {PLANS.map((plan) => (
               <div
                 key={plan.name}
-                className={`relative flex flex-col rounded-xl border bg-card p-7 transition-shadow hover:shadow-[var(--shadow-elegant)] ${
-                  plan.highlight ? "border-primary shadow-[var(--shadow-glow)]" : "border-border"
+                className={`lift relative flex flex-col rounded-2xl border bg-card p-7 ${
+                  plan.highlight
+                    ? "border-primary/60 bg-[linear-gradient(180deg,color-mix(in_oklab,var(--color-primary)_8%,var(--color-card)),var(--color-card))] shadow-[0_24px_60px_-28px_color-mix(in_oklab,var(--color-primary)_85%,transparent)] lg:-translate-y-3"
+                    : "border-border"
                 }`}
               >
                 {plan.highlight && (
@@ -374,7 +407,7 @@ function Index() {
             {FEATURES.map((f) => (
               <div
                 key={f.title}
-                className="flex min-w-0 items-start gap-3 rounded-xl border border-border bg-card p-3.5"
+                className="lift flex min-w-0 items-start gap-3 rounded-xl border border-border bg-card p-3.5"
               >
                 <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                   <f.icon className="size-4" />
@@ -390,7 +423,11 @@ function Index() {
       </section>
 
       <section className="border-t border-border px-4 py-14 sm:px-6">
-        <div className="mx-auto max-w-6xl overflow-hidden rounded-3xl border border-primary/20 bg-[linear-gradient(120deg,color-mix(in_oklab,var(--color-primary)_12%,var(--color-card)),var(--color-card))] p-8 text-center shadow-[var(--shadow-elegant)] sm:p-12">
+        <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl border border-primary/20 bg-[linear-gradient(120deg,color-mix(in_oklab,var(--color-primary)_14%,var(--color-card)),var(--color-card))] p-8 text-center shadow-[var(--shadow-elegant)] sm:p-12">
+          <div
+            aria-hidden
+            className="blob pointer-events-none -top-24 left-1/2 size-[22rem] -translate-x-1/2 bg-[color-mix(in_oklab,var(--color-primary)_25%,transparent)] opacity-50"
+          />
           <h2 className="font-display text-2xl font-normal md:text-3xl">
             Pronto para a próxima reunião produtiva?
           </h2>
