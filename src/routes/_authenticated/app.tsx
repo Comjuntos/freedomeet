@@ -699,9 +699,39 @@ function Dashboard() {
         </button>
       </header>
 
-      <main className="mx-auto grid w-full max-w-6xl gap-6 px-4 py-6 sm:gap-8 sm:px-6 sm:py-8 lg:grid-cols-2">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-3 py-4 sm:px-6 sm:py-6 lg:flex-row lg:gap-6">
+        {/* RAIL DE NAVEGAÇÃO (estilo Teams) */}
+        <nav className="lg:sticky lg:top-[4.5rem] lg:h-fit lg:w-[13.5rem] lg:shrink-0">
+          <div className="-mx-3 flex gap-1 overflow-x-auto px-3 pb-1 lg:mx-0 lg:flex-col lg:overflow-visible lg:rounded-2xl lg:border lg:border-border/60 lg:bg-card/60 lg:p-2 lg:backdrop-blur">
+            {NAV.map((item) => {
+              const active = view === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setView(item.id)}
+                  aria-current={active ? "page" : undefined}
+                  className={`relative flex shrink-0 items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors lg:w-full ${
+                    active
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  }`}
+                >
+                  <span
+                    className={`absolute left-0 top-1/2 hidden h-6 w-[3px] -translate-y-1/2 rounded-full bg-primary lg:block ${
+                      active ? "opacity-100" : "opacity-0"
+                    }`}
+                  />
+                  <item.icon className="size-[1.15rem] shrink-0" />
+                  <span className="whitespace-nowrap">{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+
+        <main className="grid min-w-0 flex-1 gap-6 sm:gap-8 lg:grid-cols-2">
         {/* EQUIPES */}
-        <section className="min-w-0 lg:col-span-2">
+        <section className={`min-w-0 lg:col-span-2 ${view === "equipes" ? "" : "hidden"}`}>
           <TooltipProvider>
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
