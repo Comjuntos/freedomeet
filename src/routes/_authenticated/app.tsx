@@ -700,9 +700,12 @@ function Dashboard() {
       </header>
 
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-3 py-4 sm:px-6 sm:py-6 lg:flex-row lg:gap-6">
-        {/* RAIL DE NAVEGAÇÃO (estilo Teams) */}
-        <nav className="lg:sticky lg:top-[4.5rem] lg:h-fit lg:w-[13.5rem] lg:shrink-0">
-          <div className="-mx-3 flex gap-1 overflow-x-auto px-3 pb-1 lg:mx-0 lg:flex-col lg:overflow-visible lg:rounded-2xl lg:border lg:border-border/60 lg:bg-card/60 lg:p-2 lg:backdrop-blur">
+        {/* RAIL DE NAVEGAÇÃO */}
+        <nav className="lg:sticky lg:top-[4.5rem] lg:h-fit lg:w-[15rem] lg:shrink-0">
+          <p className="mb-2 hidden px-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground lg:block">
+            Navegação
+          </p>
+          <div className="-mx-3 flex gap-1 overflow-x-auto px-3 pb-1 lg:mx-0 lg:flex-col lg:overflow-visible lg:rounded-2xl lg:border lg:border-primary/10 lg:bg-card/70 lg:p-2 lg:shadow-sm lg:backdrop-blur">
             {NAV.map((item) => {
               const active = view === item.id;
               return (
@@ -710,19 +713,33 @@ function Dashboard() {
                   key={item.id}
                   onClick={() => setView(item.id)}
                   aria-current={active ? "page" : undefined}
-                  className={`relative flex shrink-0 items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors lg:w-full ${
+                  title={item.desc}
+                  className={`group relative flex shrink-0 items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-all lg:w-full ${
                     active
                       ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                      : "text-muted-foreground hover:bg-primary/5 hover:text-foreground"
                   }`}
                 >
                   <span
-                    className={`absolute left-0 top-1/2 hidden h-6 w-[3px] -translate-y-1/2 rounded-full bg-primary lg:block ${
+                    className={`absolute left-0 top-1/2 hidden h-7 w-[3px] -translate-y-1/2 rounded-full bg-primary transition-opacity lg:block ${
                       active ? "opacity-100" : "opacity-0"
                     }`}
                   />
-                  <item.icon className="size-[1.15rem] shrink-0" />
-                  <span className="whitespace-nowrap">{item.label}</span>
+                  <span
+                    className={`grid size-9 shrink-0 place-items-center rounded-xl transition-colors ${
+                      active
+                        ? "bg-primary text-primary-foreground shadow-sm shadow-primary/30"
+                        : "bg-primary/10 text-primary group-hover:bg-primary/15"
+                    }`}
+                  >
+                    <item.icon className="size-[1.05rem]" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block whitespace-nowrap">{item.label}</span>
+                    <span className="hidden truncate text-[0.7rem] font-normal text-muted-foreground lg:block">
+                      {item.desc}
+                    </span>
+                  </span>
                 </button>
               );
             })}
@@ -730,6 +747,61 @@ function Dashboard() {
         </nav>
 
         <main className="grid min-w-0 flex-1 gap-6 sm:gap-8 lg:grid-cols-2">
+        {/* AÇÕES RÁPIDAS */}
+        <section className="min-w-0 lg:col-span-2">
+          <div className="rounded-3xl border border-primary/15 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-4 sm:p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0">
+                <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                  O que você quer fazer agora?
+                </h2>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                  Comece em um clique — reunião instantânea, novo time ou agendamento.
+                </p>
+              </div>
+            </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              <button
+                onClick={() =>
+                  openRoom(`reuniao-${Math.random().toString(36).slice(2, 8)}`)
+                }
+                className="flex items-center gap-3 rounded-2xl bg-primary px-4 py-3.5 text-left text-primary-foreground shadow-md shadow-primary/25 transition-all hover:brightness-105 active:scale-[0.98]"
+              >
+                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-white/20">
+                  <Video className="size-5" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-semibold">Reunião instantânea</span>
+                  <span className="block truncate text-xs opacity-80">Abrir sala agora</span>
+                </span>
+              </button>
+              <button
+                onClick={() => setView("equipes")}
+                className="flex items-center gap-3 rounded-2xl border border-primary/15 bg-card/80 px-4 py-3.5 text-left transition-all hover:border-primary/40 hover:shadow-sm active:scale-[0.98]"
+              >
+                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+                  <Users className="size-5" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-semibold text-foreground">Gerenciar equipe</span>
+                  <span className="block truncate text-xs text-muted-foreground">Membros e tarefas</span>
+                </span>
+              </button>
+              <button
+                onClick={() => setView("agenda")}
+                className="flex items-center gap-3 rounded-2xl border border-primary/15 bg-card/80 px-4 py-3.5 text-left transition-all hover:border-primary/40 hover:shadow-sm active:scale-[0.98]"
+              >
+                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+                  <CalendarClock className="size-5" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-semibold text-foreground">Agendar reunião</span>
+                  <span className="block truncate text-xs text-muted-foreground">Recorrência semanal</span>
+                </span>
+              </button>
+            </div>
+          </div>
+        </section>
         {/* EQUIPES */}
         <section className={`min-w-0 lg:col-span-2 ${view === "equipes" ? "" : "hidden"}`}>
           <TooltipProvider>
