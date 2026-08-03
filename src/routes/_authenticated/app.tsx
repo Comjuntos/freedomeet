@@ -60,14 +60,14 @@ type ViewId =
   | "agenda"
   | "competencias";
 
-const NAV: { id: ViewId; label: string; icon: typeof Users }[] = [
-  { id: "equipes", label: "Equipes", icon: Users },
-  { id: "salas", label: "Salas", icon: DoorOpen },
-  { id: "agenda", label: "Agenda", icon: CalendarClock },
-  { id: "historico", label: "Histórico", icon: History },
-  { id: "relatorios", label: "Relatórios", icon: BarChart3 },
-  { id: "gestor", label: "Gestor", icon: UserCheck },
-  { id: "competencias", label: "Competências", icon: Target },
+const NAV: { id: ViewId; label: string; desc: string; icon: typeof Users }[] = [
+  { id: "equipes", label: "Equipes", desc: "Membros e atividades", icon: Users },
+  { id: "salas", label: "Salas", desc: "Entrar em uma sala", icon: DoorOpen },
+  { id: "agenda", label: "Agenda", desc: "Reuniões recorrentes", icon: CalendarClock },
+  { id: "historico", label: "Histórico", desc: "Atas e gravações", icon: History },
+  { id: "relatorios", label: "Relatórios", desc: "Indicadores do time", icon: BarChart3 },
+  { id: "gestor", label: "Gestor", desc: "Produtividade por pessoa", icon: UserCheck },
+  { id: "competencias", label: "Competências", desc: "Mapa de habilidades", icon: Target },
 ];
 
 function MemberAvatar({
