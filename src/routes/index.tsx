@@ -127,7 +127,7 @@ function Index() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <header className="flex items-center justify-between gap-2 px-4 py-3 sm:px-6 sm:py-4">
+      <header className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b border-border/60 bg-background/70 px-4 py-3 backdrop-blur-xl sm:px-6 sm:py-4">
         <div className="flex min-w-0 items-center gap-2">
           <img src={logoUrl.url} alt="FreeduMeet" className="size-8 shrink-0 rounded-lg object-cover sm:size-9" />
           <span className="truncate font-display text-xl font-normal tracking-tight text-muted-foreground sm:text-[1.375rem]">
