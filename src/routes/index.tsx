@@ -308,30 +308,65 @@ function Index() {
         </div>
       </div>
 
-      <section className="border-t border-border bg-secondary/40 px-4 py-12 sm:px-6 sm:py-16">
-        <div className="mx-auto max-w-6xl">
-          <span className="text-sm font-medium text-primary">Como funciona</span>
-          <h2 className="mt-2 font-display text-2xl font-normal md:text-3xl">
-            Do convite à decisão em três passos
-          </h2>
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
-            {STEPS.map((s) => (
-              <div key={s.title} className="gradient-ring lift rounded-2xl p-6">
-                <span className="flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary ring-1 ring-primary/20">
+      <section className="relative overflow-hidden border-t border-border bg-secondary/40 px-4 py-14 sm:px-6 sm:py-20">
+        <div
+          aria-hidden
+          className="blob pointer-events-none -bottom-32 right-[-6%] size-[24rem] bg-[color-mix(in_oklab,var(--color-primary)_18%,transparent)] opacity-40"
+        />
+        <div className="relative mx-auto max-w-6xl">
+          <div className="max-w-2xl">
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/8 px-3 py-1 text-xs font-medium text-primary">
+              Como funciona
+            </span>
+            <h2 className="mt-3 font-display text-2xl font-normal tracking-[-0.02em] md:text-[2.1rem]">
+              Do convite à decisão em{" "}
+              <span className="bg-[linear-gradient(100deg,var(--color-primary),color-mix(in_oklab,var(--color-primary)_45%,var(--color-foreground)))] bg-clip-text text-transparent">
+                três passos
+              </span>
+            </h2>
+            <p className="mt-3 text-sm text-muted-foreground sm:text-base">
+              Sem treinamento, sem plugins. A equipe entra, conversa e sai com o próximo
+              passo definido.
+            </p>
+          </div>
+
+          <ol className="relative mt-12 grid gap-6 md:grid-cols-3">
+            {/* trilha conectando os passos no desktop */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-[16%] top-7 hidden h-px bg-[linear-gradient(90deg,transparent,color-mix(in_oklab,var(--color-primary)_45%,transparent),transparent)] md:block"
+            />
+            {STEPS.map((s, i) => (
+              <li
+                key={s.title}
+                className="lift group relative flex flex-col rounded-2xl border border-border bg-card/80 p-6 pt-10 backdrop-blur transition-colors hover:border-primary/40"
+              >
+                <span className="absolute -top-4 left-6 flex size-8 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground shadow-[0_10px_22px_-12px_color-mix(in_oklab,var(--color-primary)_90%,transparent)]">
+                  {i + 1}
+                </span>
+                <span className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:bg-primary/15">
                   <s.icon className="size-5" />
                 </span>
-                <h3 className="mt-4 font-display text-base font-medium">{s.title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{s.desc}</p>
-              </div>
+                <h3 className="mt-4 font-display text-base font-medium">
+                  {s.title.replace(/^\d+\.\s*/, "")}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
+              </li>
             ))}
+          </ol>
+
+          <div className="mt-10 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+            <button
+              onClick={createMeeting}
+              className="sheen inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground shadow-[0_14px_30px_-14px_color-mix(in_oklab,var(--color-primary)_80%,transparent)] transition-transform hover:-translate-y-0.5"
+            >
+              <span className="relative z-10">Testar agora, é grátis</span>
+              <ArrowRight className="relative z-10 size-4" />
+            </button>
+            <span className="text-xs text-muted-foreground">
+              Sem cartão de crédito · sala pronta em segundos
+            </span>
           </div>
-          <button
-            onClick={createMeeting}
-            className="mt-8 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-shadow hover:shadow-[var(--shadow-elegant)]"
-          >
-            Testar agora, é grátis
-            <ArrowRight className="size-4" />
-          </button>
         </div>
       </section>
 
