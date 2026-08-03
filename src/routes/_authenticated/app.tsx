@@ -51,6 +51,25 @@ const initials = (n: string) =>
     .map((p) => p[0]?.toUpperCase() ?? "")
     .join("");
 
+type ViewId =
+  | "equipes"
+  | "salas"
+  | "historico"
+  | "relatorios"
+  | "gestor"
+  | "agenda"
+  | "competencias";
+
+const NAV: { id: ViewId; label: string; icon: typeof Users }[] = [
+  { id: "equipes", label: "Equipes", icon: Users },
+  { id: "salas", label: "Salas", icon: DoorOpen },
+  { id: "agenda", label: "Agenda", icon: CalendarClock },
+  { id: "historico", label: "Histórico", icon: History },
+  { id: "relatorios", label: "Relatórios", icon: BarChart3 },
+  { id: "gestor", label: "Gestor", icon: UserCheck },
+  { id: "competencias", label: "Competências", icon: Target },
+];
+
 function MemberAvatar({
   member,
   url,
