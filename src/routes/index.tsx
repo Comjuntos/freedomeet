@@ -109,68 +109,65 @@ function Index() {
   };
 
   return (
-    <div className="aurora-bg flex min-h-screen flex-col bg-background text-foreground">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="flex items-center justify-between gap-2 px-4 py-3 sm:px-6 sm:py-4">
         <div className="flex min-w-0 items-center gap-2">
-          <img src={logoUrl.url} alt="FreeduMeet" className="size-8 shrink-0 rounded-xl object-cover sm:size-9" />
-          <span className="truncate font-display text-lg font-semibold tracking-tight sm:text-xl">FreeduMeet</span>
+          <img src={logoUrl.url} alt="FreeduMeet" className="size-8 shrink-0 rounded-lg object-cover sm:size-9" />
+          <span className="truncate font-display text-xl font-normal tracking-tight text-muted-foreground sm:text-[1.375rem]">
+            FreeduMeet
+          </span>
         </div>
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
           <span className="mr-2 hidden text-sm text-muted-foreground sm:block">
             {new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
           </span>
-          <button className="hidden rounded-full p-2.5 text-muted-foreground hover:bg-secondary sm:inline-flex" aria-label="Ajuda">
+          <button className="hidden rounded-full p-2.5 text-muted-foreground transition-colors hover:bg-secondary sm:inline-flex" aria-label="Ajuda">
             <HelpCircle className="size-5" />
           </button>
-          <button className="hidden rounded-full p-2.5 text-muted-foreground hover:bg-secondary sm:inline-flex" aria-label="Configurações">
+          <button className="hidden rounded-full p-2.5 text-muted-foreground transition-colors hover:bg-secondary sm:inline-flex" aria-label="Configurações">
             <Settings className="size-5" />
           </button>
           <Link
             to="/auth"
-            className="inline-flex items-center rounded-full border border-border px-3 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-secondary sm:ml-1 sm:px-4 sm:py-2"
+            className="inline-flex items-center rounded-full px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/8"
           >
             Entrar
           </Link>
           <Link
             to="/manual"
-            className="inline-flex items-center rounded-full border border-border px-3 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-secondary sm:ml-1 sm:px-4 sm:py-2"
+            className="inline-flex items-center rounded-full px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/8"
           >
             Manual
           </Link>
           <Link
             to="/app"
-            className="inline-flex items-center rounded-full bg-gradient-to-r from-primary to-accent px-3 py-1.5 text-sm font-semibold text-primary-foreground transition-transform hover:scale-105 sm:ml-1 sm:px-4 sm:py-2"
+            className="inline-flex items-center rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-none transition-shadow hover:shadow-[var(--shadow-glow)]"
           >
             Painel
           </Link>
         </div>
       </header>
 
-      <main className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-12 px-4 py-8 sm:px-6 md:grid-cols-2">
+      <main className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-12 px-4 py-10 sm:px-6 md:grid-cols-2">
         <div className="w-full max-w-md min-w-0">
-          <span className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-            Soberania Nacional
-          </span>
-          <h1 className="mt-5 text-[2rem] font-semibold leading-[1.05] tracking-tight sm:text-4xl md:text-6xl">
-            Reuniões que{" "}
-            <span className="text-gradient">pensam</span> com você
+          <h1 className="font-display text-[2.25rem] font-normal leading-[1.15] tracking-[-0.01em] sm:text-[2.75rem] md:text-[3.25rem]">
+            Videochamadas e reuniões para todos
           </h1>
-          <p className="mt-5 text-base text-muted-foreground sm:text-lg">
-            Conecte-se, colabore e comemore de qualquer lugar. Escolha o plano ideal —
-            do Gratuito ao Empresarial — e pague menos do que nas grandes plataformas.
+          <p className="mt-4 text-base font-normal text-muted-foreground sm:text-lg">
+            Conecte-se, colabore e comemore de qualquer lugar com o FreeduMeet.
           </p>
 
-          <div className="mt-8 flex flex-col items-stretch gap-4 sm:flex-row sm:items-center">
+          <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
             <button
               onClick={createMeeting}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-primary to-accent px-6 py-3 font-semibold text-primary-foreground glow transition-transform hover:scale-105"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-shadow hover:shadow-[var(--shadow-elegant)]"
             >
               <Video className="size-5" />
               Nova reunião
             </button>
 
             <div className="flex min-w-0 items-center gap-2">
-              <div className="glass flex min-w-0 flex-1 items-center gap-2 rounded-full px-4 py-2.5">
+              <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-input px-4 py-2.5 transition-colors focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
                 <Keyboard className="size-5 text-muted-foreground" />
                 <input
                   value={code}
@@ -183,7 +180,7 @@ function Index() {
               <button
                 onClick={joinMeeting}
                 disabled={!code.trim()}
-                className="shrink-0 px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-secondary/70 rounded-md disabled:text-muted-foreground disabled:opacity-60"
+                className="shrink-0 rounded-full px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/8 disabled:text-muted-foreground disabled:opacity-60 disabled:hover:bg-transparent"
               >
                 Participar
               </button>
@@ -192,7 +189,7 @@ function Index() {
 
           <hr className="mt-8 border-border" />
           <p className="mt-4 text-sm text-muted-foreground">
-            <a className="text-primary hover:underline" href="#planos">Saiba mais</a> sobre o Meet
+            <a className="text-primary hover:underline" href="#planos">Saiba mais</a> sobre o FreeduMeet
           </p>
 
           <dl className="mt-8 grid grid-cols-3 gap-4">
@@ -202,7 +199,7 @@ function Index() {
               { k: "IA", v: "ata automática" },
             ].map((s) => (
               <div key={s.v}>
-                <dt className="text-gradient font-display text-2xl font-bold">{s.k}</dt>
+                <dt className="font-display text-2xl font-normal text-primary">{s.k}</dt>
                 <dd className="text-xs text-muted-foreground">{s.v}</dd>
               </div>
             ))}
