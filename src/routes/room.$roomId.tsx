@@ -636,11 +636,21 @@ function Room() {
       // usuário já entre na sala com ambos ativados. Falhas são ignoradas:
       // o Jitsi refaz o pedido internamente se necessário.
       (async () => {
-        try {
-          const stream = await navigator.mediaDevices?.getUserMedia({ audio: true, video: true });
+        // Firefox/Safari falham a requisição inteira quando um dos dispositivos
+        // não existe; por isso há um segundo pedido apenas de áudio.
+        const ask = async (constraints: MediaStreamConstraints) => {
+          const stream = await navigator.mediaDevices?.getUserMedia(constraints);
           stream?.getTracks().forEach((t) => t.stop());
+        };
+        if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) return;
+        try {
+          await ask({ audio: true, video: true });
         } catch {
-          /* usuário pode negar ou o dispositivo pode não existir */
+          try {
+            await ask({ audio: true });
+          } catch {
+            /* usuário negou ou não há dispositivos disponíveis */
+          }
         }
       })(),
     ])
