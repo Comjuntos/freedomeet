@@ -109,6 +109,8 @@
 @utility glass {
   background: var(--card);
   border: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 @utility glow {
