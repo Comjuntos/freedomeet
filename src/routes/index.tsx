@@ -366,6 +366,29 @@ function Index() {
         </div>
       </section>
 
+      {/* Recursos em formato compacto: informa sem competir com os planos. */}
+      <section className="border-t border-border px-4 py-10 sm:px-6 sm:py-12">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="font-display text-lg font-medium">Tudo isso está incluído</h2>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            {FEATURES.map((f) => (
+              <div
+                key={f.title}
+                className="flex min-w-0 items-start gap-3 rounded-xl border border-border bg-card p-3.5"
+              >
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <f.icon className="size-4" />
+                </span>
+                <div className="min-w-0">
+                  <h3 className="truncate text-sm font-medium">{f.title}</h3>
+                  <p className="text-xs text-muted-foreground">{f.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="border-t border-border px-4 py-14 sm:px-6">
         <div className="mx-auto max-w-6xl overflow-hidden rounded-3xl border border-primary/20 bg-[linear-gradient(120deg,color-mix(in_oklab,var(--color-primary)_12%,var(--color-card)),var(--color-card))] p-8 text-center shadow-[var(--shadow-elegant)] sm:p-12">
           <h2 className="font-display text-2xl font-normal md:text-3xl">
