@@ -304,41 +304,21 @@ function Index() {
         </div>
       </section>
 
-      <section className="border-t border-border px-4 py-12 sm:px-6 sm:py-16">
+      <section
+        id="planos"
+        className="border-t border-border bg-[linear-gradient(180deg,color-mix(in_oklab,var(--color-primary)_7%,var(--color-background)),var(--color-background))] px-4 py-16 sm:px-6 sm:py-20"
+      >
         <div className="mx-auto max-w-6xl">
-          <span className="text-sm font-medium text-primary">Recursos</span>
-          <h2 className="mt-2 font-display text-2xl font-normal md:text-3xl">
-            Por que escolher o FreeduMeet
-          </h2>
-          <p className="mt-2 max-w-xl text-muted-foreground">
-            Muito além de uma chamada de vídeo: recursos de IA que economizam
-            seu tempo em cada reunião.
-          </p>
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map((f) => (
-              <div
-                key={f.title}
-                className="rounded-xl border border-border bg-card p-6 transition-shadow hover:shadow-[var(--shadow-elegant)]"
-              >
-                <div className="flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <f.icon className="size-6" />
-                </div>
-                <h3 className="mt-4 font-display text-base font-medium">{f.title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{f.desc}</p>
-              </div>
-            ))}
+          <div className="text-center">
+            <span className="text-sm font-medium text-primary">Planos</span>
+            <h2 className="mt-2 font-display text-3xl font-normal md:text-4xl">
+              Escolha o plano da sua equipe
+            </h2>
+            <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
+              Preços pensados para o mercado brasileiro, sempre cerca de 20% mais baratos
+              que as principais plataformas de videoconferência.
+            </p>
           </div>
-        </div>
-      </section>
-
-      <section id="planos" className="border-t border-border px-4 py-12 sm:px-6 sm:py-16">
-        <div className="mx-auto max-w-6xl">
-          <span className="text-sm font-medium text-primary">Planos</span>
-          <h2 className="mt-2 font-display text-2xl font-normal md:text-3xl">Planos e assinaturas</h2>
-          <p className="mt-2 max-w-xl text-muted-foreground">
-            Preços pensados para o mercado brasileiro, sempre cerca de 20% mais baratos
-            que as principais plataformas de videoconferência.
-          </p>
           <div className="mt-10 grid gap-6 lg:grid-cols-3">
             {PLANS.map((plan) => (
               <div
