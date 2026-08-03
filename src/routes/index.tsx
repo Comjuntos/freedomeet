@@ -207,41 +207,21 @@ function Index() {
         </div>
 
         <div className="flex w-full min-w-0 flex-col items-center justify-center overflow-hidden text-center">
-          <div className="relative flex size-64 shrink-0 items-center justify-center [--orbit-r:112px] sm:size-80 sm:[--orbit-r:172px]">
-            {/* soft Meet-style disc */}
-            <div className="absolute size-56 rounded-full bg-primary/8 sm:size-72" />
-            <div className="absolute size-44 rounded-full border border-border sm:size-60" />
+          <div className="relative flex size-64 shrink-0 items-center justify-center sm:size-80">
+            {/* 3D blue halo */}
+            <div className="absolute size-60 rounded-full bg-[radial-gradient(circle_at_30%_25%,var(--color-primary)_0%,transparent_62%)] opacity-25 blur-2xl sm:size-76" />
+            <div className="absolute size-56 rounded-full bg-[linear-gradient(150deg,color-mix(in_oklab,var(--color-primary)_22%,transparent),transparent_70%)] shadow-[inset_0_-14px_30px_color-mix(in_oklab,var(--color-primary)_28%,transparent),0_30px_60px_-20px_color-mix(in_oklab,var(--color-primary)_45%,transparent)] sm:size-72" />
+            <div className="absolute size-44 rounded-full border border-primary/20 sm:size-60" />
 
-            {/* logo core */}
-            <div className="relative flex size-40 items-center justify-center rounded-full bg-card shadow-[var(--shadow-elegant)] sm:size-52">
+            {/* logo core — glossy 3D sphere */}
+            <div className="relative flex size-40 items-center justify-center rounded-full bg-[linear-gradient(160deg,var(--color-card),color-mix(in_oklab,var(--color-primary)_12%,var(--color-card)))] shadow-[inset_0_2px_2px_rgba(255,255,255,0.9),inset_0_-18px_28px_-12px_color-mix(in_oklab,var(--color-primary)_40%,transparent),0_24px_44px_-16px_color-mix(in_oklab,var(--color-primary)_50%,transparent)] sm:size-52">
+              <span className="pointer-events-none absolute inset-x-6 top-3 h-10 rounded-full bg-white/70 blur-md sm:inset-x-8 sm:top-4 sm:h-12" />
               <img
                 src={logoTransparentUrl.url}
                 alt="FreeduMeet"
-                className="size-28 object-contain sm:size-36"
+                className="relative size-28 object-contain drop-shadow-[0_8px_14px_color-mix(in_oklab,var(--color-primary)_35%,transparent)] sm:size-36"
               />
             </div>
-
-            {/* orbiting feature labels */}
-            {FEATURES.map((f, i) => {
-              const delay = -(i / FEATURES.length) * 44;
-              return (
-                <div
-                  key={f.title}
-                  style={{
-                    animation: "orbit 44s linear infinite",
-                    animationDelay: `${delay}s`,
-                  }}
-                  className="absolute left-1/2 top-1/2"
-                >
-                  <span
-                    className="flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 whitespace-nowrap text-[9px] font-medium text-muted-foreground sm:gap-1.5 sm:text-xs"
-                  >
-                    <f.icon className="size-3 shrink-0 text-primary sm:size-3.5" />
-                    {f.title}
-                  </span>
-                </div>
-              );
-            })}
           </div>
           <h2 className="mt-10 font-display text-lg font-normal sm:text-xl">Receba um link para compartilhar</h2>
           <p className="mt-2 max-w-sm text-sm text-muted-foreground">
