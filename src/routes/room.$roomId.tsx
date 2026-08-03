@@ -49,6 +49,17 @@ export const Route = createFileRoute("/room/$roomId")({
     meta: [{ title: "Sala — FreeduMeet" }],
   }),
   component: Room,
+  errorComponent: ({ error }) => (
+    <div className="p-8 flex flex-col items-center justify-center min-h-screen bg-background text-foreground">
+      <h1 className="text-2xl font-bold text-red-500 mb-4">A tela quebrou! (Erro Técnico)</h1>
+      <pre className="bg-red-500/10 text-red-500 p-4 rounded-md text-sm whitespace-pre-wrap max-w-4xl overflow-auto w-full border border-red-500/20">
+        {error instanceof Error ? `${error.message}\n\n${error.stack}` : String(error)}
+      </pre>
+      <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg">
+        Tentar novamente
+      </button>
+    </div>
+  ),
 });
 
 declare global {
@@ -86,12 +97,12 @@ const SOURCE_LANGS = [
 ];
 const TARGET_LANGS = [
   { code: "", label: "Sem tradução" },
-  { code: "Português", label: "Português" },
-  { code: "Inglês", label: "Inglês" },
-  { code: "Espanhol", label: "Espanhol" },
-  { code: "Francês", label: "Francês" },
-  { code: "Alemão", label: "Alemão" },
-  { code: "Italiano", label: "Italiano" },
+  { code: "pt", label: "Português" },
+  { code: "en", label: "Inglês" },
+  { code: "es", label: "Espanhol" },
+  { code: "fr", label: "Francês" },
+  { code: "de", label: "Alemão" },
+  { code: "it", label: "Italiano" },
 ];
 
 const MINUTES_TEMPLATES = [
@@ -101,10 +112,12 @@ const MINUTES_TEMPLATES = [
 ];
 
 interface Caption {
-  id: number;
+  id: string;
   original: string;
   translated?: string;
   t?: number;
+  peerName?: string;
+  senderId?: string;
 }
 
 function VideoTile({ stream, name, isLocal }: { stream: MediaStream | null; name: string; isLocal?: boolean }) {
@@ -154,6 +167,31 @@ function Room() {
   const listeningRef = useRef(false);
   const targetRef = useRef(targetLang);
   const idRef = useRef(0);
+
+  const handleRemoteCaption = useCallback((payload: any) => {
+    setCaptions((prev) => {
+      const existing = prev.find((c) => c.id === payload.id);
+      if (existing) {
+        return prev.map((c) => (c.id === payload.id ? { ...c, ...payload } : c));
+      }
+      return [...prev, payload];
+    });
+  }, []);
+
+  const {
+    localStream,
+    remotePeers,
+    participantCount,
+    isMuted,
+    isVideoOff,
+    isScreenSharing,
+    toggleMute,
+    toggleVideo,
+    toggleScreenShare,
+    leaveRoom,
+    broadcastCaption,
+    peerId
+  } = useWebRTC(roomId, name, handleRemoteCaption);
 
   // Apenas quem criou a sala é o administrador (host) da reunião.
   useEffect(() => {
@@ -214,7 +252,7 @@ function Room() {
   const autoRanRef = useRef(false);
 
   const openDashboard = useCallback(async () => {
-    const segments = captions.map((c) => c.original).filter(Boolean);
+    const segments = captions.map((c) => `${c.peerName || 'Você'}: ${c.original}`).filter(Boolean);
     const transcript = segments.join("\n").trim();
     setShowDashboard(true);
     if (!transcript) {
@@ -264,7 +302,7 @@ function Room() {
 
   const analyze = useCallback(async () => {
     const transcript = captions
-      .map((c) => c.original)
+      .map((c) => `${c.peerName || 'Você'}: ${c.original}`)
       .join("\n")
       .trim();
     setShowSentiment(true);
@@ -289,46 +327,42 @@ function Room() {
 
   const generateAta = useCallback(async () => {
     const transcript = captions
-      .map((c) => c.original)
+      .map((c) => `${c.peerName || 'Você'}: ${c.original}`)
       .join("\n")
       .trim();
-    const members = membersInput
-      .split("\n")
-      .map((m) => m.trim())
-      .filter(Boolean);
-    if (members.length === 0) {
-      setMinutesError(
-        "Informe os membros da reunião (nome completo de cada um, um por linha).",
-      );
-      setShowMinutes(true);
-      return;
-    }
+    let members = [name || "Você", ...remotePeers.map((p) => p.name)].filter(Boolean);
+    
     if (!transcript) {
-      setMinutesError(
-        "Não há transcrição ainda. Ative a transcrição e fale durante a reunião.",
-      );
-      setShowMinutes(true);
+      toast.error("Nenhuma fala foi capturada ainda. Fale no microfone durante a reunião.");
       return;
     }
-    setShowMinutes(true);
+    
     setMinutesLoading(true);
-    setMinutesError(null);
-    setMinutesText("");
+    const loadingToastId = toast.loading("Gerando a ata da reunião...");
     try {
       const startedAt =
         startTimeRef.current !== null
           ? new Date(startTimeRef.current).toLocaleString("pt-BR")
           : undefined;
       const res = await makeMinutes({
-        data: { transcript, template: minutesTemplate, title: roomId, members, startedAt },
+        data: { transcript, template: "executiva", title: roomId, members, startedAt },
       });
-      setMinutesText(res.minutes);
+      
+      const mdBlob = new Blob([res.minutes], { type: "text/markdown;charset=utf-8" });
+      const objectUrlMd = URL.createObjectURL(mdBlob);
+      const a = document.createElement("a");
+      a.href = objectUrlMd;
+      a.download = `ata-${roomId}.md`;
+      a.click();
+      URL.revokeObjectURL(objectUrlMd);
+      
+      toast.success("Ata gerada e baixada com sucesso!", { id: loadingToastId });
     } catch {
-      setMinutesError("Não foi possível gerar a ata. Tente novamente.");
+      toast.error("Não foi possível gerar a ata. Tente novamente.", { id: loadingToastId });
     } finally {
       setMinutesLoading(false);
     }
-  }, [captions, makeMinutes, minutesTemplate, roomId, membersInput]);
+  }, [captions, name, remotePeers, makeMinutes, roomId]);
 
   // Carrega as equipes e membros do usuário para o envio ao Kanban.
   useEffect(() => {
@@ -362,7 +396,7 @@ function Room() {
       return;
     }
     const source = minutesText.trim() ||
-      captions.map((c) => c.original).join("\n").trim();
+      captions.map((c) => `${c.peerName || 'Você'}: ${c.original}`).join("\n").trim();
     if (!source) {
       toast.error("Gere a ata ou ative a transcrição antes de extrair as ações.");
       return;
@@ -461,7 +495,7 @@ function Room() {
       if (!minutes.trim()) return;
       setSaving(true);
       setSaveStatus(null);
-      const transcript = captions.map((c) => c.original).join("\n").trim();
+      const transcript = captions.map((c) => `${c.peerName || 'Você'}: ${c.original}`).join("\n").trim();
       try {
         await saveRecord({
           data: {
@@ -493,53 +527,8 @@ function Room() {
     targetRef.current = targetLang;
   }, [targetLang]);
 
-  // Ao encerrar a reunião, o administrador recebe automaticamente a ata
-  // gerada a partir da transcrição — sem cliques.
-  useEffect(() => {
-    if (!ended || !isHost || autoRanRef.current) return;
-    autoRanRef.current = true;
-    const transcript = captions
-      .map((c) => c.original)
-      .join("\n")
-      .trim();
-    if (!transcript) {
-      setEndError(
-        "Nenhuma transcrição foi capturada nesta reunião, então não há ata para gerar.",
-      );
-      return;
-    }
-    setEndLoading(true);
-    (async () => {
-      try {
-        const startedAt =
-          startTimeRef.current !== null
-            ? new Date(startTimeRef.current).toLocaleString("pt-BR")
-            : undefined;
-        const res = await makeMinutes({
-          data: { transcript, template: "executiva", title: roomId, startedAt },
-        });
-        setEndMinutes(res.minutes);
-      } catch {
-        setEndError("Não foi possível gerar a ata automática. Tente gerar manualmente.");
-      } finally {
-        setEndLoading(false);
-      }
-    })();
-  }, [ended, isHost, captions, makeMinutes, roomId]);
-
-  // Meeting duration timer: starts once the room mounts, stops when it ends.
-  useEffect(() => {
-    if (startTimeRef.current === null) startTimeRef.current = Date.now();
-    if (ended) return;
-    const tick = () => {
-      if (startTimeRef.current !== null) {
-        setElapsed(Math.floor((Date.now() - startTimeRef.current) / 1000));
-      }
-    };
-    tick();
-    const interval = setInterval(tick, 1000);
-    return () => clearInterval(interval);
-  }, [ended]);
+  const [downloadUrlDocx, setDownloadUrlDocx] = useState<string | null>(null);
+  const [downloadUrlMd, setDownloadUrlMd] = useState<string | null>(null);
 
   const startListening = useCallback(() => {
     const Ctor = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -557,29 +546,35 @@ function Room() {
         if (!r.isFinal) continue;
         const raw = r[0].transcript.trim();
         if (!raw) continue;
-        const id = ++idRef.current;
+        const id = `${name || "Você"}-${++idRef.current}`;
         const t =
           startTimeRef.current !== null
             ? Math.floor((Date.now() - startTimeRef.current) / 1000)
             : 0;
-        setCaptions((prev) => [...prev, { id, original: raw, t }]);
+        const captionData: Caption = { id, original: raw, t, peerName: name || "Convidado", senderId: peerId };
+        setCaptions((prev) => [...prev, captionData]);
+        broadcastCaption(captionData);
         // Polish the raw speech-to-text into natural, punctuated text,
         // then translate the polished version.
         punctuate({ data: { text: raw, lang: sourceLang } })
           .then((res) => {
             const clean = res.text || raw;
+            const cleanData = { ...captionData, original: clean };
             setCaptions((prev) =>
-              prev.map((c) => (c.id === id ? { ...c, original: clean } : c)),
+              prev.map((c) => (c.id === id ? cleanData : c)),
             );
+            broadcastCaption(cleanData);
             const target = targetRef.current;
             if (target) {
               translate({ data: { text: clean, target } })
                 .then((tr) => {
+                  const finalData = { ...cleanData, translated: tr.translation };
                   setCaptions((prev) =>
                     prev.map((c) =>
-                      c.id === id ? { ...c, translated: tr.translation } : c,
+                      c.id === id ? finalData : c,
                     ),
                   );
+                  broadcastCaption(finalData);
                 })
                 .catch(() => {});
             }
@@ -621,16 +616,109 @@ function Room() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sourceLang]);
 
-  const {
-    localStream,
-    remotePeers,
-    isMuted,
-    isVideoOff,
-    isScreenSharing,
-    toggleMute,
-    toggleVideo,
-    toggleScreenShare
-  } = useWebRTC(roomId, name);
+  // Auto-iniciar a transcrição/Whisper assim que entrar na chamada
+  useEffect(() => {
+    if (name && !listening && !ended && !unsupported) {
+      const timer = setTimeout(() => {
+        startListening();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [name, listening, ended, unsupported, startListening]);
+
+  // Ao encerrar a reunião (ou ser o último a sair), gera a ata automaticamente a partir da transcrição
+  useEffect(() => {
+    if (!ended || autoRanRef.current) return;
+    autoRanRef.current = true;
+    const transcript = captions
+      .map((c) => c.original)
+      .join("\n")
+      .trim();
+    if (!transcript) {
+      setEndError(
+        "Nenhuma transcrição foi capturada nesta reunião. Certifique-se de falar com o microfone ligado.",
+      );
+      return;
+    }
+    setEndLoading(true);
+    (async () => {
+      try {
+        const startedAt =
+          startTimeRef.current !== null
+            ? new Date(startTimeRef.current).toLocaleString("pt-BR")
+            : undefined;
+        const res = await makeMinutes({
+          data: { transcript, template: "executiva", title: roomId, startedAt },
+        });
+        setEndMinutes(res.minutes);
+      } catch {
+        setEndError("Não foi possível gerar a ata automática. Tente gerar manualmente.");
+      } finally {
+        setEndLoading(false);
+      }
+    })();
+  }, [ended, captions, makeMinutes, roomId]);
+
+  // Gera os links diretos para download (DOCX e MD) da ata assim que pronta
+  useEffect(() => {
+    if (!endMinutes) return;
+    let objectUrlDocx: string | null = null;
+    let objectUrlMd: string | null = null;
+
+    (async () => {
+      try {
+        const { Document, Packer, Paragraph, TextRun, HeadingLevel } = await import("docx");
+        const paragraphs = endMinutes.split("\n").map((raw) => {
+          const line = raw.trimEnd();
+          if (line.startsWith("# "))
+            return new Paragraph({ heading: HeadingLevel.HEADING_1, children: [new TextRun(line.slice(2))] });
+          if (line.startsWith("## "))
+            return new Paragraph({ heading: HeadingLevel.HEADING_2, children: [new TextRun(line.slice(3))] });
+          if (line.startsWith("### "))
+            return new Paragraph({ heading: HeadingLevel.HEADING_3, children: [new TextRun(line.slice(4))] });
+          if (/^\s*[-*]\s+/.test(line))
+            return new Paragraph({ bullet: { level: 0 }, children: [new TextRun(line.replace(/^\s*[-*]\s+/, ""))] });
+          const parts = line.split(/(\*\*[^*]+\*\*)/g).filter(Boolean);
+          const runs = parts.map((p) =>
+            p.startsWith("**") && p.endsWith("**")
+              ? new TextRun({ text: p.slice(2, -2), bold: true })
+              : new TextRun(p),
+          );
+          return new Paragraph({ children: runs.length ? runs : [new TextRun("")] });
+        });
+        const doc = new Document({ sections: [{ children: paragraphs }] });
+        const blob = await Packer.toBlob(doc);
+        objectUrlDocx = URL.createObjectURL(blob);
+        setDownloadUrlDocx(objectUrlDocx);
+      } catch {
+        // Fallback se erro no DOCX
+      }
+    })();
+
+    const mdBlob = new Blob([endMinutes], { type: "text/markdown;charset=utf-8" });
+    objectUrlMd = URL.createObjectURL(mdBlob);
+    setDownloadUrlMd(objectUrlMd);
+
+    return () => {
+      if (objectUrlDocx) URL.revokeObjectURL(objectUrlDocx);
+      if (objectUrlMd) URL.revokeObjectURL(objectUrlMd);
+    };
+  }, [endMinutes]);
+
+  // Meeting duration timer: starts once the room mounts, stops when it ends.
+  useEffect(() => {
+    if (startTimeRef.current === null) startTimeRef.current = Date.now();
+    if (ended) return;
+    const tick = () => {
+      if (startTimeRef.current !== null) {
+        setElapsed(Math.floor((Date.now() - startTimeRef.current) / 1000));
+      }
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [ended]);
+
 
   return (
     <div className="aurora-bg flex h-screen flex-col bg-background text-foreground">
@@ -645,25 +733,32 @@ function Room() {
           <div>
             <h1 className="text-2xl font-semibold">Você saiu da reunião</h1>
             <p className="mt-2 text-muted-foreground">
-              Obrigado por usar o FreeduMeet.
+              Obrigado por usar o FreeduMeet. Sua câmera e microfone foram desligados.
             </p>
             <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm font-medium">
               <Clock className="size-4 text-primary" />
               Duração total: {formatDuration(elapsed)}
             </p>
           </div>
-          {isHost && (endLoading || endMinutes || endError) && (
+          {(endLoading || endMinutes || endError) && (
             <div className="w-full max-w-2xl text-left">
               <div className="flex max-h-[50vh] flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-                <div className="flex items-center gap-2 border-b border-border px-5 py-3 font-medium">
-                  <FileText className="size-4 text-primary" />
-                  Ata inteligente da reunião
+                <div className="flex items-center justify-between border-b border-border px-5 py-3 font-medium">
+                  <div className="flex items-center gap-2">
+                    <FileText className="size-4 text-primary" />
+                    Ata inteligente da reunião (Whisper)
+                  </div>
+                  {remotePeers.length === 0 && (
+                    <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                      Última pessoa a sair da chamada
+                    </span>
+                  )}
                 </div>
                 <div className="flex-1 overflow-y-auto px-5 py-4 text-sm">
                   {endLoading ? (
                     <p className="flex items-center gap-2 text-muted-foreground">
-                      <Loader2 className="size-4 animate-spin" />
-                      Gerando a ata automaticamente a partir da transcrição…
+                      <Loader2 className="size-4 animate-spin text-primary" />
+                      O Whisper está gerando a ata da reunião a partir do áudio gravado…
                     </p>
                   ) : endError ? (
                     <p className="text-muted-foreground">{endError}</p>
@@ -675,19 +770,35 @@ function Room() {
                 </div>
                 {endMinutes && !endLoading && (
                   <div className="flex flex-wrap items-center gap-2 border-t border-border px-5 py-3">
+                    {downloadUrlDocx && (
+                      <a
+                        href={downloadUrlDocx}
+                        download={`ata-${roomId}.docx`}
+                        className="flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                      >
+                        <Download className="size-4" />
+                        Baixar Ata (.docx)
+                      </a>
+                    )}
+                    {downloadUrlMd && (
+                      <a
+                        href={downloadUrlMd}
+                        download={`ata-${roomId}.md`}
+                        className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
+                      >
+                        <Download className="size-4" />
+                        Baixar Markdown (.md)
+                      </a>
+                    )}
                     <button
-                      onClick={() => navigator.clipboard?.writeText(endMinutes)}
+                      onClick={() => {
+                        navigator.clipboard?.writeText(endMinutes);
+                        toast.success("Ata copiada para a área de transferência!");
+                      }}
                       className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
                     >
                       <Copy className="size-4" />
-                      Copiar
-                    </button>
-                    <button
-                      onClick={() => downloadAta(endMinutes)}
-                      className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
-                    >
-                      <Download className="size-4" />
-                      Baixar
+                      Copiar Ata
                     </button>
                     <button
                       onClick={() => saveToHistory(endMinutes)}
@@ -783,116 +894,100 @@ function Room() {
         </div>
       ) : (
         <div className="relative flex flex-1 flex-col overflow-hidden">
-          <div className="flex-1 grid gap-4 p-4 overflow-y-auto" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gridAutoRows: "minmax(300px, 1fr)" }}>
-            <VideoTile stream={localStream} name={name || "Você"} isLocal />
-            {remotePeers.map(peer => (
-              <VideoTile key={peer.id} stream={peer.stream} name={peer.name} />
-            ))}
-          </div>
-          <div className="flex shrink-0 items-center justify-center gap-4 bg-background p-4 border-t border-border z-10">
-            <button onClick={toggleMute} className={`rounded-full p-3 ${isMuted ? 'bg-destructive text-white' : 'bg-secondary'}`}>
-              {isMuted ? <MicOff className="size-5" /> : <Mic className="size-5" />}
-            </button>
-            <button onClick={toggleVideo} className={`rounded-full p-3 ${isVideoOff ? 'bg-destructive text-white' : 'bg-secondary'}`}>
-              {isVideoOff ? <VideoOff className="size-5" /> : <VideoIcon className="size-5" />}
-            </button>
-            <button onClick={toggleScreenShare} className={`rounded-full p-3 ${isScreenSharing ? 'bg-primary text-white' : 'bg-secondary'}`}>
-              <MonitorUp className="size-5" />
-            </button>
-            <button onClick={() => setEnded(true)} className="rounded-full bg-destructive px-6 py-3 font-semibold text-white">
-              Sair
-            </button>
-          </div>
-          <div className="pointer-events-none absolute left-4 top-4 z-10 flex items-center gap-2 rounded-full bg-black/60 px-3 py-1.5 text-sm font-medium text-white">
-            <Clock className="size-4" />
-            {formatDuration(elapsed)}
-          </div>
-          {showCaptions && (
-            <aside className="absolute bottom-24 right-0 top-0 z-20 flex w-full flex-col border-l border-border bg-card sm:static sm:bottom-auto sm:top-auto sm:z-10 sm:w-80">
-              <div className="flex items-center justify-between border-b border-border px-4 py-3">
-                <div className="flex items-center gap-2 font-medium">
-                  <Captions className="size-4 text-primary" />
-                  Transcrição
+          <div className="flex flex-1 overflow-hidden">
+            <div className="flex-1 grid gap-4 p-4 overflow-y-auto" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gridAutoRows: "minmax(300px, 1fr)" }}>
+              <VideoTile stream={localStream} name={name || "Você"} isLocal />
+              {remotePeers.map(peer => (
+                <VideoTile key={peer.id} stream={peer.stream} name={peer.name} />
+              ))}
+            </div>
+
+            {showCaptions && (
+              <aside className="w-80 shrink-0 flex flex-col border-l border-border bg-card z-20">
+                <div className="flex items-center justify-between border-b border-border px-4 py-3">
+                  <div className="flex items-center gap-2 font-medium">
+                    <Captions className="size-4 text-primary" />
+                    Transcrição
+                  </div>
+                  <button
+                    onClick={() => setShowCaptions(false)}
+                    className="rounded-md p-1 text-muted-foreground hover:bg-secondary"
+                    aria-label="Fechar transcrição"
+                  >
+                    <X className="size-4" />
+                  </button>
                 </div>
-                <button
-                  onClick={() => setShowCaptions(false)}
-                  className="rounded-md p-1 text-muted-foreground hover:bg-secondary"
-                  aria-label="Fechar transcrição"
-                >
-                  <X className="size-4" />
-                </button>
-              </div>
 
-              <div className="grid grid-cols-2 gap-2 border-b border-border p-3 text-xs">
-                <label className="flex flex-col gap-1">
-                  <span className="text-muted-foreground">Idioma falado</span>
-                  <select
-                    value={sourceLang}
-                    onChange={(e) => setSourceLang(e.target.value)}
-                    className="rounded-md border border-border bg-background px-2 py-1.5"
+                <div className="grid grid-cols-2 gap-2 border-b border-border p-3 text-xs">
+                  <label className="flex flex-col gap-1">
+                    <span className="text-muted-foreground">Idioma falado</span>
+                    <select
+                      value={sourceLang}
+                      onChange={(e) => setSourceLang(e.target.value)}
+                      className="rounded-md border border-border bg-background px-2 py-1.5"
+                    >
+                      {SOURCE_LANGS.map((l) => (
+                        <option key={l.code} value={l.code}>
+                          {l.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="flex flex-col gap-1">
+                    <span className="text-muted-foreground">Traduzir para</span>
+                    <select
+                      value={targetLang}
+                      onChange={(e) => setTargetLang(e.target.value)}
+                      className="rounded-md border border-border bg-background px-2 py-1.5"
+                    >
+                      {TARGET_LANGS.map((l) => (
+                        <option key={l.code} value={l.code}>
+                          {l.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+
+                <div className="flex-1 space-y-3 overflow-y-auto p-4 text-sm">
+                  {unsupported ? (
+                    <p className="text-muted-foreground">
+                      Seu navegador não suporta transcrição por voz. Use o Chrome
+                      para esse recurso.
+                    </p>
+                  ) : captions.length === 0 ? (
+                    <p className="text-muted-foreground">
+                      Ative a transcrição e comece a falar para ver as legendas
+                      aqui.
+                    </p>
+                  ) : (
+                    captions.map((c) => (
+                      <div key={c.id}>
+                        <p className="text-xs font-semibold text-primary/80 mb-0.5">{c.senderId === peerId ? "Você" : c.peerName || "Convidado"}:</p>
+                        <p>{c.original}</p>
+                        {c.translated && (
+                          <p className="mt-0.5 flex items-start gap-1 text-primary">
+                            <Languages className="mt-0.5 size-3 shrink-0" />
+                            {c.translated}
+                          </p>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <div className="shrink-0 space-y-2 border-t border-border p-3">
+                  <button
+                    onClick={listening ? stopListening : startListening}
+                    className={`w-full rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                      listening
+                        ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        : "bg-primary text-primary-foreground hover:bg-primary/90"
+                    }`}
                   >
-                    {SOURCE_LANGS.map((l) => (
-                      <option key={l.code} value={l.code}>
-                        {l.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="flex flex-col gap-1">
-                  <span className="text-muted-foreground">Traduzir para</span>
-                  <select
-                    value={targetLang}
-                    onChange={(e) => setTargetLang(e.target.value)}
-                    className="rounded-md border border-border bg-background px-2 py-1.5"
-                  >
-                    {TARGET_LANGS.map((l) => (
-                      <option key={l.code} value={l.code}>
-                        {l.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-
-              <div className="flex-1 space-y-3 overflow-y-auto p-4 text-sm">
-                {unsupported ? (
-                  <p className="text-muted-foreground">
-                    Seu navegador não suporta transcrição por voz. Use o Chrome
-                    para esse recurso.
-                  </p>
-                ) : captions.length === 0 ? (
-                  <p className="text-muted-foreground">
-                    Ative a transcrição e comece a falar para ver as legendas
-                    aqui.
-                  </p>
-                ) : (
-                  captions.map((c) => (
-                    <div key={c.id}>
-                      <p>{c.original}</p>
-                      {c.translated && (
-                        <p className="mt-0.5 flex items-start gap-1 text-primary">
-                          <Languages className="mt-0.5 size-3 shrink-0" />
-                          {c.translated}
-                        </p>
-                      )}
-                    </div>
-                  ))
-                )}
-              </div>
-
-              <div className="max-h-[45vh] shrink-0 space-y-2 overflow-y-auto border-t border-border p-3 sm:max-h-none sm:overflow-visible">
-                <button
-                  onClick={listening ? stopListening : startListening}
-                  className={`w-full rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                    listening
-                      ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      : "bg-primary text-primary-foreground hover:bg-primary/90"
-                  }`}
-                >
-                  {listening ? "Parar transcrição" : "Iniciar transcrição"}
-                </button>
-                {isHost ? (
-                  <>
+                    {listening ? "Parar transcrição" : "Iniciar transcrição"}
+                  </button>
+                  {isHost ? (
                     <button
                       onClick={downloadTranscript}
                       disabled={captions.length === 0}
@@ -901,460 +996,107 @@ function Room() {
                       <Download className="size-4" />
                       Baixar transcrição
                     </button>
-                    <button
-                      onClick={() => setShowAiTools((v) => !v)}
-                      className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
-                    >
-                      <Sparkles className="size-4" />
-                      Ferramentas IA
-                      <ChevronDown
-                        className={`size-4 transition-transform ${showAiTools ? "rotate-180" : ""}`}
-                      />
-                    </button>
-                  </>
-                ) : (
-                  <p className="rounded-md bg-secondary/50 px-3 py-2 text-center text-xs text-muted-foreground">
-                    Apenas o administrador da sala pode baixar a transcrição e usar as ferramentas de IA.
-                  </p>
-                )}
-                {isHost && showAiTools && (
-                  <div className="space-y-2">
-                    <button
-                      onClick={generateAta}
-                      className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
-                    >
-                      <ClipboardList className="size-4" />
-                      Gerar ata
-                    </button>
-                    <button
-                      onClick={analyze}
-                      className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
-                    >
-                      <Gauge className="size-4" />
-                      Análise de sentimento
-                    </button>
-                    <button
-                      onClick={openDashboard}
-                      className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
-                    >
-                      <ChartColumnBig className="size-4" />
-                      Dashboard de falas
-                    </button>
-                    <button
-                      onClick={openChapters}
-                      className="flex w-full items-center justify-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-secondary"
-                    >
-                      <ListTree className="size-4" />
-                      Capítulos & highlights
-                    </button>
-                  </div>
-                )}
-              </div>
-            </aside>
-          )}
-
-          {showMinutes && (
-            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 p-4">
-              <div className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-xl border border-border bg-card shadow-xl">
-                <div className="flex items-center justify-between border-b border-border px-5 py-3">
-                  <div className="flex items-center gap-2 font-medium">
-                    <FileText className="size-4 text-primary" />
-                    Ata da reunião
-                  </div>
-                  <button
-                    onClick={() => setShowMinutes(false)}
-                    className="rounded-md p-1 text-muted-foreground hover:bg-secondary"
-                    aria-label="Fechar"
-                  >
-                    <X className="size-4" />
-                  </button>
-                </div>
-
-                <div className="flex flex-wrap items-end gap-3 border-b border-border px-5 py-3 text-sm">
-                  <label className="flex w-full flex-col gap-1">
-                    <span className="text-xs text-muted-foreground">
-                      Membros da reunião (nome completo, um por linha)
-                    </span>
-                    <textarea
-                      value={membersInput}
-                      onChange={(e) => setMembersInput(e.target.value)}
-                      rows={3}
-                      placeholder={"Maria da Silva Santos\nJoão Pereira de Souza"}
-                      className="w-full resize-y rounded-md border border-border bg-background px-2 py-1.5"
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1">
-                    <span className="text-xs text-muted-foreground">Modelo</span>
-                    <select
-                      value={minutesTemplate}
-                      onChange={(e) => setMinutesTemplate(e.target.value)}
-                      className="rounded-md border border-border bg-background px-2 py-1.5"
-                    >
-                      {MINUTES_TEMPLATES.map((t) => (
-                        <option key={t.code} value={t.code}>
-                          {t.label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <button
-                    onClick={generateAta}
-                    disabled={minutesLoading}
-                    className="flex items-center gap-2 rounded-md bg-primary px-3 py-2 font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
-                  >
-                    {minutesLoading ? (
-                      <Loader2 className="size-4 animate-spin" />
-                    ) : (
-                      <ClipboardList className="size-4" />
-                    )}
-                    {minutesText ? "Gerar novamente" : "Gerar ata"}
-                  </button>
-                  {minutesText && !minutesLoading && (
-                    <>
-                      <button
-                        onClick={() => navigator.clipboard?.writeText(minutesText)}
-                        className="flex items-center gap-2 rounded-md border border-border px-3 py-2 font-medium hover:bg-secondary"
-                      >
-                        <Copy className="size-4" />
-                        Copiar
-                      </button>
-                      <button
-                        onClick={downloadAta}
-                        className="flex items-center gap-2 rounded-md border border-border px-3 py-2 font-medium hover:bg-secondary"
-                      >
-                        <Download className="size-4" />
-                        Baixar
-                      </button>
-                      <button
-                        onClick={() => saveToHistory(minutesText)}
-                        disabled={saving}
-                        className="flex items-center gap-2 rounded-md border border-border px-3 py-2 font-medium hover:bg-secondary disabled:opacity-60"
-                      >
-                        {saving ? (
-                          <Loader2 className="size-4 animate-spin" />
-                        ) : (
-                          <ClipboardList className="size-4" />
-                        )}
-                        Salvar no histórico
-                      </button>
-                      {kanbanTeams.length > 0 && (
-                        <>
-                          <select
-                            value={kanbanTeam}
-                            onChange={(e) => setKanbanTeam(e.target.value)}
-                            aria-label="Equipe para o Kanban"
-                            className="rounded-md border border-border bg-background px-2 py-2 text-sm"
-                          >
-                            {kanbanTeams.map((t) => (
-                              <option key={t.id} value={t.id}>
-                                {t.name}
-                              </option>
-                            ))}
-                          </select>
-                          <button
-                            onClick={sendActionsToKanban}
-                            disabled={kanbanSending}
-                            className="flex items-center gap-2 rounded-md border border-border px-3 py-2 font-medium hover:bg-secondary disabled:opacity-60"
-                          >
-                            {kanbanSending ? (
-                              <Loader2 className="size-4 animate-spin" />
-                            ) : (
-                              <KanbanSquare className="size-4" />
-                            )}
-                            Enviar ações ao Kanban
-                          </button>
-                        </>
-                      )}
-                    </>
-                  )}
-                </div>
-                {kanbanStatus && (
-                  <p className="px-5 pt-1 text-xs text-muted-foreground">{kanbanStatus}</p>
-                )}
-                {saveStatus && (
-                  <p className="px-5 pt-1 text-xs text-muted-foreground">{saveStatus}</p>
-                )}
-
-                <div className="flex-1 overflow-y-auto px-5 py-4 text-sm">
-                  {minutesError ? (
-                    <p className="text-destructive">{minutesError}</p>
-                  ) : minutesLoading ? (
-                    <p className="text-muted-foreground">Gerando a ata com base na transcrição…</p>
-                  ) : minutesText ? (
-                    <pre className="whitespace-pre-wrap font-sans leading-relaxed">
-                      {minutesText}
-                    </pre>
                   ) : (
-                    <p className="text-muted-foreground">
-                      Escolha um modelo e clique em “Gerar ata” para criar o
-                      documento a partir da transcrição.
+                    <p className="rounded-md bg-secondary/50 px-3 py-2 text-center text-xs text-muted-foreground">
+                      Apenas o administrador da sala pode baixar a transcrição.
                     </p>
                   )}
                 </div>
-              </div>
+              </aside>
+            )}
+          </div>
+
+          <div className="pointer-events-none absolute left-4 top-4 z-10 flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2 rounded-full bg-black/60 px-3 py-1.5 text-sm font-medium text-white backdrop-blur-sm">
+              <Clock className="size-4 text-primary" />
+              {formatDuration(elapsed)}
             </div>
-          )}
-
-          {showSentiment && (
-            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 p-4">
-              <div className="flex max-h-[85vh] w-full max-w-md flex-col rounded-xl border border-border bg-card shadow-xl">
-                <div className="flex items-center justify-between border-b border-border px-5 py-3">
-                  <div className="flex items-center gap-2 font-medium">
-                    <Gauge className="size-4 text-primary" />
-                    Análise de sentimento
-                  </div>
-                  <button
-                    onClick={() => setShowSentiment(false)}
-                    className="rounded-md p-1 text-muted-foreground hover:bg-secondary"
-                    aria-label="Fechar"
-                  >
-                    <X className="size-4" />
-                  </button>
-                </div>
-
-                <div className="flex-1 overflow-y-auto px-5 py-4 text-sm">
-                  {sentimentError ? (
-                    <p className="text-destructive">{sentimentError}</p>
-                  ) : sentimentLoading ? (
-                    <p className="text-muted-foreground">
-                      Analisando o clima da reunião…
-                    </p>
-                  ) : sentiment ? (
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3">
-                        <span
-                          className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${
-                            sentiment.label === "positivo"
-                              ? "bg-green-500/15 text-green-600"
-                              : sentiment.label === "negativo"
-                                ? "bg-destructive/15 text-destructive"
-                                : "bg-secondary text-muted-foreground"
-                          }`}
-                        >
-                          {sentiment.label}
-                        </span>
-                        <span className="text-2xl font-semibold">
-                          {sentiment.score}
-                          <span className="text-sm text-muted-foreground">/100</span>
-                        </span>
-                      </div>
-                      <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
-                        <div
-                          className={`h-full rounded-full ${
-                            sentiment.label === "positivo"
-                              ? "bg-green-500"
-                              : sentiment.label === "negativo"
-                                ? "bg-destructive"
-                                : "bg-muted-foreground"
-                          }`}
-                          style={{ width: `${sentiment.score}%` }}
-                        />
-                      </div>
-                      <p className="text-muted-foreground">{sentiment.summary}</p>
-                      {sentiment.emotions.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                          {sentiment.emotions.map((e) => (
-                            <span
-                              key={e}
-                              className="rounded-md bg-secondary px-2 py-1 text-xs capitalize"
-                            >
-                              {e}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                      <button
-                        onClick={analyze}
-                        className="w-full rounded-md border border-border px-3 py-2 font-medium hover:bg-secondary"
-                      >
-                        Analisar novamente
-                      </button>
-                    </div>
-                  ) : null}
-                </div>
-              </div>
+            <div className="flex items-center gap-2 rounded-full bg-black/60 px-3 py-1.5 text-sm font-medium text-white backdrop-blur-sm">
+              <Mic className="size-4 text-emerald-400 animate-pulse" />
+              <span>Whisper / Ata ativa</span>
             </div>
-          )}
-
-          {showDashboard && (
-            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 p-4">
-              <div className="flex max-h-[85vh] w-full max-w-lg flex-col rounded-xl border border-border bg-card shadow-xl">
-                <div className="flex items-center justify-between border-b border-border px-5 py-3">
-                  <div className="flex items-center gap-2 font-medium">
-                    <ChartColumnBig className="size-4 text-primary" />
-                    Dashboard de falas
-                  </div>
-                  <button
-                    onClick={() => setShowDashboard(false)}
-                    className="rounded-md p-1 text-muted-foreground hover:bg-secondary"
-                    aria-label="Fechar"
-                  >
-                    <X className="size-4" />
-                  </button>
-                </div>
-
-                <div className="flex-1 overflow-y-auto px-5 py-4 text-sm">
-                  {dashboardError ? (
-                    <p className="text-destructive">{dashboardError}</p>
-                  ) : dashboardLoading ? (
-                    <p className="text-muted-foreground">Analisando as falas…</p>
-                  ) : dashboard ? (
-                    <div className="space-y-6">
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="rounded-lg border border-border p-3">
-                          <div className="text-2xl font-semibold">
-                            {dashboardStats.words}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            Palavras faladas
-                          </div>
-                        </div>
-                        <div className="rounded-lg border border-border p-3">
-                          <div className="text-2xl font-semibold">
-                            {dashboardStats.segments}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            Trechos de fala
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <h3 className="mb-3 font-medium">Assuntos mais citados</h3>
-                        {dashboard.topics.length === 0 ? (
-                          <p className="text-muted-foreground">Nenhum assunto identificado.</p>
-                        ) : (
-                          <div className="space-y-2">
-                            {dashboard.topics.map((t) => {
-                              const max = dashboard.topics[0]?.mentions || 1;
-                              return (
-                                <div key={t.topic}>
-                                  <div className="mb-1 flex justify-between text-xs">
-                                    <span className="capitalize">{t.topic}</span>
-                                    <span className="text-muted-foreground">{t.mentions}x</span>
-                                  </div>
-                                  <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
-                                    <div
-                                      className="h-full rounded-full bg-primary"
-                                      style={{ width: `${Math.max(6, (t.mentions / max) * 100)}%` }}
-                                    />
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-
-                      <div>
-                        <h3 className="mb-3 font-medium">Palavras-chave</h3>
-                        {dashboard.keywords.length === 0 ? (
-                          <p className="text-muted-foreground">Nenhuma palavra-chave identificada.</p>
-                        ) : (
-                          <div className="flex flex-wrap gap-2">
-                            {dashboard.keywords.map((k) => (
-                              <span
-                                key={k.word}
-                                className="flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs"
-                              >
-                                <Hash className="size-3 text-primary" />
-                                {k.word}
-                                <span className="text-muted-foreground">{k.count}</span>
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-
-                      <button
-                        onClick={openDashboard}
-                        className="w-full rounded-md border border-border px-3 py-2 font-medium hover:bg-secondary"
-                      >
-                        Atualizar
-                      </button>
-                    </div>
-                  ) : null}
-                </div>
-              </div>
+            <div className="flex items-center gap-2 rounded-full bg-black/60 px-3 py-1.5 text-sm font-medium text-white backdrop-blur-sm">
+              <span>👥 {participantCount} participante(s)</span>
             </div>
-          )}
+          </div>
 
-          {showChapters && (
-            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 p-4">
-              <div className="flex max-h-[85vh] w-full max-w-lg flex-col rounded-xl border border-border bg-card shadow-xl">
-                <div className="flex items-center justify-between border-b border-border px-5 py-3">
-                  <div className="flex items-center gap-2 font-medium">
-                    <Clapperboard className="size-4 text-primary" />
-                    Capítulos & highlights
-                  </div>
-                  <button
-                    onClick={() => setShowChapters(false)}
-                    className="rounded-md p-1 text-muted-foreground hover:bg-secondary"
-                    aria-label="Fechar"
-                  >
-                    <X className="size-4" />
-                  </button>
-                </div>
-                <div className="flex-1 overflow-y-auto px-5 py-4 text-sm">
-                  {chaptersError ? (
-                    <p className="text-destructive">{chaptersError}</p>
-                  ) : chaptersLoading ? (
-                    <p className="text-muted-foreground">Dividindo a reunião em capítulos…</p>
-                  ) : chapters ? (
-                    chapters.length === 0 ? (
-                      <p className="text-muted-foreground">Nenhum capítulo identificado.</p>
-                    ) : (
-                      <div className="space-y-4">
-                        {chapters.map((ch, i) => (
-                          <div
-                            key={i}
-                            className="rounded-lg border border-border p-3"
-                          >
-                            <div className="flex items-start justify-between gap-2">
-                              <h3 className="font-medium">{ch.title}</h3>
-                              <span className="flex shrink-0 items-center gap-1 rounded-md bg-secondary px-2 py-0.5 font-mono text-xs text-muted-foreground">
-                                <Clock className="size-3" />
-                                {formatDuration(ch.start)}
-                              </span>
-                            </div>
-                            {ch.summary && (
-                              <p className="mt-1 text-xs text-muted-foreground">{ch.summary}</p>
-                            )}
-                            {ch.highlights.length > 0 && (
-                              <ul className="mt-2 space-y-1">
-                                {ch.highlights.map((h, j) => (
-                                  <li key={j} className="flex items-start gap-2 text-xs">
-                                    <Sparkles className="mt-0.5 size-3 shrink-0 text-primary" />
-                                    <span>{h}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
-                          </div>
-                        ))}
-                        <button
-                          onClick={openChapters}
-                          className="w-full rounded-md border border-border px-3 py-2 font-medium hover:bg-secondary"
-                        >
-                          Atualizar
-                        </button>
-                      </div>
-                    )
-                  ) : null}
-                </div>
-              </div>
-            </div>
-          )}
+          <div className="flex shrink-0 flex-wrap items-center justify-center gap-3 bg-background p-4 border-t border-border z-10">
+            <button onClick={toggleMute} title={isMuted ? "Ativar áudio" : "Mutar áudio"} className={`rounded-full p-3 ${isMuted ? 'bg-destructive text-white' : 'bg-secondary'}`}>
+              {isMuted ? <MicOff className="size-5" /> : <Mic className="size-5" />}
+            </button>
+            <button onClick={toggleVideo} title={isVideoOff ? "Ligar câmera" : "Desligar câmera"} className={`rounded-full p-3 ${isVideoOff ? 'bg-destructive text-white' : 'bg-secondary'}`}>
+              {isVideoOff ? <VideoOff className="size-5" /> : <VideoIcon className="size-5" />}
+            </button>
+            <button onClick={toggleScreenShare} title="Compartilhar tela" className={`rounded-full p-3 ${isScreenSharing ? 'bg-primary text-white' : 'bg-secondary'}`}>
+              <MonitorUp className="size-5" />
+            </button>
+            <button 
+              onClick={() => {
+                navigator.clipboard.writeText(window.location.href);
+                toast.success("Link da reunião copiado!");
+              }} 
+              title="Copiar link da reunião" 
+              className="flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            >
+              <Copy className="size-4" />
+              Copiar Link
+            </button>
 
-          {!showCaptions && (
             <button
-              onClick={() => setShowCaptions(true)}
-              className="absolute bottom-6 right-6 flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-lg hover:bg-primary/90"
+              onClick={() => setShowCaptions(!showCaptions)}
+              className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition-all ${
+                showCaptions ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+              }`}
             >
               <Captions className="size-4" />
-              Transcrição
+              {showCaptions ? "Ocultar Transcrição" : "Ver Transcrição"}
             </button>
-          )}
+
+            {/* BOTÃO 1: COMEÇAR ATA */}
+            <button
+              onClick={() => {
+                if (!listening) {
+                  startListening();
+                  toast.success("Gravador de Ata do Whisper iniciado! Fale na reunião.");
+                } else {
+                  toast.info("A gravação da ata já está ativa!");
+                }
+              }}
+              className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition-all ${
+                listening
+                  ? "bg-emerald-600 text-white shadow-md animate-pulse"
+                  : "bg-primary text-primary-foreground hover:bg-primary/90"
+              }`}
+            >
+              <Mic className="size-4" />
+              {listening ? "🔴 Ata Sendo Gravada" : "▶️ Começar Ata"}
+            </button>
+
+            {/* BOTÃO 2: FINALIZAR E BAIXAR ATA */}
+            <button
+              onClick={async () => {
+                stopListening();
+                await generateAta();
+              }}
+              disabled={minutesLoading}
+              className="flex items-center gap-2 rounded-full bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground hover:bg-accent/90 disabled:opacity-50"
+            >
+              {minutesLoading ? <Loader2 className="size-4 animate-spin" /> : <FileText className="size-4" />}
+              Finalizar e Baixar Ata
+            </button>
+
+            {/* BOTÃO 3: SAIR DA REUNIÃO */}
+            <button
+              onClick={() => {
+                stopListening();
+                leaveRoom();
+                setEnded(true);
+              }}
+              className="rounded-full bg-destructive px-6 py-2.5 text-sm font-semibold text-white hover:bg-destructive/90"
+            >
+              Sair
+            </button>
+          </div>
         </div>
       )}
     </div>

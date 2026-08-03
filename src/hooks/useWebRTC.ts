@@ -7,12 +7,13 @@ export interface RemotePeer {
   stream: MediaStream;
 }
 
-export function useWebRTC(roomId: string, userName: string | null) {
+export function useWebRTC(roomId: string, userName: string | null, onCaption?: (payload: any) => void) {
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remotePeers, setRemotePeers] = useState<RemotePeer[]>([]);
-  const [isMuted, setIsMuted] = useState(false);
-  const [isVideoOff, setIsVideoOff] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const [isVideoOff, setIsVideoOff] = useState(true);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [participantCount, setParticipantCount] = useState(1);
   
   const peerId = useRef(Math.random().toString(36).substring(7));
   const connections = useRef<Map<string, RTCPeerConnection>>(new Map());
@@ -29,14 +30,23 @@ export function useWebRTC(roomId: string, userName: string | null) {
   };
 
   const startLocalStream = async () => {
+    let stream: MediaStream;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      setLocalStream(stream);
-      return stream;
+      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
     } catch (e) {
-      console.error("Erro ao acessar câmera/microfone", e);
-      return null;
+      console.warn("Não foi possível acessar câmera e microfone, tentando apenas microfone...");
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+      } catch (e2) {
+        console.warn("Nenhum dispositivo de mídia encontrado. Entrando na sala sem mídia.");
+        stream = new MediaStream();
+      }
     }
+    
+    stream.getAudioTracks().forEach(track => track.enabled = false);
+    stream.getVideoTracks().forEach(track => track.enabled = false);
+    setLocalStream(stream);
+    return stream;
   };
 
   const createPeerConnection = (targetId: string, targetName: string, stream: MediaStream) => {
@@ -97,9 +107,18 @@ export function useWebRTC(roomId: string, userName: string | null) {
       activeStream = stream;
 
       const ch = supabase.channel(`room:${roomId}`, {
-        config: { broadcast: { self: false } }
+        config: {
+          broadcast: { self: false },
+          presence: { key: peerId.current }
+        }
       });
       channel.current = ch;
+
+      ch.on("presence", { event: "sync" }, () => {
+        const state = ch.presenceState();
+        const count = Object.keys(state).length;
+        setParticipantCount(count > 0 ? count : 1);
+      });
 
       ch.on("broadcast", { event: "join" }, async ({ payload }) => {
         const { source, name } = payload;
@@ -149,8 +168,15 @@ export function useWebRTC(roomId: string, userName: string | null) {
         removePeer(payload.source);
       });
 
+      ch.on("broadcast", { event: "caption" }, ({ payload }) => {
+        if (onCaption) {
+          onCaption(payload);
+        }
+      });
+
       ch.subscribe((status) => {
         if (status === "SUBSCRIBED") {
+          ch.track({ name: userName, joinedAt: Date.now() });
           ch.send({
             type: "broadcast",
             event: "join",
@@ -168,6 +194,7 @@ export function useWebRTC(roomId: string, userName: string | null) {
         event: "leave",
         payload: { source: peerId.current }
       });
+      channel.current?.untrack();
       channel.current?.unsubscribe();
       connections.current.forEach(pc => pc.close());
       connections.current.clear();
@@ -247,14 +274,54 @@ export function useWebRTC(roomId: string, userName: string | null) {
     });
   }, [isScreenSharing]);
 
+  const leaveRoom = useCallback(() => {
+    if (channel.current) {
+      channel.current.send({
+        type: "broadcast",
+        event: "leave",
+        payload: { source: peerId.current }
+      });
+      channel.current.untrack();
+      channel.current.unsubscribe();
+      channel.current = null;
+    }
+    connections.current.forEach(pc => pc.close());
+    connections.current.clear();
+
+    if (localStream) {
+      localStream.getTracks().forEach(track => track.stop());
+      setLocalStream(null);
+    }
+    if (originalVideoTrack.current) {
+      originalVideoTrack.current.stop();
+      originalVideoTrack.current = null;
+    }
+    setRemotePeers([]);
+  }, [localStream]);
+
+  const broadcastCaption = useCallback((payload: any) => {
+    if (channel.current) {
+      channel.current.send({
+        type: "broadcast",
+        event: "caption",
+        payload
+      });
+    }
+  }, []);
+
   return {
     localStream,
     remotePeers,
+    participantCount,
     isMuted,
     isVideoOff,
     isScreenSharing,
     toggleMute,
     toggleVideo,
-    toggleScreenShare
+    toggleScreenShare,
+    leaveRoom,
+    channelRef: channel,
+    broadcastCaption,
+    peerId: peerId.current
   };
 }

@@ -36,8 +36,6 @@ function validate(input: unknown): MinutesInput {
 export const generateMinutes = createServerFn({ method: "POST" })
   .inputValidator(validate)
   .handler(async ({ data }) => {
-    const key = process.env.LOVABLE_API_KEY;
-    if (!key) throw new Error("Missing LOVABLE_API_KEY");
 
     const style = TEMPLATES[data.template ?? "formal"] ?? TEMPLATES.formal;
     const today = new Date().toLocaleDateString("pt-BR", {
@@ -52,11 +50,14 @@ export const generateMinutes = createServerFn({ method: "POST" })
         : "Não informados";
     const startedInfo = data.startedAt || "Não informado";
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const res = await fetch("https://ollama.com/v1/chat/completions", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer 026e670c37c34e89846c62ffb045ed39.5HQ8ryBDGGhtvbuHh8-DOHbp",
+      },
       body: JSON.stringify({
-        model: "openai/gpt-5.5",
+        model: "deepseek-v4-pro",
         messages: [
           {
             role: "system",

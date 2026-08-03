@@ -7,45 +7,36 @@ function validate(input: unknown): TranslateInput {
   if (!i || typeof i.text !== "string" || typeof i.target !== "string") {
     throw new Error("Invalid input");
   }
-  return { text: i.text.slice(0, 20000), target: i.target.slice(0, 40) };
+  return { text: i.text.slice(0, 20000), target: i.target.slice(0, 10) };
 }
 
 export const translateText = createServerFn({ method: "POST" })
   .inputValidator(validate)
   .handler(async ({ data }) => {
-    const key = process.env.LOVABLE_API_KEY;
-    if (!key) throw new Error("Missing LOVABLE_API_KEY");
     if (!data.text.trim()) return { translation: "" };
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Lovable-API-Key": key,
-      },
-      body: JSON.stringify({
-        model: "openai/gpt-5.5",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are a real-time meeting caption translator. Translate the user's text into the requested target language. Reply with ONLY the translation, no notes, no quotes.",
-          },
-          {
-            role: "user",
-            content: `Target language: ${data.target}\n\nText: ${data.text}`,
-          },
-        ],
-      }),
-    });
-
-    if (!res.ok) {
-      const body = await res.text().catch(() => "");
-      throw new Error(`Translation failed [${res.status}]: ${body}`);
+    const encodedText = encodeURIComponent(data.text);
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${data.target}&dt=t&q=${encodedText}`;
+    
+    try {
+      const res = await fetch(url);
+      if (!res.ok) {
+        throw new Error(`Translation failed [${res.status}]`);
+      }
+      const json = await res.json();
+      
+      let translation = "";
+      if (Array.isArray(json) && Array.isArray(json[0])) {
+        json[0].forEach((sentenceParts: any) => {
+          if (sentenceParts && sentenceParts[0]) {
+            translation += sentenceParts[0];
+          }
+        });
+      }
+      
+      return { translation: translation.trim() };
+    } catch (e: any) {
+      console.error("Google Translate error:", e);
+      return { translation: `[Erro: ${e.message}]` };
     }
-
-    const json = (await res.json()) as {
-      choices?: { message?: { content?: string } }[];
-    };
-    return { translation: json.choices?.[0]?.message?.content?.trim() ?? "" };
   });
