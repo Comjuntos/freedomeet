@@ -49,32 +49,16 @@ const OUTCOMES: { icon: typeof Clock; k: string; v: string }[] = [
   { icon: Users, k: "100%", v: "das decisões viram tarefas" },
 ];
 
+/**
+ * Recursos exibidos em cartões compactos: descrições curtas para que a seção
+ * ocupe pouco espaço e o destaque da página fique nos planos de assinatura.
+ */
 const FEATURES = [
-  {
-    icon: Captions,
-    title: "Transcrição ao vivo com IA",
-    desc: "A fala vira texto em tempo real, com pontuação e acentuação natural — nada de legenda robótica.",
-  },
-  {
-    icon: Languages,
-    title: "Tradução em tempo real",
-    desc: "Traduza as legendas na hora para inglês, espanhol, francês, alemão, italiano e mais.",
-  },
-  {
-    icon: FileText,
-    title: "Ata gerada por IA",
-    desc: "Ao final, gere uma ata profissional a partir da transcrição — modelos formal, executivo ou detalhado.",
-  },
-  {
-    icon: KanbanSquare,
-    title: "Gestão estilo Kanban",
-    desc: "Organize tarefas e acompanhamentos das reuniões em quadros Kanban, movendo cartões entre colunas.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Vídeo HD seguro",
-    desc: "Câmera, áudio, chat e compartilhamento de tela com acesso protegido por tokens assinados.",
-  },
+  { icon: Captions, title: "Transcrição ao vivo", desc: "Fala vira texto na hora." },
+  { icon: Languages, title: "Tradução em tempo real", desc: "Legendas em 5+ idiomas." },
+  { icon: FileText, title: "Ata por IA", desc: "Resumo pronto ao final." },
+  { icon: KanbanSquare, title: "Kanban da equipe", desc: "Decisões viram tarefas." },
+  { icon: ShieldCheck, title: "Vídeo HD seguro", desc: "Acesso por token assinado." },
 ];
 
 const PLANS = PLAN_LIST;
@@ -320,41 +304,21 @@ function Index() {
         </div>
       </section>
 
-      <section className="border-t border-border px-4 py-12 sm:px-6 sm:py-16">
+      <section
+        id="planos"
+        className="border-t border-border bg-[linear-gradient(180deg,color-mix(in_oklab,var(--color-primary)_7%,var(--color-background)),var(--color-background))] px-4 py-16 sm:px-6 sm:py-20"
+      >
         <div className="mx-auto max-w-6xl">
-          <span className="text-sm font-medium text-primary">Recursos</span>
-          <h2 className="mt-2 font-display text-2xl font-normal md:text-3xl">
-            Por que escolher o FreeduMeet
-          </h2>
-          <p className="mt-2 max-w-xl text-muted-foreground">
-            Muito além de uma chamada de vídeo: recursos de IA que economizam
-            seu tempo em cada reunião.
-          </p>
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map((f) => (
-              <div
-                key={f.title}
-                className="rounded-xl border border-border bg-card p-6 transition-shadow hover:shadow-[var(--shadow-elegant)]"
-              >
-                <div className="flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <f.icon className="size-6" />
-                </div>
-                <h3 className="mt-4 font-display text-base font-medium">{f.title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{f.desc}</p>
-              </div>
-            ))}
+          <div className="text-center">
+            <span className="text-sm font-medium text-primary">Planos</span>
+            <h2 className="mt-2 font-display text-3xl font-normal md:text-4xl">
+              Escolha o plano da sua equipe
+            </h2>
+            <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
+              Preços pensados para o mercado brasileiro, sempre cerca de 20% mais baratos
+              que as principais plataformas de videoconferência.
+            </p>
           </div>
-        </div>
-      </section>
-
-      <section id="planos" className="border-t border-border px-4 py-12 sm:px-6 sm:py-16">
-        <div className="mx-auto max-w-6xl">
-          <span className="text-sm font-medium text-primary">Planos</span>
-          <h2 className="mt-2 font-display text-2xl font-normal md:text-3xl">Planos e assinaturas</h2>
-          <p className="mt-2 max-w-xl text-muted-foreground">
-            Preços pensados para o mercado brasileiro, sempre cerca de 20% mais baratos
-            que as principais plataformas de videoconferência.
-          </p>
           <div className="mt-10 grid gap-6 lg:grid-cols-3">
             {PLANS.map((plan) => (
               <div
@@ -399,6 +363,29 @@ function Index() {
           <p className="mt-6 text-xs text-muted-foreground">
             Valores mensais em reais. Assinaturas anuais têm desconto adicional.
           </p>
+        </div>
+      </section>
+
+      {/* Recursos em formato compacto: informa sem competir com os planos. */}
+      <section className="border-t border-border px-4 py-10 sm:px-6 sm:py-12">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="font-display text-lg font-medium">Tudo isso está incluído</h2>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            {FEATURES.map((f) => (
+              <div
+                key={f.title}
+                className="flex min-w-0 items-start gap-3 rounded-xl border border-border bg-card p-3.5"
+              >
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <f.icon className="size-4" />
+                </span>
+                <div className="min-w-0">
+                  <h3 className="truncate text-sm font-medium">{f.title}</h3>
+                  <p className="text-xs text-muted-foreground">{f.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
