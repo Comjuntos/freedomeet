@@ -1331,7 +1331,7 @@ function Dashboard() {
         </section>
 
         {/* SALAS */}
-        <section className="min-w-0">
+        <section className={`min-w-0 lg:col-span-2 ${view === "salas" ? "" : "hidden"}`}>
           <h2 className="flex items-center gap-2 text-xl font-semibold">
             <DoorOpen className="size-5 text-primary" /> Salas de projeto
           </h2>
@@ -1416,7 +1416,7 @@ function Dashboard() {
         </section>
 
         {/* HISTÓRICO DE REUNIÕES */}
-        <section className="min-w-0 lg:col-span-2">
+        <section className={`min-w-0 lg:col-span-2 ${view === "historico" ? "" : "hidden"}`}>
           <h2 className="flex items-center gap-2 text-xl font-semibold">
             <History className="size-5 text-primary" /> Histórico de reuniões
           </h2>
@@ -1511,7 +1511,7 @@ function Dashboard() {
         </section>
 
         {/* RELATÓRIOS DE ENGAJAMENTO */}
-        <section className="min-w-0 lg:col-span-2">
+        <section className={`min-w-0 lg:col-span-2 ${view === "relatorios" ? "" : "hidden"}`}>
           <h2 className="flex items-center gap-2 text-xl font-semibold">
             <BarChart3 className="size-5 text-primary" /> Relatórios de engajamento
           </h2>
@@ -1580,7 +1580,7 @@ function Dashboard() {
         </section>
 
         {/* VISÃO DO GESTOR — TAREFAS POR PESSOA */}
-        <section className="min-w-0 lg:col-span-2">
+        <section className={`min-w-0 lg:col-span-2 ${view === "gestor" ? "" : "hidden"}`}>
           <h2 className="flex items-center gap-2 text-xl font-semibold">
             <UserCheck className="size-5 text-primary" /> Visão do gestor
           </h2>
@@ -1689,7 +1689,7 @@ function Dashboard() {
         </section>
 
         {/* AGENDA DE REUNIÕES RECORRENTES */}
-        <section className="min-w-0 lg:col-span-2">
+        <section className={`min-w-0 lg:col-span-2 ${view === "agenda" ? "" : "hidden"}`}>
           <h2 className="flex items-center gap-2 text-xl font-semibold">
             <CalendarClock className="size-5 text-primary" /> Agenda recorrente
           </h2>
@@ -1800,7 +1800,7 @@ function Dashboard() {
           </div>
         </section>
 
-        <section className="min-w-0 lg:col-span-2">
+        <section className={`min-w-0 lg:col-span-2 ${view === "competencias" ? "" : "hidden"}`}>
           {isAdmin ? (
             <Link
               to="/competencias"
@@ -1844,7 +1844,8 @@ function Dashboard() {
             </div>
           )}
         </section>
-      </main>
+        </main>
+      </div>
 
 
       {openRecord && (
