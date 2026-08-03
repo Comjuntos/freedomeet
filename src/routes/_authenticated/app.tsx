@@ -324,6 +324,7 @@ function Dashboard() {
   const [compResp, setCompResp] = useState("");
   const [compDeadline, setCompDeadline] = useState("");
   const [teamTab, setTeamTab] = useState<Record<string, "membros" | "atividades">>({});
+  const [view, setView] = useState<ViewId>("equipes");
 
   const signOut = async () => {
     await qc.cancelQueries();
