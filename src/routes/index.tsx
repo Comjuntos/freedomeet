@@ -354,8 +354,10 @@ function Index() {
             {PLANS.map((plan) => (
               <div
                 key={plan.name}
-                className={`relative flex flex-col rounded-xl border bg-card p-7 transition-shadow hover:shadow-[var(--shadow-elegant)] ${
-                  plan.highlight ? "border-primary shadow-[var(--shadow-glow)]" : "border-border"
+                className={`lift relative flex flex-col rounded-2xl border bg-card p-7 ${
+                  plan.highlight
+                    ? "border-primary/60 bg-[linear-gradient(180deg,color-mix(in_oklab,var(--color-primary)_8%,var(--color-card)),var(--color-card))] shadow-[0_24px_60px_-28px_color-mix(in_oklab,var(--color-primary)_85%,transparent)] lg:-translate-y-3"
+                    : "border-border"
                 }`}
               >
                 {plan.highlight && (
@@ -405,7 +407,7 @@ function Index() {
             {FEATURES.map((f) => (
               <div
                 key={f.title}
-                className="flex min-w-0 items-start gap-3 rounded-xl border border-border bg-card p-3.5"
+                className="lift flex min-w-0 items-start gap-3 rounded-xl border border-border bg-card p-3.5"
               >
                 <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                   <f.icon className="size-4" />
@@ -421,7 +423,11 @@ function Index() {
       </section>
 
       <section className="border-t border-border px-4 py-14 sm:px-6">
-        <div className="mx-auto max-w-6xl overflow-hidden rounded-3xl border border-primary/20 bg-[linear-gradient(120deg,color-mix(in_oklab,var(--color-primary)_12%,var(--color-card)),var(--color-card))] p-8 text-center shadow-[var(--shadow-elegant)] sm:p-12">
+        <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl border border-primary/20 bg-[linear-gradient(120deg,color-mix(in_oklab,var(--color-primary)_14%,var(--color-card)),var(--color-card))] p-8 text-center shadow-[var(--shadow-elegant)] sm:p-12">
+          <div
+            aria-hidden
+            className="blob pointer-events-none -top-24 left-1/2 size-[22rem] -translate-x-1/2 bg-[color-mix(in_oklab,var(--color-primary)_25%,transparent)] opacity-50"
+          />
           <h2 className="font-display text-2xl font-normal md:text-3xl">
             Pronto para a próxima reunião produtiva?
           </h2>
