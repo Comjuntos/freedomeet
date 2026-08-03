@@ -289,6 +289,25 @@ function Index() {
         </div>
       </main>
 
+      {/* Faixa em movimento contínuo com os diferenciais do produto. */}
+      <div className="overflow-hidden border-y border-border bg-[linear-gradient(90deg,color-mix(in_oklab,var(--color-primary)_10%,var(--color-background)),var(--color-background),color-mix(in_oklab,var(--color-primary)_10%,var(--color-background)))] py-3">
+        <div className="marquee-track gap-10 pr-10">
+          {[0, 1].map((dup) => (
+            <div key={dup} className="flex shrink-0 items-center gap-10 pr-10" aria-hidden={dup === 1}>
+              {FEATURES.map((f) => (
+                <span
+                  key={f.title}
+                  className="flex items-center gap-2 whitespace-nowrap text-sm font-medium text-muted-foreground"
+                >
+                  <f.icon className="size-4 text-primary" />
+                  {f.title}
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+
       <section className="border-t border-border bg-secondary/40 px-4 py-12 sm:px-6 sm:py-16">
         <div className="mx-auto max-w-6xl">
           <span className="text-sm font-medium text-primary">Como funciona</span>
@@ -297,8 +316,8 @@ function Index() {
           </h2>
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             {STEPS.map((s) => (
-              <div key={s.title} className="rounded-2xl border border-border bg-card p-6">
-                <span className="flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <div key={s.title} className="gradient-ring lift rounded-2xl p-6">
+                <span className="flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary ring-1 ring-primary/20">
                   <s.icon className="size-5" />
                 </span>
                 <h3 className="mt-4 font-display text-base font-medium">{s.title}</h3>
