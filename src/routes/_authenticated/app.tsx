@@ -803,6 +803,36 @@ function Dashboard() {
           </div>
         </section>
         {/* EQUIPES */}
+        {/* PANORAMA */}
+        <section className="min-w-0 lg:col-span-2">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {[
+              { id: "equipes" as ViewId, label: "Equipes", value: teams.length, icon: Users, hint: "times ativos" },
+              { id: "equipes" as ViewId, label: "Membros", value: members.length, icon: UserCheck, hint: "pessoas cadastradas" },
+              {
+                id: "gestor" as ViewId,
+                label: "Tarefas abertas",
+                value: activities.filter((a) => a.status !== "done").length,
+                icon: BarChart3,
+                hint: "em andamento",
+              },
+              { id: "agenda" as ViewId, label: "Agendadas", value: schedules.length, icon: CalendarClock, hint: "reuniões recorrentes" },
+            ].map((s) => (
+              <button
+                key={s.label}
+                onClick={() => setView(s.id)}
+                className="flex min-w-0 flex-col gap-1 rounded-2xl border border-border/60 bg-card/70 p-3.5 text-left transition-all hover:border-primary/40 hover:shadow-sm active:scale-[0.98] sm:p-4"
+              >
+                <span className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                  <s.icon className="size-4 shrink-0 text-primary" />
+                  <span className="truncate">{s.label}</span>
+                </span>
+                <span className="text-2xl font-semibold tracking-tight text-foreground">{s.value}</span>
+                <span className="truncate text-[0.7rem] text-muted-foreground">{s.hint}</span>
+              </button>
+            ))}
+          </div>
+        </section>
         <section className={`min-w-0 lg:col-span-2 ${view === "equipes" ? "" : "hidden"}`}>
           <TooltipProvider>
           <div className="flex flex-wrap items-end justify-between gap-4">
@@ -829,7 +859,30 @@ function Dashboard() {
           </div>
 
           {teams.length === 0 && (
-            <p className="mt-4 text-sm text-muted-foreground">Nenhuma equipe ainda.</p>
+            <div className="mt-5 grid place-items-center gap-3 rounded-3xl border border-dashed border-primary/25 bg-card/50 px-6 py-10 text-center">
+              <span className="grid size-14 place-items-center rounded-2xl bg-primary/10 text-primary">
+                <Users className="size-7" />
+              </span>
+              <div>
+                <p className="text-base font-semibold text-foreground">Comece criando sua primeira equipe</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Dê um nome ao time, adicione membros e organize as tarefas no quadro.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  if (!teamName.trim()) {
+                    setTeamName("Minha equipe");
+                    toast.info("Ajuste o nome e clique em Nova lista");
+                    return;
+                  }
+                  addTeam();
+                }}
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.97]"
+              >
+                <Plus className="size-4" /> Criar equipe
+              </button>
+            </div>
           )}
 
           {teams.length > 0 && (
