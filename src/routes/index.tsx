@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
 import { PLAN_LIST } from "@/lib/plans";
-import logoUrl from "@/assets/freedumeet-logo.png.asset.json";
-import logoTransparentUrl from "@/assets/freedumeet-logo-transparent.png.asset.json";
+import logoUrl from "@/assets/itera-mark.png.asset.json";
+const logoTransparentUrl = logoUrl;
 import {
   Video,
   Keyboard,
@@ -112,7 +112,7 @@ function Index() {
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="flex items-center justify-between gap-2 px-4 py-3 sm:px-6 sm:py-4">
         <div className="flex min-w-0 items-center gap-2">
-          <img src={logoUrl.url} alt="FreeduMeet" className="size-8 shrink-0 rounded-lg object-cover sm:size-9" />
+          <img src={logoUrl.url} alt="FreeduMeet" className="size-8 shrink-0 object-contain sm:size-9" />
           <span className="truncate font-display text-xl font-normal tracking-tight text-muted-foreground sm:text-[1.375rem]">
             FreeduMeet
           </span>
@@ -336,10 +336,10 @@ function Index() {
       <footer className="border-t border-border px-4 py-10 sm:px-6">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 text-sm text-muted-foreground sm:flex-row">
           <div className="flex items-center gap-2">
-            <img src={logoUrl.url} alt="FreeduMeet" className="size-7 rounded-lg object-cover" />
+            <img src={logoUrl.url} alt="FreeduMeet" className="size-7 object-contain" />
             <span className="font-display font-semibold text-foreground">FreeduMeet</span>
           </div>
-          <p className="text-center sm:text-right">© {new Date().getFullYear()} FreeduMeet — Videoconferência com soberania nacional.</p>
+          <p className="text-center sm:text-right">© {new Date().getFullYear()} FreeduMeet — uma solução Itera Tech · Tecnologia que transforma.</p>
         </div>
       </footer>
     </div>
