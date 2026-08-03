@@ -632,6 +632,17 @@ function Room() {
     Promise.all([
       loadJitsiScript(),
       fetchToken({ data: { room: roomId, name, avatar: avatarUrl, moderator: isHost } }),
+      // Solicita permissão de câmera e microfone antecipadamente para que o
+      // usuário já entre na sala com ambos ativados. Falhas são ignoradas:
+      // o Jitsi refaz o pedido internamente se necessário.
+      (async () => {
+        try {
+          const stream = await navigator.mediaDevices?.getUserMedia({ audio: true, video: true });
+          stream?.getTracks().forEach((t) => t.stop());
+        } catch {
+          /* usuário pode negar ou o dispositivo pode não existir */
+        }
+      })(),
     ])
       .then(([, tokenRes]) => {
         if (cancelled || !containerRef.current || !window.JitsiMeetExternalAPI) return;
@@ -651,6 +662,8 @@ function Room() {
             readOnlyName: true,
             startWithAudioMuted: false,
             startAudioMuted: 999,
+            startWithVideoMuted: false,
+            startVideoMuted: 999,
             disableInitialGUM: false,
           },
           interfaceConfigOverwrite: {
